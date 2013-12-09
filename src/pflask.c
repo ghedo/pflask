@@ -158,10 +158,14 @@ int main(int argc, char *argv[]) {
 				detach = 1;
 				break;
 
-			case 'a':
-				/* TODO: use strtol */
-				pid = atol(optarg);
+			case 'a': {
+				char *end;
+				pid = strtol(optarg, &end, 10);
+				if (*end != '\0')
+					fail_printf(
+						"Invalid option '%s'",optarg);
 				break;
+			}
 
 			case '?':
 			case 'h':
