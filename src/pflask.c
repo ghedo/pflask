@@ -215,13 +215,16 @@ int main(int argc, char *argv[]) {
 			NULL
 		};
 
-		rc = setsid();
-		if (rc < 0) sysf_printf("setsid()");
-
-		open_slave_pty(master_name);
+		/* TODO: register with machined */
+		/* TODO: cgroup */
 
 		rc = close(master_fd);
 		if (rc < 0) sysf_printf("close()");
+
+		open_slave_pty(master_name);
+
+		rc = setsid();
+		if (rc < 0) sysf_printf("setsid()");
 
 		if (clone_flags & CLONE_NEWUSER)
 			map_user_to_root(uid, gid);
@@ -263,7 +266,7 @@ int main(int argc, char *argv[]) {
 process:
 	if (detach == 1) {
 		/* TODO: do daemonize */
-		/* rc = daemon(0, 1); */
+		/* rc = daemon(1, 1); */
 		/* if (rc < 0) sysf_printf("daemon()"); */
 
 		serve_pty(getpid(), master_fd);
