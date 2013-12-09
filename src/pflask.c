@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
 			if (rc < 0) sysf_printf("chdir()");
 		}
 
-		env = dest == NULL ? environ : envp;
+		env = dest == NULL ? environ : (char **) envp;
 
 		if (argc > optind)
 			rc = execvpe(argv[optind], argv + optind, env);
