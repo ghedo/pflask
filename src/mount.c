@@ -93,7 +93,8 @@ void add_mount_from_spec(char *spec) {
 	if (c == 0) fail_printf("Invalid mount spec '%s'", spec);
 
 	if (strncmp(opts[0], "bind", 5) == 0) {
-		char *src, *dst;
+		_free_ char *src = NULL;
+		_free_ char *dst = NULL;
 
 		if (c < 3) fail_printf("Invalid mount spec '%s'", spec);
 
@@ -105,7 +106,8 @@ void add_mount_from_spec(char *spec) {
 
 		add_mount(src, dst, NULL, MS_BIND, NULL);
 	} else if (strncmp(opts[0], "aufs", 4) == 0) {
-		char *dst, *overlay;
+		_free_ char *dst = NULL;
+		_free_ char *overlay = NULL;
 		_free_ char *aufs_opts = NULL;
 
 		if (c < 3) fail_printf("Invalid mount spec '%s'", spec);
@@ -123,7 +125,7 @@ void add_mount_from_spec(char *spec) {
 	} else if (strncmp(opts[0], "loop", 5) == 0) {
 		/* TODO: loop device support */
 	} else if (strncmp(opts[0], "tmp", 4) == 0) {
-		char *dst;
+		_free_ char *dst = NULL;
 
 		if (c < 2) fail_printf("Invalid mount spec '%s'", spec);
 
