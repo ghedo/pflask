@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv='content-type' value='text/html;charset=utf8'>
+  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
+  <title>pflask(1) - the process in the flask</title>
+  <style type='text/css' media='all'>
+  /* style: man */
+  body#manpage {margin:0}
+  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
+  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
+  .mp h2 {margin:10px 0 0 0}
+  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
+  .mp h3 {margin:0 0 0 4ex}
+  .mp dt {margin:0;clear:left}
+  .mp dt.flush {float:left;width:8ex}
+  .mp dd {margin:0 0 0 9ex}
+  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
+  .mp pre {margin-bottom:20px}
+  .mp pre+h2,.mp pre+h3 {margin-top:22px}
+  .mp h2+pre,.mp h3+pre {margin-top:5px}
+  .mp img {display:block;margin:auto}
+  .mp h1.man-title {display:none}
+  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
+  .mp h2 {font-size:16px;line-height:1.25}
+  .mp h1 {font-size:20px;line-height:2}
+  .mp {text-align:justify;background:#fff}
+  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
+  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
+  .mp u {text-decoration:underline}
+  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
+  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
+  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
+  .mp b.man-ref {font-weight:normal;color:#434241}
+  .mp pre {padding:0 4ex}
+  .mp pre code {font-weight:normal;color:#434241}
+  .mp h2+pre,h3+pre {padding-left:0}
+  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
+  ol.man-decor {width:100%}
+  ol.man-decor li.tl {text-align:left}
+  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
+  ol.man-decor li.tr {text-align:right;float:right}
+  </style>
+</head>
+<!--
+  The following styles are deprecated and will be removed at some point:
+  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+
+  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
+  .man-navigation should be used instead.
+-->
+<body id='manpage'>
+  <div class='mp' id='man'>
+
+  <div class='man-navigation' style='display:none'>
+    <a href="#NAME">NAME</a>
+    <a href="#SYNOPSIS">SYNOPSIS</a>
+    <a href="#DESCRIPTION">DESCRIPTION</a>
+    <a href="#OPTIONS">OPTIONS</a>
+    <a href="#MOUNT-POINTS">MOUNT POINTS</a>
+    <a href="#AUTHOR">AUTHOR</a>
+    <a href="#COPYRIGHT">COPYRIGHT</a>
+  </div>
+
+  <ol class='man-decor man-head man head'>
+    <li class='tl'>pflask(1)</li>
+    <li class='tc'></li>
+    <li class='tr'>pflask(1)</li>
+  </ol>
+
+  <h2 id="NAME">NAME</h2>
+<p class="man-name">
+  <code>pflask</code> - <span class="man-whatis">the process in the flask</span>
+</p>
+
+<h2 id="SYNOPSIS">SYNOPSIS</h2>
+
+<p><code>pflask [OPTIONS] [COMMAND [ARGS...]]</code></p>
+
+<h2 id="DESCRIPTION">DESCRIPTION</h2>
+
+<p><strong>pflask</strong> is a simple tool for creating Linux namespace containers. It can be
+used for running a command or even booting an OS inside an isolated container,
+created with the help of Linux namespaces. It is similar in functionality to
+<code>chroot(8)</code>, altough pflask provides better isolation thanks to the use of
+namespaces.</p>
+
+<h2 id="OPTIONS">OPTIONS</h2>
+
+<p><code>-m, --mount &lt;type>,&lt;opts></code></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Create a new <em>"type"</em> mount point inside the container. See <a href="#MOUNT-POINTS" title="MOUNT POINTS" data-bare-link="true">MOUNT POINTS</a> for
+more info.</p>
+
+<p><code>-n, --netif &lt;dev>,&lt;name></code></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Move the <em>"dev"</em> network interface inside the container and rename it to
+<em>"name"</em>.</p>
+
+<p><code>-u, --user &lt;user></code></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Run the command as <em>"user"</em>.</p>
+
+<p><code>-r, --root &lt;dir&gt;</code></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Use <em>"dir"</em> as root directory inside the container.</p>
+
+<p><code>-c, --chdir &lt;dir&gt;</code></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Change to <em>"dir"</em>  inside the namespace.</p>
+
+<p><code>-d, --detach</code></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Detach from the pflask process, re-attach with --attach.</p>
+
+<p><code>-a, --attach &lt;pid></code></p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Attach to the <em>"pid"</em> detached process.</p>
+
+<h2 id="MOUNT-POINTS">MOUNT POINTS</h2>
+
+<p>pflask support the following mount point types:</p>
+
+<h3 id="bind">bind</h3>
+
+<p>It bind mounts a directory/file to another directory/file</p>
+
+<p>Example: <code>--mount=bind,/source/path,/dest/path</code></p>
+
+<h3 id="aufs">aufs</h3>
+
+<p>It stacks a directory on top of another directory using AuFS</p>
+
+<p>Example: <code>--mount=aufs,/overlay/path,/dest/path</code></p>
+
+<h3 id="loop">loop</h3>
+
+<p>It mounts a loop device on a driectory given its file system type.</p>
+
+<p>Example: <code>--mount=loop,ext4,/path/to/disk.img,/dest/path</code></p>
+
+<h3 id="tmp">tmp</h3>
+
+<p>It mounts a tmpfs on a directory.</p>
+
+<p>Example: <code>--mount=tmp,/dest/path</code></p>
+
+<h2 id="AUTHOR">AUTHOR</h2>
+
+<p>Alessandro Ghedini <a href="&#109;&#97;&#x69;&#108;&#116;&#x6f;&#x3a;&#97;&#108;&#x65;&#115;&#115;&#97;&#x6e;&#100;&#x72;&#x6f;&#64;&#103;&#x68;&#101;&#100;&#x69;&#x6e;&#105;&#x2e;&#109;&#101;" data-bare-link="true">&#97;&#108;&#x65;&#115;&#115;&#97;&#110;&#100;&#x72;&#111;&#x40;&#x67;&#x68;&#x65;&#x64;&#x69;&#110;&#105;&#x2e;&#x6d;&#101;</a></p>
+
+<h2 id="COPYRIGHT">COPYRIGHT</h2>
+
+<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#58;&#97;&#108;&#101;&#115;&#115;&#x61;&#110;&#100;&#x72;&#x6f;&#x40;&#103;&#x68;&#101;&#x64;&#105;&#x6e;&#x69;&#x2e;&#109;&#x65;" data-bare-link="true">&#97;&#x6c;&#x65;&#115;&#115;&#97;&#x6e;&#x64;&#x72;&#x6f;&#x40;&#x67;&#104;&#x65;&#x64;&#x69;&#x6e;&#105;&#x2e;&#109;&#x65;</a></p>
+
+<p>This program is released under the 2 clause BSD license.</p>
+
+
+  <ol class='man-decor man-foot man foot'>
+    <li class='tl'></li>
+    <li class='tc'>December 2013</li>
+    <li class='tr'>pflask(1)</li>
+  </ol>
+
+  </div>
+</body>
+</html>
