@@ -1,0 +1,18 @@
+language: c
+
+install:
+ - sudo apt-get update
+ - sudo apt-get install cmake pkg-config libnl-route-3-dev
+
+before_script:
+ - cmake .
+
+script:
+ - make
+
+notifications:
+  recipient:
+   - alessandro@ghedini.me
+  email:
+    on_success: change
+    on_failure: always
