@@ -50,7 +50,7 @@ Detach from the pflask process, re-attach with --attach.
 `-a, --attach <pid>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Attach to the _"pid"_ detached process.
+Attach to the _"pid"_ detached process. To detach again press `^@` (Ctrl + @).
 
 ## MOUNT POINTS
 

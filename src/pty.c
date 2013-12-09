@@ -147,6 +147,8 @@ void process_pty(int master_fd) {
 		char buf[line_max];
 
 		if (FD_ISSET(STDIN_FILENO, &rfds)) {
+			char *p;
+
 			int rc = read(STDIN_FILENO, buf, line_max);
 
 			if (rc == 0)
@@ -156,10 +158,15 @@ void process_pty(int master_fd) {
 
 			rc = write(master_fd, buf, rc);
 			if (rc < 0) sysf_printf("write()");
+
+			for (p = buf; p < buf + rc; p++) {
+				/* ^@ */
+				if (*p == '\0')
+					goto finish;
+			}
 		}
 
 		if (FD_ISSET(master_fd, &rfds)) {
-			/* TODO: support escape code for detach */
 			rc = read(master_fd, buf, line_max);
 
 			if (rc == 0)
