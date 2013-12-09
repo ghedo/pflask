@@ -25,6 +25,12 @@ void make_console(char *dest, char *console) {
 	struct stat sb;
 	_free_ char *target = NULL;
 
+	rc = chmod(console, 0600);
+	if (rc < 0) sysf_printf("chmod()");
+
+	rc = chown(console, 0, 0);
+	if (rc < 0) sysf_printf("chown()");
+
 	rc = stat(console, &sb);
 	if (rc < 0) sysf_printf("stat()");
 
