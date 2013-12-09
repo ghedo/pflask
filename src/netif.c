@@ -129,7 +129,7 @@ void do_netif(pid_t pid) {
 		rtnl_link_put(link);
 	}
 
-	nl_cache_put(cache);
+	nl_cache_free(cache);
 
 	nl_close(sock);
 	nl_socket_free(sock);
