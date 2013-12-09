@@ -122,8 +122,6 @@ void add_mount_from_spec(char *spec) {
 		if (rc < 0) fail_printf("OOM");
 
 		add_mount(NULL, dst, "aufs", 0, aufs_opts);
-	} else if (strncmp(opts[0], "loop", 5) == 0) {
-		/* TODO: loop device support */
 	} else if (strncmp(opts[0], "tmp", 4) == 0) {
 		_free_ char *dst = NULL;
 

@@ -46,7 +46,6 @@ by using the `--mount` option. Supported mount point types are:
 
  * `bind` -- bind mount a directory/file to another directory/file
  * `aufs` -- stack a directory on top of another directory using AuFS
- * `loop` -- mount a loop device (TODO)
  * `tmp`  -- mount a tmpfs on a directory
 
 ### Network namespace

@@ -68,12 +68,6 @@ It stacks a directory on top of another directory using AuFS
 
 Example: `--mount=aufs,/overlay/path,/dest/path`
 
-### loop
-
-It mounts a loop device on a driectory given its file system type.
-
-Example: `--mount=loop,ext4,/path/to/disk.img,/dest/path`
-
 ### tmp
 
 It mounts a tmpfs on a directory.
