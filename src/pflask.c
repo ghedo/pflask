@@ -99,6 +99,8 @@ static struct option long_opts[] = {
 	{ "user",      required_argument, NULL, 'u' },
 	{ "root",      required_argument, NULL, 'r' },
 	{ "chdir",     required_argument, NULL, 'c' },
+	{ "detach",    no_argument,       NULL, 'd' },
+	{ "attach",    required_argument, NULL, 'a' },
 	{ "help",      no_argument,       NULL, 'h' },
 	{ 0, 0, 0, 0 }
 };
@@ -106,9 +108,9 @@ static struct option long_opts[] = {
 int main(int argc, char *argv[]) {
 	int rc, i;
 
-	pid_t pid;
-	uid_t uid;
-	gid_t gid;
+	pid_t pid = -1;
+	uid_t uid = -1;
+	gid_t gid = -1;
 
 	_free_ char *user   = NULL;
 	_free_ char *dest   = NULL;
@@ -116,6 +118,8 @@ int main(int argc, char *argv[]) {
 
 	int   master_fd;
 	char *master_name;
+
+	int   detach = 0;
 
 	siginfo_t status;
 
@@ -150,11 +154,26 @@ int main(int argc, char *argv[]) {
 				change = strdup(optarg);
 				break;
 
+			case 'd':
+				detach = 1;
+				break;
+
+			case 'a':
+				/* TODO: use strtol */
+				pid = atol(optarg);
+				break;
+
 			case '?':
 			case 'h':
 				help();
 				return 0;
 		}
+	}
+
+	if (pid != -1) {
+		master_fd = recv_pty(pid);
+		pid = -1;
+		goto process;
 	}
 
 	if (user == NULL) {
@@ -241,8 +260,22 @@ int main(int argc, char *argv[]) {
 
 	do_netif(pid);
 
-	/* TODO: attach/detach */
-	process_pty(master_fd);
+process:
+	if (detach == 1) {
+		/* TODO: do daemonize */
+		/* rc = daemon(0, 1); */
+		/* if (rc < 0) sysf_printf("daemon()"); */
+
+		serve_pty(getpid(), master_fd);
+	} else {
+		process_pty(master_fd);
+	}
+
+	rc = close(master_fd);
+	if (rc < 0) sysf_printf("close()");
+
+	if (pid == -1)
+		return 0;
 
 	rc = waitid(P_PID, pid, &status, WEXITED);
 	if (rc < 0) sysf_printf("waitid()");
@@ -291,6 +324,10 @@ static inline void help(void) {
 		"Use the specified directory as root inside the container");
 	CMD_HELP("--chdir", "-c",
 		"Change to the specified directory inside the namespace");
+	CMD_HELP("--detach", "-d",
+		"Detach from the pflask process, re-attach with --attach");
+	CMD_HELP("--attach", "-a",
+		"Attach to the given detached process");
 
 	puts("");
 }

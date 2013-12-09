@@ -28,6 +28,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
@@ -45,13 +46,14 @@
 #include <sys/un.h>
 
 #include "printf.h"
+#include "util.h"
 
-#define SOCKET_PATH "/tmp/fuck-security"
+#define SOCKET_PATH "@/com/github/ghedo/pflask/%u"
 
 static struct termios stdin_attr;
 static struct winsize stdin_ws;
 
-static void recv_fd(int sock);
+static int recv_fd(int sock);
 static void send_fd(int sock, int fd);
 
 void open_master_pty(int *master_fd, char **master_name) {
@@ -126,6 +128,9 @@ void process_pty(int master_fd) {
 	signal_fd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
 	if (signal_fd < 0) sysf_printf("signalfd()");
 
+	rc = tcgetattr(STDIN_FILENO, &stdin_attr);
+	if (rc < 0) sysf_printf("tcgetattr()");
+
 	cfmakeraw(&raw_attr);
 	raw_attr.c_lflag &= ~ECHO;
 
@@ -138,7 +143,7 @@ void process_pty(int master_fd) {
 	FD_SET(master_fd, &rfds);
 	FD_SET(signal_fd, &rfds);
 
-	while ((rc = select(master_fd + 1, &rfds, NULL, NULL, NULL)) > 0) {
+	while ((rc = select(signal_fd + 1, &rfds, NULL, NULL, NULL)) > 0) {
 		char buf[line_max];
 
 		if (FD_ISSET(STDIN_FILENO, &rfds)) {
@@ -154,6 +159,7 @@ void process_pty(int master_fd) {
 		}
 
 		if (FD_ISSET(master_fd, &rfds)) {
+			/* TODO: support escape code for detach */
 			rc = read(master_fd, buf, line_max);
 
 			if (rc == 0)
@@ -198,23 +204,35 @@ finish:
 	if (rc < 0) sysf_printf("tcsetattr()");
 }
 
-void serve_pty(int fd) {
+void serve_pty(pid_t pid, int fd) {
 	int rc;
 	int sock;
+
+	fd_set rfds;
+
+	sigset_t mask;
+	int signal_fd;
 
 	struct sockaddr    *servaddr;
 	struct sockaddr_un  servaddr_un;
 	int                 servaddr_len;
 
+	_free_ char *path = NULL;
+
+	rc = asprintf(&path, SOCKET_PATH, pid);
+	if (rc < 0) fail_printf("OOM");
+
 	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
 
 	servaddr_un.sun_family  = AF_UNIX;
-	strcpy(servaddr_un.sun_path, SOCKET_PATH);
+	strcpy(servaddr_un.sun_path, path);
+
+	servaddr_un.sun_path[0] = '\0';
 
 	servaddr     = (struct sockaddr *) &servaddr_un;
 	servaddr_len = sizeof(struct sockaddr_un) -
 		       sizeof(servaddr_un.sun_path) +
-		       strlen(SOCKET_PATH);
+		       strlen(path);
 
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock < 0) sysf_printf("socket()");
@@ -225,15 +243,47 @@ void serve_pty(int fd) {
 	rc = listen(sock, 1);
 	if (rc < 0) sysf_printf("listen()");
 
-	while (1) {
-		int send_sock = accept(sock, (struct sockaddr *) NULL, NULL);
-		if (send_sock < 0) sysf_printf("accept()");
+	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGCHLD);
 
-		send_fd(send_sock, fd);
+	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
+	if (rc < 0) sysf_printf("sigprocmask()");
+
+	signal_fd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
+	if (signal_fd < 0) sysf_printf("signalfd()");
+
+	FD_ZERO(&rfds);
+
+	FD_SET(sock, &rfds);
+	FD_SET(signal_fd, &rfds);
+
+	while ((rc = select(signal_fd + 1, &rfds, NULL, NULL, NULL)) > 0) {
+		if (FD_ISSET(sock, &rfds)) {
+			int send_sock = accept(sock, (struct sockaddr *) NULL, NULL);
+			if (send_sock < 0) sysf_printf("accept()");
+
+			send_fd(send_sock, fd);
+		}
+
+		if (FD_ISSET(signal_fd, &rfds)) {
+			struct signalfd_siginfo fdsi;
+
+			rc = read(signal_fd, &fdsi, sizeof(fdsi));
+			if (rc != sizeof(fdsi)) sysf_printf("read()");
+
+			switch (fdsi.ssi_signo) {
+				case SIGCHLD:
+					return;
+			}
+		}
+
+		FD_SET(sock, &rfds);
+		FD_SET(signal_fd, &rfds);
 	}
 }
 
-void recv_pty(void) {
+int recv_pty(pid_t pid) {
 	int rc;
 	int sock;
 
@@ -241,15 +291,22 @@ void recv_pty(void) {
 	struct sockaddr_un  servaddr_un;
 	int                 servaddr_len;
 
+	_free_ char *path = NULL;
+
+	rc = asprintf(&path, SOCKET_PATH, pid);
+	if (rc < 0) fail_printf("OOM");
+
 	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
 
 	servaddr_un.sun_family = AF_UNIX;
-	strcpy(servaddr_un.sun_path, SOCKET_PATH);
+	strcpy(servaddr_un.sun_path, path);
+
+	servaddr_un.sun_path[0] = '\0';
 
 	servaddr     = (struct sockaddr *) &servaddr_un;
 	servaddr_len = sizeof(struct sockaddr_un) -
 		       sizeof(servaddr_un.sun_path) +
-		       strlen(SOCKET_PATH);
+		       strlen(path);
 
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock < 0) sysf_printf("socket()");
@@ -257,7 +314,7 @@ void recv_pty(void) {
 	rc = connect(sock, servaddr, servaddr_len);
 	if (rc < 0) sysf_printf("connect()");
 
-	recv_fd(sock);
+	return recv_fd(sock);
 }
 
 static void send_fd(int sock, int fd) {
@@ -299,7 +356,7 @@ static void send_fd(int sock, int fd) {
 	if (rc < 0) sysf_printf("sendmsg()");
 }
 
-static void recv_fd(int sock) {
+static int recv_fd(int sock) {
 	int rc;
 
 	union {
@@ -335,9 +392,8 @@ static void recv_fd(int sock) {
 			continue;
 
 		fd = *((int *) CMSG_DATA(cmsg));
-		process_pty(fd);
-
-		rc = close(fd);
-		if (rc < 0) sysf_printf("close()");
+		return fd;
 	}
+
+	return -1;
 }
