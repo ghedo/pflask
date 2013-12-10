@@ -122,9 +122,9 @@ copy-on-write filesystem on /. Any change to files and directories will be saved
 in `/tmp/overlay` so that the container directory (`/path/to/container`) will be
 unaffected.
 
-Note that this requires support for AuFS on the host system. Also, AUFS does not
+Note that this requires support for AuFS on the host system. Also, AuFS does not
 (yet?) support user namespaces, so that they need to be disabled (that's what
-the `--no-userns` option is for):
+the `--no-userns` option is for).
 
  * Build a Debian package:
 
