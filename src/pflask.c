@@ -305,7 +305,7 @@ process:
 			break;
 	}
 
-	return 0;
+	return status.si_status;
 }
 
 static inline void version(void) {
