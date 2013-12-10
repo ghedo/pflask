@@ -249,9 +249,6 @@ void serve_pty(int fd) {
 
 	_free_ char *path = NULL;
 
-	rc = daemon(1, 1);
-	if (rc < 0) sysf_printf("daemon()");
-
 	pid = getpid();
 
 	rc = asprintf(&path, SOCKET_PATH, pid);

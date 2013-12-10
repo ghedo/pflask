@@ -222,6 +222,11 @@ int main(int argc, char *argv[]) {
 	uid = getuid();
 	gid = getgid();
 
+	if (detach) {
+		rc = daemon(0, 0);
+		if (rc < 0) sysf_printf("daemon()");
+	}
+
 	pid = do_clone();
 
 	if (pid == 0) {
