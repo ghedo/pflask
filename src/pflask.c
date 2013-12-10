@@ -101,6 +101,12 @@ static struct option long_opts[] = {
 	{ "chdir",     required_argument, NULL, 'c' },
 	{ "detach",    no_argument,       NULL, 'd' },
 	{ "attach",    required_argument, NULL, 'a' },
+	{ "no-userns", no_argument,       NULL, 'U' },
+	{ "no-mountns", no_argument,      NULL, 'M' },
+	{ "no-netns",  no_argument,       NULL, 'N' },
+	{ "no-ipcns",  no_argument,       NULL, 'I' },
+	{ "no-utsns",  no_argument,       NULL, 'H' },
+	{ "no-pidns",  no_argument,       NULL, 'P' },
 	{ "help",      no_argument,       NULL, 'h' },
 	{ 0, 0, 0, 0 }
 };
@@ -123,7 +129,7 @@ int main(int argc, char *argv[]) {
 
 	siginfo_t status;
 
-	const char *short_opts = "+m:n:u:r:h";
+	const char *short_opts = "+m:n:u:r:hUMNIHP";
 
 	if (argc < 2) {
 		help();
@@ -166,6 +172,30 @@ int main(int argc, char *argv[]) {
 						"Invalid option '%s'",optarg);
 				break;
 			}
+
+			case 'U':
+				clone_flags &= ~(CLONE_NEWUSER);
+				break;
+
+			case 'M':
+				clone_flags &= ~(CLONE_NEWNS);
+				break;
+
+			case 'N':
+				clone_flags &= ~(CLONE_NEWNET);
+				break;
+
+			case 'I':
+				clone_flags &= ~(CLONE_NEWIPC);
+				break;
+
+			case 'H':
+				clone_flags &= ~(CLONE_NEWUTS);
+				break;
+
+			case 'P':
+				clone_flags &= ~(CLONE_NEWPID);
+				break;
 
 			case '?':
 			case 'h':
