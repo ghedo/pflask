@@ -125,6 +125,7 @@ int main(int argc, char *argv[]) {
 	int   master_fd;
 	char *master_name;
 
+	int   attach = 0;
 	int   detach = 0;
 
 	siginfo_t status;
@@ -170,6 +171,7 @@ int main(int argc, char *argv[]) {
 				if (*end != '\0')
 					fail_printf(
 						"Invalid option '%s'",optarg);
+				attach = 1;
 				break;
 			}
 
@@ -298,15 +300,10 @@ int main(int argc, char *argv[]) {
 	do_netif(pid);
 
 process:
-	if (detach == 1) {
-		/* TODO: do daemonize */
-		/* rc = daemon(1, 1); */
-		/* if (rc < 0) sysf_printf("daemon()"); */
-
-		serve_pty(getpid(), master_fd);
-	} else {
-		process_pty(master_fd);
-	}
+	if (detach)
+		serve_pty(master_fd);
+	else
+		process_pty(master_fd, attach);
 
 	rc = close(master_fd);
 	if (rc < 0) sysf_printf("close()");

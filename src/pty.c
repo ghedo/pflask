@@ -45,6 +45,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include "pty.h"
 #include "printf.h"
 #include "util.h"
 
@@ -102,7 +103,7 @@ void open_slave_pty(char *master_name) {
 	if (rc < 0) sysf_printf("close()");
 }
 
-void process_pty(int master_fd) {
+void process_pty(int master_fd, int attached) {
 	int rc;
 
 	fd_set rfds;
@@ -118,7 +119,6 @@ void process_pty(int master_fd) {
 	memcpy(&raw_attr, &stdin_attr, sizeof(stdin_attr));
 
 	sigemptyset(&mask);
-	sigaddset(&mask, SIGINT);
 	sigaddset(&mask, SIGCHLD);
 	sigaddset(&mask, SIGWINCH);
 
@@ -161,8 +161,13 @@ void process_pty(int master_fd) {
 
 			for (p = buf; p < buf + rc; p++) {
 				/* ^@ */
-				if (*p == '\0')
-					goto finish;
+				if (*p == '\0') {
+
+					if (attached)
+						goto finish;
+					else
+						goto detach;
+				}
 			}
 		}
 
@@ -209,11 +214,29 @@ void process_pty(int master_fd) {
 finish:
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
 	if (rc < 0) sysf_printf("tcsetattr()");
+
+	puts("");
+
+	return;
+
+detach:
+	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
+	if (rc < 0) sysf_printf("tcsetattr()");
+
+	puts("");
+
+	rc = sigprocmask(SIG_UNBLOCK, &mask, NULL);
+	if (rc < 0) sysf_printf("sigprocmask()");
+
+	serve_pty(master_fd);
+	return;
 }
 
-void serve_pty(pid_t pid, int fd) {
+void serve_pty(int fd) {
 	int rc;
 	int sock;
+
+	pid_t pid;
 
 	fd_set rfds;
 
@@ -225,6 +248,11 @@ void serve_pty(pid_t pid, int fd) {
 	int                 servaddr_len;
 
 	_free_ char *path = NULL;
+
+	rc = daemon(1, 1);
+	if (rc < 0) sysf_printf("daemon()");
+
+	pid = getpid();
 
 	rc = asprintf(&path, SOCKET_PATH, pid);
 	if (rc < 0) fail_printf("OOM");
@@ -251,7 +279,6 @@ void serve_pty(pid_t pid, int fd) {
 	if (rc < 0) sysf_printf("listen()");
 
 	sigemptyset(&mask);
-	sigaddset(&mask, SIGINT);
 	sigaddset(&mask, SIGCHLD);
 
 	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
