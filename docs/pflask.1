@@ -46,13 +46,49 @@
 \fB\-d, \-\-detach\fR
 .
 .P
-\~\~\~\~\~\~ Detach from the pflask process, re\-attach with \-\-attach\.
+\~\~\~\~\~\~ Detach the pflask process from terminal, re\-attach with \-\-attach\. Only a process with the same UID of the detached process can attach to it\.
 .
 .P
 \fB\-a, \-\-attach <pid>\fR
 .
 .P
 \~\~\~\~\~\~ Attach to the \fI"pid"\fR detached process\. To detach again press \fB^@\fR (Ctrl + @)\.
+.
+.P
+\fB\-U, \-\-no\-userns\fR
+.
+.P
+\~\~\~\~\~\~ Disable user namespace\.
+.
+.P
+\fB\-M, \-\-no\-mountns\fR
+.
+.P
+\~\~\~\~\~\~ Disable mount namespace\.
+.
+.P
+\fB\-N, \-\-no\-netns\fR
+.
+.P
+\~\~\~\~\~\~ Disable net namespace\.
+.
+.P
+\fB\-I, \-\-no\-ipcns\fR
+.
+.P
+\~\~\~\~\~\~ Disable IPC namespace\.
+.
+.P
+\fB\-H, \-\-no\-utsns\fR
+.
+.P
+\~\~\~\~\~\~ Disable UTS namespace\.
+.
+.P
+\fB\-P, \-\-no\-pidrns\fR
+.
+.P
+\~\~\~\~\~\~ Disable PID namespace\.
 .
 .SH "MOUNT POINTS"
 pflask support the following mount point types:

@@ -45,12 +45,43 @@ Change to _"dir"_  inside the namespace.
 `-d, --detach`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Detach from the pflask process, re-attach with --attach.
+Detach the pflask process from terminal, re-attach with --attach. Only a process
+with the same UID of the detached process can attach to it.
 
 `-a, --attach <pid>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Attach to the _"pid"_ detached process. To detach again press `^@` (Ctrl + @).
+
+`-U, --no-userns`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Disable user namespace.
+
+`-M, --no-mountns`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Disable mount namespace.
+
+`-N, --no-netns`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Disable net namespace.
+
+`-I, --no-ipcns`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Disable IPC namespace.
+
+`-H, --no-utsns`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Disable UTS namespace.
+
+`-P, --no-pidrns`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Disable PID namespace.
 
 ## MOUNT POINTS
 

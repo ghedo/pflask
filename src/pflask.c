@@ -344,7 +344,7 @@ static inline void version(void) {
 }
 
 static inline void help(void) {
-	#define CMD_HELP(CMDL, CMDS, MSG) printf("  %s, %s \t%s.\n", COLOR_YELLOW CMDS, CMDL COLOR_OFF, MSG);
+	#define CMD_HELP(CMDL, CMDS, MSG) printf("  %s, %-15s \t%s.\n", COLOR_YELLOW CMDS, CMDL COLOR_OFF, MSG);
 
 	printf(COLOR_RED "Usage: " COLOR_OFF);
 	printf(COLOR_GREEN "pflask " COLOR_OFF);
@@ -355,17 +355,29 @@ static inline void help(void) {
 	CMD_HELP("--mount", "-m",
 		"Create a new mount point inside the container");
 	CMD_HELP("--netif", "-n",
-		"Move a network interface inside the container");
+		"Move a network interface to the container");
+
 	CMD_HELP("--user",  "-u",
-		"Run the command as the specified user");
+		"Run the command as the specified user inside the container");
+
 	CMD_HELP("--root",  "-r",
 		"Use the specified directory as root inside the container");
 	CMD_HELP("--chdir", "-c",
-		"Change to the specified directory inside the namespace");
+		"Change to the specified directory inside the container");
+
 	CMD_HELP("--detach", "-d",
-		"Detach from the pflask process, re-attach with --attach");
+		"Detach from terminal, re-attach with --attach");
 	CMD_HELP("--attach", "-a",
 		"Attach to the given detached process");
+
+	puts("");
+
+	CMD_HELP("--no-userns",  "-U", "Disable user namespace");
+	CMD_HELP("--no-mountns", "-M", "Disable mount namespace");
+	CMD_HELP("--no-netns",   "-N", "Disable net namespace");
+	CMD_HELP("--no-ipcns",   "-I", "Disable IPC namespace");
+	CMD_HELP("--no-utsns",   "-H", "Disable UTS namespace");
+	CMD_HELP("--no-pidrns",  "-P", "Disable PID namespace");
 
 	puts("");
 }
