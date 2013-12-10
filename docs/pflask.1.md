@@ -10,8 +10,9 @@ pflask(1) -- the process in the flask
 **pflask** is a simple tool for creating Linux namespace containers. It can be
 used for running a command or even booting an OS inside an isolated container,
 created with the help of Linux namespaces. It is similar in functionality to
-`chroot(8)`, altough pflask provides better isolation thanks to the use of
-namespaces.
+`chroot(8)`, although pflask provides better isolation thanks to the use of
+namespaces. Unlike chroot and most other containerization solutions, pflask can
+also be used without changing the root directory inside the container.
 
 ## OPTIONS
 
