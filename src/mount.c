@@ -145,7 +145,7 @@ void do_mount(char *dest) {
 	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
 
 	if (dest != NULL) {
-		add_mount(dest, dest, NULL, MS_BIND, NULL);
+		/* add_mount(dest, dest, NULL, MS_BIND, NULL); */
 
 		add_mount_inside(dest, "proc", "/proc", "proc",
 			MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
