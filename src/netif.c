@@ -105,6 +105,7 @@ void do_netif(pid_t pid) {
 		struct nl_msg *msg;
 		struct rtnl_link *new_link;
 
+		/* TODO: roll own netlink and get rid of libnl */
 		struct rtnl_link *link = rtnl_link_get_by_name(cache, i->dev);
 		if (link == NULL) fail_printf("Invalid netif '%s'", i -> dev);
 
