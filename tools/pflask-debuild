@@ -30,49 +30,110 @@
 
 set -e
 
-umask 022
+UNSTABLE_CODENAME="sid"
+TESTING_CODENAME="jessie"
+STABLE_CODENAME="wheezy"
 
-DIST=unstable
-ARCH=amd64
+DEBIAN_SUITES=(
+	$UNSTABLE_CODENAME $TESTING_CODENAME $STABLE_CODENAME
+	"experimental" "unstable" "testing" "stable" "oldstable"
+)
 
-PFLASK="$HOME/devel/projs/pflask/build/pflask"
+if [ -z "${DIST}" ] && [ -r "debian/changelog" ]; then
+	DIST=$(dpkg-parsechangelog | awk '/^Distribution: / {print $2}')
+fi
 
-BASE_DIR="$HOME/local/base-$DIST-$ARCH"
+: ${DIST:="$(lsb_release --short --codename)"}
 
-PKG_DIR=$(pwd)
+case "$DIST" in
+	$UNSTABLE_CODENAME)
+		DIST="unstable"
+		;;
+	$TESTING_CODENAME)
+		DIST="testing"
+		;;
+	$STABLE_CODENAME)
+		DIST="stable"
+		;;
+esac
 
-PKG=$(basename $PKG_DIR)
-DIR=$(dirname $PKG_DIR)
+: ${ARCH:="$(dpkg --print-architecture)"}
 
-OVERLAY="$DIR/$PKG-XXXX"
+NAME="$DIST-$ARCH"
+ARCHITECTURE="${ARCH}"
+
+BASEDIR="/var/cache/pflask/base-$NAME"
+
+BUILDDIR=$(pwd)
+PKGDIR=$(basename $BUILDDIR)
+RESDIR=$(dirname $BUILDDIR)
+
+SRC=$(dpkg-parsechangelog | sed -rne 's,^Source: (.+).*,\1,p')
+VER=$(dpkg-parsechangelog | sed -rne 's,^Version: ([0-9]:)*(.+).*,\2,p')
+
+OVERLAY="$RESDIR/$PKGDIR-XXXX"
 
 OVERLAY=$(mktemp -d $OVERLAY)
 
 USER=$(whoami)
 
-APT='apt-get --no-install-recommends -y'
+PFLASK_TOOL="sudo $(which pflask) --no-userns"
+APT_TOOL="apt-get --no-install-recommends -y"
+TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot"
+BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
+BUILD_TOOL="dpkg-buildpackage -tc -rfakeroot"
+CLEAN_TOOL="debclean"
+CHOWN_TOOL="sudo chown -f"
+DSIGN_TOOL="debsign"
 
-$PFLASK --user $USER --root $BASE_DIR		\
-	--mount "aufs,$OVERLAY,$BASE_DIR"	\
-	--mount "bind,$DIR,$BASE_DIR/tmp"	\
-	--chdir "/tmp/$PKG"			\
+if [ ! -d "$BASEDIR" ]; then
+	echo "E: Missing base root directory '$BASEDIR'"
+	exit -1
+fi
+
+BUILD_CMD="$TOOLS_TOOL && $BDEPS_TOOL && $BUILD_TOOL"
+
+$PFLASK_TOOL --root $BASEDIR			\
+	--mount "tmp,$OVERLAY"			\
+	--mount "aufs,$OVERLAY,$BASEDIR"	\
+	--mount "bind,$RESDIR,$BASEDIR/mnt"	\
+	--chdir "/mnt/$PKGDIR"			\
 	--					\
-	mk-build-deps -r -i debian/control -t $APT
+	sh -c "$BUILD_CMD"
 
-$PFLASK --user $USER --root $BASE_DIR		\
-	--mount "aufs,$OVERLAY,$BASE_DIR"	\
-	--mount "bind,$DIR,$BASE_DIR/tmp"	\
-	--chdir "/tmp/$PKG"			\
-	--					\
-	debuild
+CHANGES="$RESDIR/${SRC}_${VER}_${ARCH}.changes"
+DSC="$RESDIR/${SRC}_${VER}.dsc"
+DEB="$RESDIR/${SRC}_${VER}.debian.tar.gz"
+DIF="$RESDIR/${SRC}_${VER}.diff.tar.gz"
 
-$PFLASK --user $USER --root $BASE_DIR		\
-	--mount "aufs,$OVERLAY,$BASE_DIR"	\
-	--mount "bind,$DIR,$BASE_DIR/tmp"	\
-	--chdir "/tmp/$PKG"			\
-	--					\
-	debclean
+if [ -f "$DEB" ]; then
+	$CHOWN_TOOL "$USER:$USER" $DEB
+fi
 
-rm -rf $OVERLAY
+if [ -f "$DIF" ]; then
+	$CHOWN_TOOL "$USER:$USER" $DIF
+fi
 
-exit 0
+for PKG in `dh_listpackages`;
+do
+	FILE_ARCH="$RESDIR/${PKG}_${VER}_${ARCH}.deb"
+	FILE_ALL="$RESDIR/${PKG}_${VER}_all.deb"
+
+	if [ -f "$FILE_ARCH" ]; then
+		$CHOWN_TOOL "$USER:$USER" $FILE_ARCH
+	fi
+
+	if [ -f "$FILE_ALL" ]; then
+		$CHOWN_TOOL "$USER:$USER" $FILE_ALL
+	fi
+done
+
+$CHOWN_TOOL "$USER:$USER" "$CHANGES"
+
+$CHOWN_TOOL "$USER:$USER" "$DSC"
+
+$DSIGN_TOOL "$CHANGES"
+
+sudo rm -rf $OVERLAY
+
+exit $?
