@@ -16,8 +16,8 @@ is mostly intended for testing/building/experimenting, whereas LXC is better
 suited for production environments.
 
 Compared to [systemd-nspawn] [systemd], pflask doesn't require the use of
-systemd on the host system and provides additional features such as a more
-comprehensive handling of mounts and network interfaces inside the container.
+systemd on the host system and provides a better interface for manipulating
+mount points and network interfaces inside the container.
 
 [LXC]: http://linuxcontainers.org
 [systemd]: http://www.freedesktop.org/software/systemd/man/systemd-nspawn.html
