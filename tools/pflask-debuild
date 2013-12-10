@@ -77,12 +77,18 @@ OVERLAY=$(mktemp -d $OVERLAY)
 
 USER=$(whoami)
 
+CHANGES_FILE="${SRC}_${VER}_${ARCH}.changes"
+DSC_FILE="${SRC}_${VER}.dsc"
+DEBIAN_FILE="${SRC}_${VER}.debian.tar.gz"
+DIFF_FILE="${SRC}_${VER}.diff.tar.gz"
+
 PFLASK_TOOL="sudo $(which pflask) --no-userns"
 APT_TOOL="apt-get --no-install-recommends -y"
-TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot"
+TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot lintian"
 BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
 BUILD_TOOL="dpkg-buildpackage -tc -rfakeroot"
 CLEAN_TOOL="debclean"
+LINT_TOOL="lintian  --allow-root -IE --pedantic ../$CHANGES_FILE"
 CHOWN_TOOL="sudo chown -f"
 DSIGN_TOOL="debsign"
 
@@ -91,7 +97,7 @@ if [ ! -d "$BASEDIR" ]; then
 	exit -1
 fi
 
-BUILD_CMD="$TOOLS_TOOL && $BDEPS_TOOL && $BUILD_TOOL"
+BUILD_CMD="$TOOLS_TOOL && $BDEPS_TOOL && $BUILD_TOOL && $LINT_TOOL"
 
 $PFLASK_TOOL --root $BASEDIR			\
 	--mount "tmp,$OVERLAY"			\
@@ -101,17 +107,12 @@ $PFLASK_TOOL --root $BASEDIR			\
 	--					\
 	sh -c "$BUILD_CMD"
 
-CHANGES="$RESDIR/${SRC}_${VER}_${ARCH}.changes"
-DSC="$RESDIR/${SRC}_${VER}.dsc"
-DEB="$RESDIR/${SRC}_${VER}.debian.tar.gz"
-DIF="$RESDIR/${SRC}_${VER}.diff.tar.gz"
-
-if [ -f "$DEB" ]; then
-	$CHOWN_TOOL "$USER:$USER" $DEB
+if [ -f "$RESDIR/$DEBIAN_FILE" ]; then
+	$CHOWN_TOOL "$USER:$USER" "$RESDIR/$DEBIAN_FILE"
 fi
 
-if [ -f "$DIF" ]; then
-	$CHOWN_TOOL "$USER:$USER" $DIF
+if [ -f "$RESDIR/$DIFF_FILE" ]; then
+	$CHOWN_TOOL "$USER:$USER" "$RESDIR/$DIFF_FILE"
 fi
 
 for PKG in `dh_listpackages`;
@@ -128,11 +129,11 @@ do
 	fi
 done
 
-$CHOWN_TOOL "$USER:$USER" "$CHANGES"
+$CHOWN_TOOL "$USER:$USER" "$RESDIR/$CHANGES_FILE"
 
-$CHOWN_TOOL "$USER:$USER" "$DSC"
+$CHOWN_TOOL "$USER:$USER" "$RESDIR/$DSC_FILE"
 
-$DSIGN_TOOL "$CHANGES"
+$DSIGN_TOOL "$RESDIR/$CHANGES_FILE"
 
 sudo rm -rf $OVERLAY
 
