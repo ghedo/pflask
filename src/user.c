@@ -40,14 +40,23 @@
 #include "printf.h"
 #include "util.h"
 
-void map_user_to_root(uid_t uid, gid_t gid) {
+void map_user_to_user(uid_t uid, gid_t gid, char *user) {
 	int rc;
 	int map_fd;
+
+	struct passwd *pwd;
 
 	_free_ char *uid_map = NULL;
 	_free_ char *gid_map = NULL;
 
-	rc = asprintf(&uid_map, "0 %d 1", uid);
+	errno = 0;
+	pwd = getpwnam(user);
+	if (pwd == NULL) {
+		if (errno) sysf_printf("getpwnam()");
+		else       fail_printf("Invalid user '%s'", user);
+	}
+
+	rc = asprintf(&uid_map, "%d %d 1", pwd -> pw_uid, uid);
 	if (rc < 0) fail_printf("OOM");
 
 	map_fd = open("/proc/self/uid_map", O_RDWR);
@@ -59,7 +68,7 @@ void map_user_to_root(uid_t uid, gid_t gid) {
 	rc = close(map_fd);
 	if (rc < 0) sysf_printf("close(uid_map)");
 
-	rc = asprintf(&gid_map, "0 %d 1", gid);
+	rc = asprintf(&gid_map, "%d %d 1", pwd -> pw_gid, gid);
 	if (rc < 0) fail_printf("OOM");
 
 	map_fd = open("/proc/self/gid_map", O_RDWR);

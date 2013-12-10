@@ -261,7 +261,7 @@ int main(int argc, char *argv[]) {
 		if (rc < 0) sysf_printf("setsid()");
 
 		if (clone_flags & CLONE_NEWUSER)
-			map_user_to_root(uid, gid);
+			map_user_to_user(uid, gid, user);
 
 		do_mount(dest);
 
