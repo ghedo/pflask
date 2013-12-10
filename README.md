@@ -102,7 +102,7 @@ can detach again by pressing _^@_ (Ctrl + @).
  * Boot the OS inside the container:
 
 ```bash
-# pflask --root /path/to/container /sbin/init
+$ sudo pflask --root /path/to/container /sbin/init
 ```
 
 This will simply execute the init system inside the container. It is recommended
@@ -112,7 +112,7 @@ run inside a container or not, and disable services accordingly.
  * Copy-on-write filesystem:
 
 ```bash
-# pflask --root /path/to/container --no-userns \
+$ sudo pflask --root /path/to/container --no-userns \
   --mount aufs,/tmp/overlay,/path/to/container \
   /sbin/init
 ```
@@ -131,8 +131,8 @@ the `--no-userns` option is for):
 First, create the chroot directory:
 
 ```bash
-# mkdir -p /var/cache/pflask
-# debootstrap --arch=amd64 --variant=buildd unstable /var/cache/pflask/base-unstable-amd64
+$ sudo mkdir -p /var/cache/pflask
+$ sudo debootstrap --arch=amd64 --variant=buildd unstable /var/cache/pflask/base-unstable-amd64
 ```
 
 Then retrieve the source package we want to build:
