@@ -58,7 +58,7 @@ static int clone_flags = SIGCHLD      |
 			 CLONE_NEWNS  |
 			 CLONE_NEWIPC |
 			 CLONE_NEWPID |
-			 /* CLONE_NEWUSER| */
+			 CLONE_NEWUSER|
 			 CLONE_NEWUTS;
 
 static inline void help(void);
