@@ -29,14 +29,27 @@
  */
 
 #include <stdlib.h>
+#include <unistd.h>
 
 #define _free_ __attribute__((cleanup(freep)))
+#define _close_ __attribute__((cleanup(closep)))
 
 static inline void freep(void *p) {
 	if (p == NULL)
 		return;
 
 	free(*(void **) p);
+}
+
+static inline void closep(int *p) {
+	int rc;
+	int fd = *p;
+
+	if (fd == -1)
+		return;
+
+	rc = close(fd);
+	if (rc < 0) sysf_printf("close()");
 }
 
 extern size_t split_str(char *orig, char ***dest, char *needle);

@@ -42,7 +42,9 @@
 
 void map_user_to_user(uid_t uid, gid_t gid, char *user) {
 	int rc;
-	int map_fd;
+
+	_close_ int uid_map_fd = -1;
+	_close_ int gid_map_fd = -1;
 
 	struct passwd *pwd;
 
@@ -59,26 +61,20 @@ void map_user_to_user(uid_t uid, gid_t gid, char *user) {
 	rc = asprintf(&uid_map, "%d %d 1", pwd -> pw_uid, uid);
 	if (rc < 0) fail_printf("OOM");
 
-	map_fd = open("/proc/self/uid_map", O_RDWR);
-	if (map_fd < 0) sysf_printf("open(uid_map)");
+	uid_map_fd = open("/proc/self/uid_map", O_RDWR);
+	if (uid_map_fd < 0) sysf_printf("open(uid_map)");
 
-	rc = write(map_fd, uid_map, strlen(uid_map));
+	rc = write(uid_map_fd, uid_map, strlen(uid_map));
 	if (rc < 0) sysf_printf("write(uid_map)");
-
-	rc = close(map_fd);
-	if (rc < 0) sysf_printf("close(uid_map)");
 
 	rc = asprintf(&gid_map, "%d %d 1", pwd -> pw_gid, gid);
 	if (rc < 0) fail_printf("OOM");
 
-	map_fd = open("/proc/self/gid_map", O_RDWR);
-	if (map_fd < 0) sysf_printf("open(gid_map)");
+	gid_map_fd = open("/proc/self/gid_map", O_RDWR);
+	if (gid_map_fd < 0) sysf_printf("open(gid_map)");
 
-	rc = write(map_fd, gid_map, strlen(gid_map));
+	rc = write(gid_map_fd, gid_map, strlen(gid_map));
 	if (rc < 0) sysf_printf("write(gid_map)");
-
-	rc = close(map_fd);
-	if (rc < 0) sysf_printf("close(gid_map)");
 }
 
 void do_user(char *user) {

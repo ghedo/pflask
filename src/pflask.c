@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
 	_free_ char *dest   = NULL;
 	_free_ char *change = NULL;
 
-	int   master_fd;
+	_close_ int master_fd = -1;
 	char *master_name;
 
 	int   attach = 0;
@@ -311,9 +311,6 @@ process:
 		serve_pty(master_fd);
 	else
 		process_pty(master_fd, attach);
-
-	rc = close(master_fd);
-	if (rc < 0) sysf_printf("close()");
 
 	if (pid == -1)
 		return 0;

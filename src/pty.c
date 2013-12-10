@@ -77,7 +77,8 @@ void open_master_pty(int *master_fd, char **master_name) {
 }
 
 void open_slave_pty(char *master_name) {
-	int rc, slave_fd;
+	int rc;
+	_close_ int slave_fd = -1;
 
 	slave_fd = open(master_name, O_RDWR, 0);
 	if (slave_fd < 0) sysf_printf("open()");
@@ -98,9 +99,6 @@ void open_slave_pty(char *master_name) {
 
 	rc = ioctl(slave_fd, TIOCSWINSZ, &stdin_ws);
 	if (rc < 0) sysf_printf("ioctl(TIOCWINSZ)");
-
-	rc = close(slave_fd);
-	if (rc < 0) sysf_printf("close()");
 }
 
 void process_pty(int master_fd, int attached) {
@@ -109,7 +107,8 @@ void process_pty(int master_fd, int attached) {
 	fd_set rfds;
 
 	sigset_t mask;
-	int signal_fd;
+
+	_close_ int signal_fd = -1;
 
 	struct termios raw_attr;
 
@@ -234,14 +233,15 @@ detach:
 
 void serve_pty(int fd) {
 	int rc;
-	int sock;
 
 	pid_t pid;
 
 	fd_set rfds;
 
 	sigset_t mask;
-	int signal_fd;
+
+	_close_ int sock = -1;
+	_close_ int signal_fd = -1;
 
 	struct sockaddr    *servaddr;
 	struct sockaddr_un  servaddr_un;
@@ -294,7 +294,9 @@ void serve_pty(int fd) {
 			socklen_t len;
 			struct ucred ucred;
 
-			int send_sock = accept(sock, (struct sockaddr *) NULL,
+			_close_ int send_sock = -1;
+
+			send_sock = accept(sock, (struct sockaddr *) NULL,
 									NULL);
 			if (send_sock < 0) sysf_printf("accept()");
 
@@ -307,8 +309,6 @@ void serve_pty(int fd) {
 				send_fd(send_sock, fd);
 			else
 				send_fd(send_sock, -1);
-
-			close(send_sock);
 		}
 
 		if (FD_ISSET(signal_fd, &rfds)) {
