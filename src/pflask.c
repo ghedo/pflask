@@ -208,6 +208,8 @@ int main(int argc, char *argv[]) {
 
 	if (pid != -1) {
 		master_fd = recv_pty(pid);
+		if (master_fd < 0) fail_printf("Access denied");
+
 		pid = -1;
 		goto process;
 	}

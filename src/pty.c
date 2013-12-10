@@ -291,10 +291,24 @@ void serve_pty(int fd) {
 
 	while ((rc = select(signal_fd + 1, &rfds, NULL, NULL, NULL)) > 0) {
 		if (FD_ISSET(sock, &rfds)) {
-			int send_sock = accept(sock, (struct sockaddr *) NULL, NULL);
+			socklen_t len;
+			struct ucred ucred;
+
+			int send_sock = accept(sock, (struct sockaddr *) NULL,
+									NULL);
 			if (send_sock < 0) sysf_printf("accept()");
 
-			send_fd(send_sock, fd);
+			len = sizeof(struct ucred);
+			rc = getsockopt(send_sock, SOL_SOCKET, SO_PEERCRED,
+								&ucred, &len);
+			if (rc < 0) sysf_printf("getsockopt(SO_PEERCRED)");
+
+			if (ucred.uid == geteuid())
+				send_fd(send_sock, fd);
+			else
+				send_fd(send_sock, -1);
+
+			close(send_sock);
 		}
 
 		if (FD_ISSET(signal_fd, &rfds)) {
