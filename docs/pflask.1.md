@@ -45,13 +45,13 @@ Change to _"dir"_  inside the namespace.
 `-d, --detach`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Detach the pflask process from terminal, re-attach with --attach. Only a process
-with the same UID of the detached process can attach to it.
+Detach from terminal.
 
 `-a, --attach <pid>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Attach to the _"pid"_ detached process. To detach again press `^@` (Ctrl + @).
+Attach to the _"pid"_ detached process. Only a process with the same UID of the
+detached process can attach to it. To detach again press `^@` (Ctrl + @).
 
 `-U, --no-userns`
 

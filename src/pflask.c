@@ -366,7 +366,7 @@ static inline void help(void) {
 		"Change to the specified directory inside the container");
 
 	CMD_HELP("--detach", "-d",
-		"Detach from terminal, re-attach with --attach");
+		"Detach from terminal");
 	CMD_HELP("--attach", "-a",
 		"Attach to the given detached process");
 
