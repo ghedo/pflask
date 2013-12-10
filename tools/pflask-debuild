@@ -88,7 +88,7 @@ TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot lintian"
 BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
 BUILD_TOOL="dpkg-buildpackage -tc -rfakeroot"
 CLEAN_TOOL="debclean"
-LINT_TOOL="lintian  --allow-root -IE --pedantic ../$CHANGES_FILE"
+LINT_TOOL="echo lintian: start && lintian  --allow-root -IE --pedantic ../$CHANGES_FILE && echo lintian: end"
 CHOWN_TOOL="sudo chown -f"
 DSIGN_TOOL="debsign"
 
