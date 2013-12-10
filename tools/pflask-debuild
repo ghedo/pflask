@@ -135,6 +135,6 @@ $CHOWN_TOOL "$USER:$USER" "$RESDIR/$DSC_FILE"
 
 $DSIGN_TOOL "$RESDIR/$CHANGES_FILE"
 
-sudo rm -rf $OVERLAY
+rmdir $OVERLAY
 
 exit $?
