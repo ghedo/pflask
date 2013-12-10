@@ -150,7 +150,7 @@ Finally build the package:
 $ pflask-debuild
 ```
 
-Note that the [pflask-debuild] [tools/pflask-debuild] tool is far from perfect,
+Note that the [pflask-debuild](tools/pflask-debuild) tool is far from perfect,
 and may not work in all situations.
 
 See the [man page](http://ghedo.github.io/pflask/) for more information.
