@@ -31,7 +31,7 @@
 extern void open_master_pty(int *master_fd, char **master_name);
 extern void open_slave_pty(char *master_name);
 
-extern void process_pty(int master_fd, int attached);
+extern void process_pty(int master_fd);
 
 extern void serve_pty(int fd);
 extern int recv_pty(pid_t pid);

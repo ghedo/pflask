@@ -125,7 +125,6 @@ int main(int argc, char *argv[]) {
 	_close_ int master_fd = -1;
 	char *master_name;
 
-	int   attach = 0;
 	int   detach = 0;
 
 	siginfo_t status;
@@ -176,7 +175,6 @@ int main(int argc, char *argv[]) {
 				if (*end != '\0')
 					fail_printf(
 						"Invalid option '%s'",optarg);
-				attach = 1;
 				break;
 			}
 
@@ -315,7 +313,7 @@ process:
 	if (detach)
 		serve_pty(master_fd);
 	else
-		process_pty(master_fd, attach);
+		process_pty(master_fd);
 
 	if (pid == -1)
 		return 0;

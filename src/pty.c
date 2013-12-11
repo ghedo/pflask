@@ -45,7 +45,6 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "pty.h"
 #include "printf.h"
 #include "util.h"
 
@@ -101,7 +100,7 @@ void open_slave_pty(char *master_name) {
 	if (rc < 0) sysf_printf("ioctl(TIOCWINSZ)");
 }
 
-void process_pty(int master_fd, int attached) {
+void process_pty(int master_fd) {
 	int rc;
 
 	fd_set rfds;
@@ -160,13 +159,8 @@ void process_pty(int master_fd, int attached) {
 
 			for (p = buf; p < buf + rc; p++) {
 				/* ^@ */
-				if (*p == '\0') {
-
-					if (attached)
-						goto finish;
-					else
-						goto detach;
-				}
+				if (*p == '\0')
+					goto finish;
 			}
 		}
 
@@ -215,22 +209,6 @@ void process_pty(int master_fd, int attached) {
 finish:
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
 	if (rc < 0) sysf_printf("tcsetattr()");
-
-	return;
-
-detach:
-	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
-	if (rc < 0) sysf_printf("tcsetattr()");
-
-	puts("");
-
-	rc = sigprocmask(SIG_UNBLOCK, &mask, NULL);
-	if (rc < 0) sysf_printf("sigprocmask()");
-
-	closep(&signal_fd);
-
-	serve_pty(master_fd);
-	return;
 }
 
 void serve_pty(int fd) {
