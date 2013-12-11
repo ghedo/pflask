@@ -13,31 +13,31 @@
 \fBpflask\fR is a simple tool for creating Linux namespace containers\. It can be used for running a command or even booting an OS inside an isolated container, created with the help of Linux namespaces\. It is similar in functionality to \fBchroot(8)\fR, although pflask provides better isolation thanks to the use of namespaces\. Unlike chroot and most other containerization solutions, pflask can also be used without changing the root directory inside the container\.
 .
 .SH "OPTIONS"
-\fB\-m, \-\-mount <type>,<opts>\fR
+\fB\-m, \-\-mount=<type>,<opts>\fR
 .
 .P
 \~\~\~\~\~\~ Create a new \fI"type"\fR mount point inside the container\. See \fIMOUNT POINTS\fR for more info\.
 .
 .P
-\fB\-n, \-\-netif <dev>,<name>\fR
+\fB\-n, \-\-netif[=<dev>,<name>]\fR
 .
 .P
-\~\~\~\~\~\~ Move the \fI"dev"\fR network interface inside the container and rename it to \fI"name"\fR\.
+\~\~\~\~\~\~ Create a new network namespace and if the argument is present, move the \fI"dev"\fR network interface inside the container and rename it to \fI"name"\fR\.
 .
 .P
-\fB\-u, \-\-user <user>\fR
+\fB\-u, \-\-user=<user>\fR
 .
 .P
 \~\~\~\~\~\~ Run the command as \fI"user"\fR\.
 .
 .P
-\fB\-r, \-\-root <dir>\fR
+\fB\-r, \-\-root=<dir>\fR
 .
 .P
 \~\~\~\~\~\~ Use \fI"dir"\fR as root directory inside the container\.
 .
 .P
-\fB\-c, \-\-chdir <dir>\fR
+\fB\-c, \-\-chdir=<dir>\fR
 .
 .P
 \~\~\~\~\~\~ Change to \fI"dir"\fR inside the namespace\.
@@ -49,7 +49,7 @@
 \~\~\~\~\~\~ Detach from terminal\.
 .
 .P
-\fB\-a, \-\-attach <pid>\fR
+\fB\-a, \-\-attach=<pid>\fR
 .
 .P
 \~\~\~\~\~\~ Attach to the \fI"pid"\fR detached process\. Only a process with the same UID of the detached process can attach to it\. To detach again press \fB^@\fR (Ctrl + @)\.

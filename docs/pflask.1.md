@@ -16,29 +16,29 @@ also be used without changing the root directory inside the container.
 
 ## OPTIONS
 
-`-m, --mount <type>,<opts>`
+`-m, --mount=<type>,<opts>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Create a new _"type"_ mount point inside the container. See [MOUNT POINTS] for
 more info.
 
-`-n, --netif <dev>,<name>`
+`-n, --netif[=<dev>,<name>]`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Move the _"dev"_ network interface inside the container and rename it to
-_"name"_.
+Create a new network namespace and if the argument is present, move the _"dev"_
+network interface inside the container and rename it to _"name"_.
 
-`-u, --user <user>`
+`-u, --user=<user>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Run the command as _"user"_.
 
-`-r, --root <dir>`
+`-r, --root=<dir>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Use _"dir"_ as root directory inside the container.
 
-`-c, --chdir <dir>`
+`-c, --chdir=<dir>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Change to _"dir"_  inside the namespace.
@@ -48,7 +48,7 @@ Change to _"dir"_  inside the namespace.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Detach from terminal.
 
-`-a, --attach <pid>`
+`-a, --attach=<pid>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Attach to the _"pid"_ detached process. Only a process with the same UID of the
