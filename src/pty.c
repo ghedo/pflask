@@ -197,6 +197,8 @@ void process_pty(int master_fd, int attached) {
 
 					rc = ioctl(master_fd, TIOCSWINSZ, &ws);
 					if (rc < 0) sysf_printf("ioctl()");
+
+					break;
 				}
 
 				case SIGCHLD:
