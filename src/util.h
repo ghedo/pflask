@@ -43,13 +43,14 @@ static inline void freep(void *p) {
 
 static inline void closep(int *p) {
 	int rc;
-	int fd = *p;
 
-	if (fd == -1)
+	if (*p == -1)
 		return;
 
-	rc = close(fd);
+	rc = close(*p);
 	if (rc < 0) sysf_printf("close()");
+
+	*p = -1;
 }
 
 extern size_t split_str(char *orig, char ***dest, char *needle);
