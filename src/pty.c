@@ -216,8 +216,6 @@ finish:
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
 	if (rc < 0) sysf_printf("tcsetattr()");
 
-	puts("");
-
 	return;
 
 detach:
