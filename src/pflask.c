@@ -144,6 +144,9 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'n':
+				if (geteuid() != 0)
+					fail_printf("The --netif option requires root privileges");
+
 				clone_flags |= CLONE_NEWNET;
 				add_netif_from_spec(optarg);
 				break;
@@ -153,6 +156,8 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'r':
+				if (geteuid() != 0)
+					fail_printf("The --root option requires root privileges");
 				dest = realpath(optarg, NULL);
 				if (dest == NULL) sysf_printf("realpath()");
 				break;
@@ -208,7 +213,7 @@ int main(int argc, char *argv[]) {
 
 	if (pid != -1) {
 		master_fd = recv_pty(pid);
-		if (master_fd < 0) fail_printf("Access denied");
+		if (master_fd < 0) fail_printf("Invalid PID '%u'", pid);
 
 		pid = -1;
 		goto process;
