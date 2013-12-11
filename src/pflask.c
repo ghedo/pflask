@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 
 	siginfo_t status;
 
-	const char *short_opts = "+m:n:u:r:hUMNIHP";
+	const char *short_opts = "+m:n:u:r:c:da:UMNIHPh";
 
 	if (argc < 2) {
 		help();
