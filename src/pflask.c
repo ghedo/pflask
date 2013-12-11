@@ -95,7 +95,7 @@ pid_t do_clone(void) {
 
 static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
-	{ "netif",     required_argument, NULL, 'n' },
+	{ "netif",     optional_argument, NULL, 'n' },
 	{ "user",      required_argument, NULL, 'u' },
 	{ "root",      required_argument, NULL, 'r' },
 	{ "chdir",     required_argument, NULL, 'c' },
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 
 	siginfo_t status;
 
-	const char *short_opts = "+m:n:u:r:c:da:UMNIHPh";
+	const char *short_opts = "+m:n::u:r:c:da:UMNIHPh";
 
 	if (argc < 2) {
 		help();
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'n':
-				if (geteuid() != 0)
+				if (optarg != NULL && geteuid() != 0)
 					fail_printf("The --netif option requires root privileges");
 
 				clone_flags |= CLONE_NEWNET;

@@ -63,9 +63,13 @@ void add_netif(char *dev, char *name) {
 }
 
 void add_netif_from_spec(char *spec) {
+	_free_ char *tmp = NULL;
 	_free_ char **opts = NULL;
 
-	_free_ char *tmp = strdup(spec);
+	if (spec == NULL)
+		return;
+
+	tmp = strdup(spec);
 	if (tmp == NULL) fail_printf("OOM");
 
 	size_t c = split_str(tmp, &opts, ",");
