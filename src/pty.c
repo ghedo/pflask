@@ -227,6 +227,8 @@ detach:
 	rc = sigprocmask(SIG_UNBLOCK, &mask, NULL);
 	if (rc < 0) sysf_printf("sigprocmask()");
 
+	closep(&signal_fd);
+
 	serve_pty(master_fd);
 	return;
 }
@@ -276,6 +278,8 @@ void serve_pty(int fd) {
 	if (rc < 0) sysf_printf("listen()");
 
 	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGTERM);
 	sigaddset(&mask, SIGCHLD);
 
 	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
