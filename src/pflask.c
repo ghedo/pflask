@@ -235,32 +235,6 @@ int main(int argc, char *argv[]) {
 	pid = do_clone();
 
 	if (pid == 0) {
-		_free_ char *env_term = NULL;
-		_free_ char *env_user = NULL;
-		_free_ char *env_name = NULL;
-
-		char **env = NULL;
-
-		rc = asprintf(&env_user, "USER=%s", user);
-		if (rc < 0) fail_printf("OOM");
-
-		rc = asprintf(&env_name, "LOGNAME=%s", user);
-		if (rc < 0) fail_printf("OOM");
-
-		if (getenv("TERM")) {
-			rc = asprintf(&env_term, "TERM=%s", getenv("TERM"));
-			if (rc < 0) fail_printf("OOM");
-		}
-
-		const char *envp[] = {
-			"container=pflask",
-			"PATH=/usr/sbin:/usr/bin:/sbin:/bin",
-			env_user,
-			env_name,
-			env_term,
-			NULL
-		};
-
 		/* TODO: register with machined */
 		/* TODO: cgroup */
 
@@ -297,12 +271,23 @@ int main(int argc, char *argv[]) {
 			if (rc < 0) sysf_printf("chdir()");
 		}
 
-		env = dest == NULL ? environ : (char **) envp;
+		if (dest != NULL) {
+			char *term = getenv("TERM");
+
+			clearenv();
+
+			setenv("PATH", "PATH=/usr/sbin:/usr/bin:/sbin:/bin", 1);
+			setenv("USER", user, 1);
+			setenv("LOGNAME", user, 1);
+			setenv("TERM", term, 1);
+		}
+
+		setenv("container", "pflask", 1);
 
 		if (argc > optind)
-			rc = execvpe(argv[optind], argv + optind, env);
+			rc = execvpe(argv[optind], argv + optind, environ);
 		else
-			rc = execle("/bin/bash", "-bash", NULL, env);
+			rc = execle("/bin/bash", "-bash", NULL, environ);
 
 		if (rc < 0) sysf_printf("exec()");
 	}
