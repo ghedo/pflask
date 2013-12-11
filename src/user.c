@@ -97,7 +97,4 @@ void do_user(char *user) {
 
 	rc = setresuid(pwd -> pw_uid, pwd -> pw_uid, pwd -> pw_uid);
 	if (rc < 0) sysf_printf("setresuid()");
-
-	rc = chdir(pwd -> pw_dir);
-	if (rc < 0) sysf_printf("chdir(HOME)");
 }
