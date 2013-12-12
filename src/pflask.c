@@ -256,10 +256,13 @@ int main(int argc, char *argv[]) {
 		do_mount(dest);
 
 		if (dest != NULL) {
-			make_ptmx(dest);
-			make_console(dest, master_name);
-
 			copy_nodes(dest);
+
+			make_ptmx(dest);
+
+			make_symlinks(dest);
+
+			make_console(dest, master_name);
 
 			do_chroot(dest);
 		}

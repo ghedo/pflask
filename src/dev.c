@@ -44,6 +44,36 @@ void make_console(char *dest, char *console) {
 	if (rc < 0) sysf_printf("mount()");
 }
 
+void make_symlinks(char *dest) {
+	int i, rc;
+
+	const char *src[] = {
+		"/proc/kcore",
+		"/proc/self/fd",
+		"/proc/self/fd/0",
+		"/proc/self/fd/1",
+		"/proc/self/fd/2"
+	};
+
+	const char *dst[] = {
+		"/dev/core",
+		"/dev/fd",
+		"/dev/stdin",
+		"/dev/stdout",
+		"/dev/stderr"
+	};
+
+	for (i = 0; i <  sizeof(src) / sizeof(*src); i++) {
+		_free_ char *link = NULL;
+
+		rc = asprintf(&link, "%s/%s", dest, dst[i]);
+		if (rc < 0) fail_printf("OOM");
+
+		rc = symlink(src[i], link);
+		if (rc < 0) sysf_printf("symlink()");
+	}
+}
+
 void copy_nodes(char *dest) {
 	int i;
 	int rc;
