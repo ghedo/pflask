@@ -127,7 +127,7 @@ Note that this requires support for AuFS on the host system. Also, AuFS does not
 (yet?) support user namespaces, so that they need to be disabled (that's what
 the `--no-userns` option is for).
 
- * Build a Debian package:
+ * Build a Debian package inside a container:
 
 First, create the chroot directory:
 
@@ -150,6 +150,12 @@ Finally build the package:
 ```bash
 $ pflask-debuild
 ```
+
+The script will take care of creating a new container, installing all the
+required dependncies (inside the container), building and signing the package.
+
+A copy-on-write filesystem is also mounted on the / of the container, so that
+the same clean chroot can be re-used to build other packages.
 
 Note that the [pflask-debuild](tools/pflask-debuild) tool is far from perfect,
 and may not work in all situations.
