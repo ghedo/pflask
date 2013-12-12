@@ -159,7 +159,6 @@ See the [man page](http://ghedo.github.io/pflask/) for more information.
 ## DEPENDENCIES
 
  * `linux`
- * `libnl-route`
 
 ## BUILDING
 

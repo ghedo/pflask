@@ -28,11 +28,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <netlink/msg.h>
-#include <netlink/attr.h>
-#include <netlink/errno.h>
-#include <netlink/socket.h>
-#include <netlink/route/link.h>
+#include <string.h>
+
+#include <sys/uio.h>
+#include <sys/socket.h>
+
+#include <net/if.h>
+#include <netinet/in.h>
+
+#include <asm/types.h>
+#include <linux/netlink.h>
+#include <linux/rtnetlink.h>
 
 #include "netif.h"
 #include "printf.h"
@@ -45,7 +51,22 @@ typedef struct NETIF_LIST {
 	struct NETIF_LIST *next;
 } netif_list;
 
+struct nlmsg {
+	struct nlmsghdr  hdr;
+	union {
+		struct ifinfomsg ifi;
+		struct nlmsgerr  err;
+	} msg;
+};
+
 static netif_list *netifs = NULL;
+
+static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
+
+static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len);
+
+static void nl_send(int sock, struct nlmsg *nlmsg);
+static void nl_recv(int sock, struct nlmsg *nlmsg);
 
 void add_netif(char *dev, char *name) {
 	netif_list *nif = malloc(sizeof(netif_list));
@@ -82,21 +103,21 @@ void add_netif_from_spec(char *spec) {
 
 void do_netif(pid_t pid) {
 	int rc;
+	_close_ int sock = -1;
+
 	netif_list *i = NULL;
+	struct sockaddr_nl addr;
 
-	struct nl_sock  *sock;
-	struct nl_cache *cache;
+	sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+	if (sock < 0) sysf_printf("socket()");
 
-	sock = nl_socket_alloc();
-	if (sock == NULL) fail_printf("OOM");
+	addr.nl_family = AF_NETLINK;
+	addr.nl_pad    = 0;
+	addr.nl_pid    = getpid();
+	addr.nl_groups = 0;
 
-	rc = nl_connect(sock, NETLINK_ROUTE);
-	if (rc < 0) fail_printf("Error creating netlink connection: %s",
-						nl_geterror(rc));
-
-	rc = rtnl_link_alloc_cache(sock, AF_UNSPEC, &cache);
-	if (rc < 0) fail_printf("Error creating netlink cache: %s",
-						nl_geterror(rc));
+	rc = bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_nl));
+	if (rc < 0) sysf_printf("bind()");
 
 	while (netifs) {
 		netif_list *next = netifs -> next;
@@ -106,36 +127,103 @@ void do_netif(pid_t pid) {
 	}
 
 	while (i != NULL) {
-		struct nl_msg *msg;
-		struct rtnl_link *new_link;
+		unsigned int if_index = if_nametoindex(i -> dev);
+		if (if_index == 0) sysf_printf("Error searching for '%s'",
+								i -> dev);
 
-		/* TODO: roll own netlink and get rid of libnl */
-		struct rtnl_link *link = rtnl_link_get_by_name(cache, i->dev);
-		if (link == NULL) fail_printf("Invalid netif '%s'", i -> dev);
-
-		new_link = rtnl_link_alloc();
-		if (new_link == NULL) fail_printf("OOM");
-
-		rtnl_link_set_name(new_link, i -> name);
-
-		rc = rtnl_link_build_change_request(link, new_link, 0, &msg);
-		if (rc < 0) fail_printf("Error creating netlink request: '%s'",
-						nl_geterror(rc));
-
-		nla_put_u32(msg, IFLA_NET_NS_PID, pid);
-
-		rc = nl_send_sync(sock, msg);
-		if (rc < 0) fail_printf("Error sending netlink request: %s",
-						nl_geterror(rc));
+		move_and_rename_if(sock, pid, if_index, i -> name);
 
 		i = i -> next;
-
-		rtnl_link_put(new_link);
-		rtnl_link_put(link);
 	}
+}
 
-	nl_cache_free(cache);
+#define NLMSG_TAIL(nmsg) \
+ ((struct rtattr *) (((unsigned char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
 
-	nl_close(sock);
-	nl_socket_free(sock);
+static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name) {
+	_free_ struct nlmsg *req = malloc(4096);
+
+	req -> hdr.nlmsg_seq   = 1;
+	req -> hdr.nlmsg_type  = RTM_NEWLINK;
+	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req -> hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
+
+	req -> msg.ifi.ifi_family  = AF_UNSPEC;
+	req -> msg.ifi.ifi_index   = if_index;
+
+	rtattr_append(req, IFLA_NET_NS_PID, &pid, sizeof(pid));
+	rtattr_append(req, IFLA_IFNAME, new_name, strlen(new_name) + 1);
+
+	nl_send(sock, req);
+	nl_recv(sock, req);
+
+	if (req -> hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req -> msg.err.error < 0)
+			fail_printf("Error sending netlink request: %s",
+					strerror(-req -> msg.err.error));
+	}
+}
+
+static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
+	struct rtattr *rtattr;
+	size_t rtalen = RTA_LENGTH(len);
+
+	rtattr = NLMSG_TAIL(&nlmsg -> hdr);
+	rtattr -> rta_type = attr;
+	rtattr -> rta_len  = rtalen;
+
+	memcpy(RTA_DATA(rtattr), d, rtalen);
+
+	nlmsg -> hdr.nlmsg_len = NLMSG_ALIGN(nlmsg -> hdr.nlmsg_len) +
+				 RTA_ALIGN(rtalen);
+}
+
+static void nl_send(int sock, struct nlmsg *nlmsg) {
+	int rc;
+	struct sockaddr_nl addr;
+
+	struct iovec iov = {
+		.iov_base = (void *) nlmsg,
+		.iov_len  = nlmsg -> hdr.nlmsg_len
+	};
+
+	struct msghdr msg = {
+		.msg_name    = &addr,
+		.msg_namelen = sizeof(struct sockaddr_nl),
+		.msg_iov     = &iov,
+		.msg_iovlen  = 1
+	};
+
+	memset(&addr, 0, sizeof(struct sockaddr_nl));
+	addr.nl_family = AF_NETLINK;
+	addr.nl_pid    = 0;
+	addr.nl_groups = 0;
+
+	rc = sendmsg(sock, &msg, 0);
+	if (rc < 0) sysf_printf("sendmsg()");
+}
+
+static void nl_recv(int sock, struct nlmsg *nlmsg) {
+	int rc;
+	struct sockaddr_nl addr;
+
+	struct iovec iov = {
+		.iov_base = (void *) nlmsg,
+		.iov_len  = nlmsg -> hdr.nlmsg_len
+	};
+
+	struct msghdr msg = {
+		.msg_name    = &addr,
+		.msg_namelen = sizeof(struct sockaddr_nl),
+		.msg_iov     = &iov,
+		.msg_iovlen  = 1
+	};
+
+	memset(&addr, 0, sizeof(struct sockaddr_nl));
+	addr.nl_family = AF_NETLINK;
+	addr.nl_pid    = 0;
+	addr.nl_groups = 0;
+
+	rc = recvmsg(sock, &msg, 0);
+	if (rc < 0) sysf_printf("recvmsg()");
 }
