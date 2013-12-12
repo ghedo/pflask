@@ -98,12 +98,13 @@ more info.</p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Create a new network namespace and if the argument is present, move the <em>"dev"</em>
-network interface inside the container and rename it to <em>"name"</em>.</p>
+network interface inside the container and rename it to <em>"name"</em> inside the
+container. Once the container terminates, this interface will be destroyed.</p>
 
 <p><code>-u, --user=&lt;user></code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Run the command as <em>"user"</em>.</p>
+Run the command as <em>"user"</em> inside the container.</p>
 
 <p><code>-r, --root=&lt;dir&gt;</code></p>
 
@@ -113,7 +114,7 @@ Use <em>"dir"</em> as root directory inside the container.</p>
 <p><code>-c, --chdir=&lt;dir&gt;</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Change to <em>"dir"</em>  inside the namespace.</p>
+Change to <em>"dir"</em>  inside the container.</p>
 
 <p><code>-d, --detach</code></p>
 
@@ -180,11 +181,11 @@ Disable PID namespace.</p>
 
 <h2 id="AUTHOR">AUTHOR</h2>
 
-<p>Alessandro Ghedini <a href="&#x6d;&#97;&#105;&#108;&#116;&#x6f;&#x3a;&#97;&#x6c;&#101;&#x73;&#x73;&#x61;&#110;&#x64;&#x72;&#111;&#x40;&#x67;&#x68;&#101;&#100;&#105;&#110;&#105;&#x2e;&#x6d;&#101;" data-bare-link="true">&#97;&#108;&#101;&#x73;&#115;&#97;&#x6e;&#x64;&#x72;&#111;&#x40;&#103;&#104;&#x65;&#100;&#x69;&#x6e;&#x69;&#46;&#x6d;&#101;</a></p>
+<p>Alessandro Ghedini <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#111;&#x3a;&#97;&#108;&#x65;&#115;&#115;&#97;&#x6e;&#100;&#114;&#111;&#x40;&#103;&#104;&#101;&#x64;&#105;&#x6e;&#105;&#46;&#109;&#x65;" data-bare-link="true">&#x61;&#108;&#x65;&#x73;&#115;&#97;&#110;&#x64;&#114;&#111;&#x40;&#103;&#x68;&#x65;&#100;&#x69;&#110;&#x69;&#x2e;&#x6d;&#101;</a></p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#97;&#x6c;&#101;&#x73;&#x73;&#97;&#110;&#100;&#114;&#111;&#x40;&#103;&#104;&#101;&#100;&#x69;&#x6e;&#105;&#46;&#109;&#x65;" data-bare-link="true">&#x61;&#108;&#x65;&#115;&#115;&#x61;&#110;&#x64;&#114;&#x6f;&#64;&#x67;&#x68;&#x65;&#x64;&#105;&#x6e;&#x69;&#46;&#x6d;&#101;</a></p>
+<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#x6d;&#x61;&#x69;&#108;&#x74;&#111;&#58;&#x61;&#108;&#101;&#115;&#115;&#x61;&#110;&#100;&#114;&#111;&#x40;&#103;&#104;&#101;&#x64;&#x69;&#110;&#x69;&#46;&#109;&#101;" data-bare-link="true">&#x61;&#x6c;&#x65;&#x73;&#115;&#97;&#x6e;&#x64;&#114;&#111;&#x40;&#103;&#104;&#x65;&#100;&#x69;&#x6e;&#x69;&#x2e;&#109;&#101;</a></p>
 
 <p>This program is released under the 2 clause BSD license.</p>
 
