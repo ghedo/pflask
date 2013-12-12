@@ -124,7 +124,7 @@ void do_netif(pid_t pid) {
 
 		nla_put_u32(msg, IFLA_NET_NS_PID, pid);
 
-		rc = nl_send_auto(sock, msg);
+		rc = nl_send_sync(sock, msg);
 		if (rc < 0) fail_printf("Error sending netlink request: %s",
 						nl_geterror(rc));
 
