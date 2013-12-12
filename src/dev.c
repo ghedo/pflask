@@ -37,7 +37,7 @@ void make_console(char *dest, char *console) {
 	rc = asprintf(&target, "%s/dev/console", dest);
 	if (rc < 0) fail_printf("OOM");
 
-	rc = mknod(target, (sb.st_mode & ~07777) | 0600, sb.st_rdev);
+	rc = mknod(target, sb.st_mode, sb.st_rdev);
 	if (rc < 0) sysf_printf("mknod()");
 
 	rc = mount(console, target, NULL, MS_BIND, NULL);
