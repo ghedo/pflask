@@ -65,15 +65,13 @@ ARCHITECTURE="${ARCH}"
 BASEDIR="/var/cache/pflask/base-$NAME"
 
 BUILDDIR=$(pwd)
+OVERDIR="/mnt"
 PKGDIR=$(basename $BUILDDIR)
 RESDIR=$(dirname $BUILDDIR)
 TMPDIR="/mnt"
 
 SRC=$(dpkg-parsechangelog | sed -rne 's,^Source: (.+).*,\1,p')
 VER=$(dpkg-parsechangelog | sed -rne 's,^Version: ([0-9]:)*(.+).*,\2,p')
-
-OVERLAY="$RESDIR/$PKGDIR-XXXX"
-OVERLAY=$(mktemp -d $OVERLAY)
 
 CHANGES_FILE="${SRC}_${VER}_${ARCH}.changes"
 DSC_FILE="${SRC}_${VER}.dsc"
@@ -113,13 +111,11 @@ done
 BUILD_CMD="$BUILD_CMD && [ \$FAIL = 0 ] && $LINT_TOOL"
 
 $PFLASK_TOOL --root $BASEDIR				\
-	--mount "tmp,$OVERLAY"				\
-	--mount "aufs,$OVERLAY,$BASEDIR"		\
+	--mount "tmp,$OVERDIR"				\
+	--mount "aufs,$OVERDIR,$BASEDIR"		\
 	--mount "bind,$RESDIR,$BASEDIR${TMPDIR}"	\
 	--chdir "/mnt/$PKGDIR"				\
 	--						\
 	sh -c "$BUILD_CMD"
 
 $DSIGN_TOOL "$RESDIR/$CHANGES_FILE"
-
-rmdir $OVERLAY
