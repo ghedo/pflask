@@ -278,7 +278,7 @@ int main(int argc, char *argv[]) {
 
 			clearenv();
 
-			setenv("PATH", "PATH=/usr/sbin:/usr/bin:/sbin:/bin", 1);
+			setenv("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
 			setenv("USER", user, 1);
 			setenv("LOGNAME", user, 1);
 			setenv("TERM", term, 1);
