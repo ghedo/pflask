@@ -26,12 +26,13 @@ more info.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Create a new network namespace and if the argument is present, move the _"dev"_
-network interface inside the container and rename it to _"name"_.
+network interface inside the container and rename it to _"name"_ inside the
+container. Once the container terminates, this interface will be destroyed.
 
 `-u, --user=<user>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Run the command as _"user"_.
+Run the command as _"user"_ inside the container.
 
 `-r, --root=<dir>`
 
@@ -41,7 +42,7 @@ Use _"dir"_ as root directory inside the container.
 `-c, --chdir=<dir>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Change to _"dir"_  inside the namespace.
+Change to _"dir"_  inside the container.
 
 `-d, --detach`
 
