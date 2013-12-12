@@ -65,7 +65,7 @@ container from the host system.
  * Hide directories from an application:
 
 ```bash
-$ pflask --user $USER --mount tmp,$HOME chromium --disable-setuid-sandbox
+$ pflask --user=$USER --mount=tmp,$HOME chromium --disable-setuid-sandbox
 ```
 
 This command does not require a pre-generated chroot (it will use the current
@@ -75,7 +75,7 @@ discarded once the process terminates. A bind mount can be used to retain the
 modifications:
 
 ```bash
-$ pflask --user $USER --mount bind,/tmp/trash,$HOME  chromium --disable-setuid-sandbox
+$ pflask --user=$USER --mount=bind,/tmp/trash,$HOME  chromium --disable-setuid-sandbox
 ```
 
 All filesystem changes applied by the command will be available in /tmp/trash.
@@ -86,7 +86,7 @@ supported by the host system, and available to non-privileged users.
  * Detach from terminal:
 
 ```bash
-$ pflask --user $USER --detach /bin/bash
+$ pflask --user=$USER --detach /bin/bash
 ```
 
 To reattach run pflask with the `--attach` option:
@@ -94,7 +94,7 @@ To reattach run pflask with the `--attach` option:
 ```bash
 $ pgrep pflask
 29076
-$ pflask --attach 29076
+$ pflask --attach=29076
 ```
 
 Where _29076_ is the PID of the detached pflask process. Once reattached, one
@@ -103,7 +103,7 @@ can detach again by pressing _^@_ (Ctrl + @).
  * Boot the OS inside the container:
 
 ```bash
-$ sudo pflask --root /path/to/container /sbin/init
+$ sudo pflask --root=/path/to/container /sbin/init
 ```
 
 This will simply execute the init system inside the container. It is recommended
@@ -113,8 +113,8 @@ run inside a container or not, and disable services accordingly.
  * Copy-on-write filesystem:
 
 ```bash
-$ sudo pflask --root /path/to/container --no-userns \
-  --mount aufs,/tmp/overlay,/path/to/container \
+$ sudo pflask --root=/path/to/container --no-userns \
+  --mount=aufs,/tmp/overlay,/path/to/container \
   /sbin/init
 ```
 
