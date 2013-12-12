@@ -345,7 +345,7 @@ static inline void help(void) {
 	CMD_HELP("--mount", "-m",
 		"Create a new mount point inside the container");
 	CMD_HELP("--netif", "-n",
-		"Move a network interface to the container");
+		"Create a new network namespace and optionally move a network interface inside it");
 
 	CMD_HELP("--user",  "-u",
 		"Run the command as the specified user inside the container");
@@ -358,16 +358,16 @@ static inline void help(void) {
 	CMD_HELP("--detach", "-d",
 		"Detach from terminal");
 	CMD_HELP("--attach", "-a",
-		"Attach to the given detached process");
+		"Attach to the specified detached process");
 
 	puts("");
 
-	CMD_HELP("--no-userns",  "-U", "Disable user namespace");
-	CMD_HELP("--no-mountns", "-M", "Disable mount namespace");
-	CMD_HELP("--no-netns",   "-N", "Disable net namespace");
-	CMD_HELP("--no-ipcns",   "-I", "Disable IPC namespace");
-	CMD_HELP("--no-utsns",   "-H", "Disable UTS namespace");
-	CMD_HELP("--no-pidrns",  "-P", "Disable PID namespace");
+	CMD_HELP("--no-userns",  "-U", "Disable user namespace support");
+	CMD_HELP("--no-mountns", "-M", "Disable mount namespace support");
+	CMD_HELP("--no-netns",   "-N", "Disable net namespace support");
+	CMD_HELP("--no-ipcns",   "-I", "Disable IPC namespace support");
+	CMD_HELP("--no-utsns",   "-H", "Disable UTS namespace support");
+	CMD_HELP("--no-pidrns",  "-P", "Disable PID namespace support");
 
 	puts("");
 }
