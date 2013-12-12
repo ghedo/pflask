@@ -80,6 +80,7 @@ void copy_nodes(char *dest) {
 
 	const char *nodes[] = {
 		"/dev/tty",
+		"/dev/full",
 		"/dev/null",
 		"/dev/zero",
 		"/dev/random",
