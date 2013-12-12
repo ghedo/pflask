@@ -144,9 +144,6 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'n':
-				if (optarg != NULL && geteuid() != 0)
-					fail_printf("The --netif option requires root privileges");
-
 				clone_flags |= CLONE_NEWNET;
 				add_netif_from_spec(optarg);
 				break;
@@ -156,8 +153,6 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'r':
-				if (geteuid() != 0)
-					fail_printf("The --root option requires root privileges");
 				dest = realpath(optarg, NULL);
 				if (dest == NULL) sysf_printf("realpath()");
 				break;
