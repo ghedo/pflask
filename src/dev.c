@@ -22,7 +22,6 @@ void make_ptmx(char *dest) {
 
 void make_console(char *dest, char *console) {
 	int rc;
-	struct stat sb;
 	_free_ char *target = NULL;
 
 	rc = chmod(console, 0600);
@@ -31,14 +30,11 @@ void make_console(char *dest, char *console) {
 	rc = chown(console, 0, 0);
 	if (rc < 0) sysf_printf("chown()");
 
-	rc = stat(console, &sb);
-	if (rc < 0) sysf_printf("stat()");
-
 	rc = asprintf(&target, "%s/dev/console", dest);
 	if (rc < 0) fail_printf("OOM");
 
-	rc = mknod(target, (sb.st_mode & ~07777) | 0600, sb.st_rdev);
-	if (rc < 0) sysf_printf("mknod()");
+	rc = creat(target, 0600);
+	if (rc < 0) sysf_printf("creat()");
 
 	rc = mount(console, target, NULL, MS_BIND, NULL);
 	if (rc < 0) sysf_printf("mount()");
@@ -87,16 +83,15 @@ void copy_nodes(char *dest) {
 	};
 
 	for (i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
-		struct stat sb;
 		_free_ char *target = NULL;
 
 		rc = asprintf(&target, "%s%s", dest, nodes[i]);
 		if (rc < 0) fail_printf("OOM");
 
-		rc = stat(nodes[i], &sb);
-		if (rc < 0) sysf_printf("stat()");
+		rc = creat(target, 0600);
+		if (rc < 0) sysf_printf("create()");
 
-		rc = mknod(target, sb.st_mode, sb.st_rdev);
-		if (rc < 0) sysf_printf("mknod()");
+		rc = mount(nodes[i], target, NULL, MS_BIND, NULL);
+		if (rc < 0) sysf_printf("mount()");
 	}
 }
