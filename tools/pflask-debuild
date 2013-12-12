@@ -123,5 +123,3 @@ $PFLASK_TOOL --root $BASEDIR				\
 $DSIGN_TOOL "$RESDIR/$CHANGES_FILE"
 
 rmdir $OVERLAY
-
-exit $?
