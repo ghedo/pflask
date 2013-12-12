@@ -84,7 +84,7 @@ TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot lintian"
 BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
 BUILD_TOOL="dpkg-buildpackage -tc -rfakeroot"
 LINT_TOOL="echo lintian: start && lintian  --allow-root -IE --pedantic ../$CHANGES_FILE && echo lintian: end"
-CHOWN_TOOL="chown -f"
+CHOWN_TOOL="chown --from=root:root"
 DSIGN_TOOL="debsign"
 
 if [ ! -d "$BASEDIR" ]; then
