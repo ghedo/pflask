@@ -42,6 +42,7 @@
 #include <signal.h>
 #include <getopt.h>
 
+#include <sys/prctl.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
@@ -245,6 +246,9 @@ int main(int argc, char *argv[]) {
 
 		rc = setsid();
 		if (rc < 0) sysf_printf("setsid()");
+
+		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
+		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
 
 		if (clone_flags & CLONE_NEWUSER)
 			map_user_to_user(uid, gid, user);
