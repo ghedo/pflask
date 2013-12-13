@@ -60,7 +60,6 @@ esac
 : ${ARCH:="$(dpkg --print-architecture)"}
 
 NAME="$DIST-$ARCH"
-ARCHITECTURE="${ARCH}"
 
 BASEDIR="/var/cache/pflask/base-$NAME"
 
