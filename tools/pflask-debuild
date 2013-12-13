@@ -99,7 +99,9 @@ FILES="$CHANGES_FILE $DSC_FILE $DEBIAN_FILE $DIFF_FILE"
 for PKG in `dh_listpackages`;
 do
 	FILES="$FILES ${PKG}_${VER}_${ARCH}.deb"
+	FILES="$FILES ${PKG}_${VER}_${ARCH}.udeb"
 	FILES="$FILES ${PKG}_${VER}_all.deb"
+	FILES="$FILES ${PKG}_${VER}_all.udeb"
 done
 
 for FILE in $FILES
