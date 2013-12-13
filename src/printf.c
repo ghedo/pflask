@@ -40,9 +40,6 @@
 void ok_printf(const char *fmt, ...) {
 	va_list args;
 
-	/* if (cfg.silent || cfg.quiet) */
-	/* 	return; */
-
 	va_start(args, fmt);
 	fprintf(stderr, "[" COLOR_GREEN "✔" COLOR_OFF "] ");
 	vfprintf(stderr, fmt, args);
@@ -53,9 +50,6 @@ void ok_printf(const char *fmt, ...) {
 void debug_printf(const char *fmt, ...) {
 	va_list args;
 
-	/* if (!cfg.verbose || cfg.silent || cfg.quiet) */
-	/* 	return; */
-
 	va_start(args, fmt);
 	fprintf(stderr,  "[" COLOR_YELLOW "¡" COLOR_OFF "] ");
 	vfprintf(stderr, fmt, args);
@@ -65,9 +59,6 @@ void debug_printf(const char *fmt, ...) {
 
 void err_printf(const char *fmt, ...) {
 	va_list args;
-
-	/* if (cfg.silent) */
-	/* 	return; */
 
 	va_start(args, fmt);
 	fprintf(stderr,  "[" COLOR_RED "✘" COLOR_OFF "] ");
@@ -97,5 +88,5 @@ void sysf_printf(const char *fmt, ...) {
 	va_end(args);
 	fprintf(stderr, ": %s\n", strerror(errno));
 
-	exit(-1);
+	_exit(-1);
 }
