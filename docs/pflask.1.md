@@ -26,8 +26,8 @@ more info.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Create a new network namespace and if the argument is present, move the _"dev"_
-network interface inside the container and rename it to _"name"_ inside the
-container. Once the container terminates, this interface will be destroyed.
+network interface inside the container and rename it to _"name"_. Once the
+container terminates, this interface will be destroyed.
 
 `-u, --user=<user>`
 
