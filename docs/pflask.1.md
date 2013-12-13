@@ -42,6 +42,11 @@ Use _"dir"_ as root directory inside the container.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Change to _"dir"_  inside the container.
 
+`-g, --cgroup=<controller>[,<controller> ...]`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Create new cgroups in the given controllers and move the container inside them.
+
 `-d, --detach`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

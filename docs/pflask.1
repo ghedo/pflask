@@ -1,7 +1,7 @@
 .\" generated with Ronn/v0.7.3
 .\" http://github.com/rtomayko/ronn/tree/0.7.3
 .
-.TH "PFLASK" "1" "December 2013" "" ""
+.TH "PFLASK" "1" "January 2014" "" ""
 .
 .SH "NAME"
 \fBpflask\fR \- the process in the flask
@@ -41,6 +41,12 @@
 .
 .P
 \~\~\~\~\~\~ Change to \fI"dir"\fR inside the container\.
+.
+.P
+\fB\-g, \-\-cgroup=<controller>[,<controller> \.\.\.]\fR
+.
+.P
+\~\~\~\~\~\~ Create new cgroups in the given controllers and move the container inside them\.
 .
 .P
 \fB\-d, \-\-detach\fR

@@ -51,6 +51,7 @@
 #include "pty.h"
 #include "user.h"
 #include "mount.h"
+#include "cgroup.h"
 #include "netif.h"
 #include "printf.h"
 #include "util.h"
@@ -69,6 +70,7 @@ static struct option long_opts[] = {
 	{ "user",      required_argument, NULL, 'u' },
 	{ "chroot",    required_argument, NULL, 'r' },
 	{ "chdir",     required_argument, NULL, 'c' },
+	{ "cgroup",    required_argument, NULL, 'g' },
 	{ "detach",    no_argument,       NULL, 'd' },
 	{ "attach",    required_argument, NULL, 'a' },
 	{ "setenv",    required_argument, NULL, 's' },
@@ -92,7 +94,9 @@ static inline void version(void);
 int main(int argc, char *argv[]) {
 	int rc, i;
 
-	pid_t pid = -1;
+	pid_t pid  = -1;
+	pid_t ppid = getpid();
+
 	uid_t uid = -1;
 	gid_t gid = -1;
 
@@ -100,6 +104,7 @@ int main(int argc, char *argv[]) {
 	_free_ char *dest   = NULL;
 	_free_ char *change = NULL;
 	_free_ char *env    = NULL;
+	_free_ char *cgroup = NULL;
 
 	_close_ int master_fd = -1;
 
@@ -109,7 +114,7 @@ int main(int argc, char *argv[]) {
 
 	siginfo_t status;
 
-	const char *short_opts = "+m:n::u:r:c:da:s:UMNIHPh";
+	const char *short_opts = "+m:n::u:r:c:g:da:s:UMNIHPh";
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
@@ -139,6 +144,12 @@ int main(int argc, char *argv[]) {
 				freep(&change);
 
 				change = strdup(optarg);
+				break;
+
+			case 'g':
+				freep(&change);
+
+				cgroup = strdup(optarg);
 				break;
 
 			case 'd':
@@ -229,8 +240,6 @@ int main(int argc, char *argv[]) {
 	pid = do_clone();
 
 	if (pid == 0) {
-		/* TODO: cgroup */
-
 		rc = close(master_fd);
 		if (rc < 0) sysf_printf("close()");
 
@@ -244,6 +253,8 @@ int main(int argc, char *argv[]) {
 
 		if (clone_flags & CLONE_NEWUSER)
 			map_user_to_user(uid, gid, user);
+
+		do_cgroup(cgroup, ppid);
 
 		do_mount(dest);
 
@@ -340,6 +351,8 @@ process_fd:
 			err_printf("Child failed");
 			break;
 	}
+
+	undo_cgroup(cgroup, ppid);
 
 	return status.si_status;
 }
