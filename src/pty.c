@@ -350,24 +350,23 @@ static void send_fd(int sock, int fd) {
 		char           control[CMSG_SPACE(sizeof(int))];
 	} msg_control;
 
-	struct msghdr   msg;
-	struct iovec    iov[1];
+	struct iovec iov = {
+		.iov_base = "x",
+		.iov_len  = 1
+	};
+
+	struct msghdr msg = {
+		.msg_name    = NULL,
+		.msg_namelen = 0,
+		.msg_iov     = &iov,
+		.msg_iovlen  = 1,
+		.msg_flags   = 0,
+
+		.msg_control    = &msg_control,
+		.msg_controllen = sizeof(msg_control)
+	};
+
 	struct cmsghdr *cmsg;
-
-	iov [0].iov_base = "x";
-	iov [0].iov_len  = 1;
-
-	msg.msg_name    = NULL;
-	msg.msg_namelen = 0;
-	msg.msg_iov     = iov;
-	msg.msg_iovlen  = 1;
-	msg.msg_flags   = 0;
-
-	msg.msg_control = NULL;
-	msg.msg_controllen = 0;
-
-	msg.msg_control    = &msg_control;
-	msg.msg_controllen = sizeof(msg_control);
 
 	cmsg = CMSG_FIRSTHDR(&msg);
 
@@ -375,7 +374,7 @@ static void send_fd(int sock, int fd) {
 	cmsg -> cmsg_level = SOL_SOCKET;
 	cmsg -> cmsg_type  = SCM_RIGHTS;
 
-	*((int *) CMSG_DATA(cmsg)) = fd;
+	memcpy(CMSG_DATA(cmsg), &fd, sizeof(fd));
 
 	rc = sendmsg(sock, &msg, 0);
 	if (rc < 0) sysf_printf("sendmsg()");
@@ -389,21 +388,24 @@ static int recv_fd(int sock) {
 		char           control [CMSG_SPACE(sizeof(int))];
 	} msg_control;
 
-	struct msghdr   msg;
-	struct iovec    iov[1];
 	struct cmsghdr *cmsg;
 	char            buf[192];
 
-	iov [0].iov_base = buf;
-	iov [0].iov_len  = sizeof(buf);
+	struct iovec iov = {
+		.iov_base = buf,
+		.iov_len  = sizeof(buf)
+	};
 
-	msg.msg_name       = NULL;
-	msg.msg_namelen    = 0;
-	msg.msg_iov        = iov;
-	msg.msg_iovlen     = 1;
-	msg.msg_control    = &msg_control;
-	msg.msg_controllen = sizeof(msg_control);
-	msg.msg_flags      = 0;
+	struct msghdr msg = {
+		.msg_name    = NULL,
+		.msg_namelen = 0,
+		.msg_iov     = &iov,
+		.msg_iovlen  = 1,
+		.msg_flags   = 0,
+
+		.msg_control    = &msg_control,
+		.msg_controllen = sizeof(msg_control)
+	};
 
 	rc = recvmsg(sock, &msg, 0);
 	if (rc < 0) sysf_printf("recvmsg()");
