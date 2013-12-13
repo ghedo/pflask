@@ -62,38 +62,6 @@ static int clone_flags = SIGCHLD      |
 			 CLONE_NEWUSER|
 			 CLONE_NEWUTS;
 
-static inline void help(void);
-static inline void version(void);
-
-void do_chroot(char *dest) {
-	int rc;
-
-	rc = chdir(dest);
-	if (rc < 0) sysf_printf("chdir()");
-
-	rc = chroot(".");
-	if (rc < 0) sysf_printf("chroot()");
-
-	rc = chdir("/");
-	if (rc < 0) sysf_printf("chdir(/)");
-}
-
-pid_t do_clone(void) {
-	pid_t pid;
-
-	pid = syscall(__NR_clone, clone_flags, NULL);
-	if (pid < 0) {
-		if (errno == EINVAL) {
-			clone_flags &= ~(CLONE_NEWUSER);
-			pid = syscall(__NR_clone, clone_flags, NULL);
-		}
-	}
-
-	if (pid < 0) sysf_printf("clone()");
-
-	return pid;
-}
-
 static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
 	{ "netif",     optional_argument, NULL, 'n' },
@@ -111,6 +79,12 @@ static struct option long_opts[] = {
 	{ "help",      no_argument,       NULL, 'h' },
 	{ 0, 0, 0, 0 }
 };
+
+static void do_chroot(char *dest);
+static pid_t do_clone(void);
+
+static inline void help(void);
+static inline void version(void);
 
 int main(int argc, char *argv[]) {
 	int rc, i;
@@ -327,6 +301,35 @@ process:
 	}
 
 	return status.si_status;
+}
+
+static void do_chroot(char *dest) {
+	int rc;
+
+	rc = chdir(dest);
+	if (rc < 0) sysf_printf("chdir()");
+
+	rc = chroot(".");
+	if (rc < 0) sysf_printf("chroot()");
+
+	rc = chdir("/");
+	if (rc < 0) sysf_printf("chdir(/)");
+}
+
+static pid_t do_clone(void) {
+	pid_t pid;
+
+	pid = syscall(__NR_clone, clone_flags, NULL);
+	if (pid < 0) {
+		if (errno == EINVAL) {
+			clone_flags &= ~(CLONE_NEWUSER);
+			pid = syscall(__NR_clone, clone_flags, NULL);
+		}
+	}
+
+	if (pid < 0) sysf_printf("clone()");
+
+	return pid;
 }
 
 static inline void version(void) {
