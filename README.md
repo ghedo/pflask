@@ -62,7 +62,7 @@ container from the host system.
 
 ## EXAMPLES
 
- * Hide directories from an application:
+### Hide directories from an application:
 
 ```bash
 $ pflask --user=$USER --mount=tmp,$HOME chromium --disable-setuid-sandbox
@@ -83,7 +83,7 @@ All filesystem changes applied by the command will be available in /tmp/trash.
 Both commands can be run without root privileges as long as user namespaces are
 supported by the host system, and available to non-privileged users.
 
- * Detach from terminal:
+### Detach from terminal:
 
 ```bash
 $ pflask --user=$USER --detach /bin/bash
@@ -100,7 +100,7 @@ $ pflask --attach=29076
 Where _29076_ is the PID of the detached pflask process. Once reattached, one
 can detach again by pressing _^@_ (Ctrl + @).
 
- * Disable network inside the container:
+### Disable network inside the container:
 
 ```bash
 $ pflask --user=$USER --netif /bin/bash
@@ -112,7 +112,7 @@ _lo_ interface as the only one inside the container and disabling network access
 to the outside world while at the same time leaving the network on the host
 system working.
 
- * Boot the OS inside the container:
+### Boot the OS inside the container:
 
 ```bash
 $ sudo pflask --root=/path/to/container /sbin/init
@@ -122,7 +122,7 @@ This will simply execute the init system inside the container. It is recommended
 to use systemd inside the guest system, since it can detect whether it is
 run inside a container or not, and disable services accordingly.
 
- * Copy-on-write filesystem:
+### Copy-on-write filesystem:
 
 ```bash
 $ sudo pflask --root=/path/to/container --no-userns \
@@ -139,7 +139,7 @@ Note that this requires support for AuFS on the host system. Also, AuFS does not
 (yet?) support user namespaces, so that they need to be disabled (that's what
 the `--no-userns` option is for).
 
- * Build a Debian package inside a container:
+### Build a Debian package inside a container:
 
 First, create the chroot directory:
 
@@ -173,10 +173,6 @@ Note that the [pflask-debuild](tools/pflask-debuild) tool is far from perfect,
 and may not work in all situations.
 
 See the [man page](http://ghedo.github.io/pflask/) for more information.
-
-## DEPENDENCIES
-
- * `linux`
 
 ## BUILDING
 
