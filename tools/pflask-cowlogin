@@ -33,6 +33,11 @@ set -e
 BASEDIR=$1
 OVERDIR="/mnt"
 
+if [ ! -d "$BASEDIR" ]; then
+	echo "E: Missing base root directory '$BASEDIR'"
+	exit -1
+fi
+
 PFLASK_TOOL="sudo $(which pflask) --no-userns"
 
 shift
