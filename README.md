@@ -110,7 +110,7 @@ Using the `--netif` option without any argument creates a new network namespace
 inside the container without adding any new interface, therefore leaving the
 _lo_ interface as the only one inside the container and disabling network access
 to the outside world while at the same time leaving the network on the host
-system instact.
+system working.
 
  * Boot the OS inside the container:
 
