@@ -140,7 +140,7 @@ First, let's create the new network interface thet will be used inside the
 container:
 
 ```bash
-$ sudo ip link add link eth0 pflask-vlan0 type macvlan
+$ sudo ip link add name pflask-vlan0 link eth0 type macvlan
 ```
 
 This will create a new interface, `pflask-vlan0`, of type `macvlan` using the
