@@ -100,10 +100,20 @@ $ pflask --attach=29076
 Where _29076_ is the PID of the detached pflask process. Once reattached, one
 can detach again by pressing _^@_ (Ctrl + @).
 
+### Boot the OS inside the container
+
+```bash
+$ sudo pflask --root=/path/to/container /sbin/init
+```
+
+This will simply execute the init system inside the container. It is recommended
+to use systemd inside the guest system, since it can detect whether it is
+run inside a container or not, and disable services accordingly.
+
 ### Disable network inside the container
 
 ```bash
-$ pflask --user=$USER --netif /bin/bash
+$ sudo pflask --root=/path/to/container --netif /sbin/init
 ```
 
 Using the `--netif` option without any argument creates a new network namespace
@@ -129,7 +139,7 @@ it look like a completely different device.
 Finally, create the container:
 
 ```bash
-$ pflask --user=$USER --netif=pflask-vlan0,eth0 /bin/bash
+$ sudo pflask --root=/path/to/container --netif=pflask-vlan0,eth0 /sbin/init
 ```
 
 This will take the `pflask-vlan0` interface previously created, move it inside
@@ -142,16 +152,6 @@ Note that `macvlan` is just one of the possibilities. One could create a pair
 of `veth` interfaces, move one of them inside the container and connect the
 other to a bridge (e.g. an Open VSwitch bridge). Alternatively one could create
 a `vxlan` interface and connect the container to a VXLAN network, etc...
-
-### Boot the OS inside the container
-
-```bash
-$ sudo pflask --root=/path/to/container /sbin/init
-```
-
-This will simply execute the init system inside the container. It is recommended
-to use systemd inside the guest system, since it can detect whether it is
-run inside a container or not, and disable services accordingly.
 
 ### Copy-on-write filesystem
 
