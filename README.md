@@ -112,6 +112,37 @@ _lo_ interface as the only one inside the container and disabling network access
 to the outside world while at the same time leaving the network on the host
 system working.
 
+### Use a private network interface inside the container
+
+First, let's create the new network interface thet will be used inside the
+container:
+
+```bash
+$ sudo ip link add link eth0 pflask-vlan0 type macvlan
+```
+
+This will create a new interface, `pflask-vlan0`, of type `macvlan` using the
+`eth0` interface on the host as master. `macvlan` interfaces can be used to
+give a second MAC address to a network adapter (in this case `eth0`) and make
+it look like a completely different device.
+
+Finally, create the container:
+
+```bash
+$ pflask --user=$USER --netif=pflask-vlan0,eth0 /bin/bash
+```
+
+This will take the `pflask-vlan0` interface previously created, move it inside
+the container and rename it to `eth0`. The container will thus have what it
+looks like a private `eth0` network interface that can be configured
+independently from the host `eth0`. Once the container terminates, its network
+interface will be destroyed as well.
+
+Note that `macvlan` is just one of the possibilities. One could create a pair
+of `veth` interfaces, move one of them inside the container and connect the
+other to a bridge (e.g. an Open VSwitch bridge). Alternatively one could create
+a `vxlan` interface and connect the container to a VXLAN network, etc...
+
 ### Boot the OS inside the container
 
 ```bash
