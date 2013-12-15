@@ -44,6 +44,9 @@
 #include "printf.h"
 #include "util.h"
 
+#define NLMSG_TAIL(nmsg) \
+ ((struct rtattr *) (((unsigned char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
+
 typedef struct NETIF_LIST {
 	char *dev;
 	char *name;
@@ -136,9 +139,6 @@ void do_netif(pid_t pid) {
 		i = i -> next;
 	}
 }
-
-#define NLMSG_TAIL(nmsg) \
- ((struct rtattr *) (((unsigned char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
 
 static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name) {
 	_free_ struct nlmsg *req = malloc(4096);
