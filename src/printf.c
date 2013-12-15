@@ -36,45 +36,59 @@
 #include <unistd.h>
 
 #include "printf.h"
+#include "util.h"
 
 void ok_printf(const char *fmt, ...) {
+	int rc;
 	va_list args;
 
+	_free_ char *format = NULL;
+
+	rc = asprintf(&format, "[" COLOR_GREEN "✔" COLOR_OFF "] %s\n", fmt);
+	if (rc < 0) fail_printf("OOM");
+
 	va_start(args, fmt);
-	fprintf(stderr, "[" COLOR_GREEN "✔" COLOR_OFF "] ");
-	vfprintf(stderr, fmt, args);
+	vfprintf(stderr, format, args);
 	va_end(args);
-	fprintf(stderr, "\n");
 }
 
 void debug_printf(const char *fmt, ...) {
 	va_list args;
 
+	_free_ char *format = NULL;
+
+	rc = asprintf(&format, "[" COLOR_GREEN "¡" COLOR_OFF "] %s\n", fmt);
+	if (rc < 0) fail_printf("OOM");
+
 	va_start(args, fmt);
-	fprintf(stderr,  "[" COLOR_YELLOW "¡" COLOR_OFF "] ");
 	vfprintf(stderr, fmt, args);
 	va_end(args);
-	fprintf(stderr, "\n");
 }
 
 void err_printf(const char *fmt, ...) {
 	va_list args;
 
+	_free_ char *format = NULL;
+
+	rc = asprintf(&format, "[" COLOR_GREEN "✘" COLOR_OFF "] %s\n", fmt);
+	if (rc < 0) fail_printf("OOM");
+
 	va_start(args, fmt);
-	fprintf(stderr,  "[" COLOR_RED "✘" COLOR_OFF "] ");
 	vfprintf(stderr, fmt, args);
 	va_end(args);
-	fprintf(stderr, "\n");
 }
 
 void fail_printf(const char *fmt, ...) {
 	va_list args;
 
+	_free_ char *format = NULL;
+
+	rc = asprintf(&format, "[" COLOR_GREEN "✘" COLOR_OFF "] %s\n", fmt);
+	if (rc < 0) fail_printf("OOM");
+
 	va_start(args, fmt);
-	fprintf(stderr,  "[" COLOR_RED "✘" COLOR_OFF "] ");
 	vfprintf(stderr, fmt, args);
 	va_end(args);
-	fprintf(stderr, "\n");
 
 	_exit(-1);
 }
@@ -82,11 +96,15 @@ void fail_printf(const char *fmt, ...) {
 void sysf_printf(const char *fmt, ...) {
 	va_list args;
 
+	_free_ char *format = NULL;
+
+	rc = asprintf(&format, "[" COLOR_GREEN "✘" COLOR_OFF "] %s: %s\n",
+						fmt, strerror(errno));
+	if (rc < 0) fail_printf("OOM");
+
 	va_start(args, fmt);
-	fprintf(stderr,  "[" COLOR_RED "✘" COLOR_OFF "] ");
 	vfprintf(stderr, fmt, args);
 	va_end(args);
-	fprintf(stderr, ": %s\n", strerror(errno));
 
 	_exit(-1);
 }
