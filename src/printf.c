@@ -35,93 +35,44 @@
 #include <string.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <limits.h>
 
 #include "printf.h"
 #include "util.h"
 
 int use_syslog = 0;
 
+static void do_log(const char *prefix, const char *fmt, va_list args);
+
 void ok_printf(const char *fmt, ...) {
-	int rc;
 	va_list args;
 
-	_free_ char *prefix = NULL;
-	_free_ char *format = NULL;
-
-	if (use_syslog == 0)
-		prefix = strdup("[" COLOR_GREEN "✔" COLOR_OFF "]");
-
-	rc = asprintf(&format, "%s%s\n", prefix ? prefix : "", fmt);
-	if (rc < 0) fail_printf("OOM");
-
 	va_start(args, fmt);
-	if (use_syslog == 1)
-		vsyslog(LOG_INFO, format, args);
-	else
-		vfprintf(stderr, format, args);
+	do_log("[" COLOR_GREEN "✔" COLOR_OFF "] ", fmt, args);
 	va_end(args);
 }
 
 void debug_printf(const char *fmt, ...) {
-	int rc;
 	va_list args;
 
-	_free_ char *prefix = NULL;
-	_free_ char *format = NULL;
-
-	if (use_syslog == 0)
-		prefix = strdup("[" COLOR_YELLOW "¡" COLOR_OFF "] ");
-
-	rc = asprintf(&format, "%s%s\n", prefix ? prefix : "", fmt);
-	if (rc < 0) fail_printf("OOM");
-
 	va_start(args, fmt);
-	if (use_syslog == 1)
-		vsyslog(LOG_DEBUG, format, args);
-	else
-		vfprintf(stderr, format, args);
+	do_log("[" COLOR_YELLOW "¡" COLOR_OFF "] ", fmt, args);
 	va_end(args);
 }
 
 void err_printf(const char *fmt, ...) {
-	int rc;
 	va_list args;
 
-	_free_ char *prefix = NULL;
-	_free_ char *format = NULL;
-
-	if (use_syslog == 0)
-		prefix = strdup("[" COLOR_RED "✘" COLOR_OFF "] ");
-
-	rc = asprintf(&format, "%s%s\n", prefix ? prefix : "", fmt);
-	if (rc < 0) fail_printf("OOM");
-
 	va_start(args, fmt);
-	if (use_syslog == 1)
-		vsyslog(LOG_ERR, format, args);
-	else
-		vfprintf(stderr, format, args);
+	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args);
 	va_end(args);
 }
 
 void fail_printf(const char *fmt, ...) {
-	int rc;
 	va_list args;
 
-	_free_ char *prefix = NULL;
-	_free_ char *format = NULL;
-
-	if (use_syslog == 0)
-		prefix = strdup("[" COLOR_RED "✘" COLOR_OFF "] ");
-
-	rc = asprintf(&format, "%s%s\n", prefix ? prefix : "", fmt);
-	if (rc < 0) fail_printf("OOM");
-
 	va_start(args, fmt);
-	if (use_syslog == 1)
-		vsyslog(LOG_CRIT, format, args);
-	else
-		vfprintf(stderr, format, args);
+	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args);
 	va_end(args);
 
 	_exit(-1);
@@ -131,22 +82,27 @@ void sysf_printf(const char *fmt, ...) {
 	int rc;
 	va_list args;
 
-	_free_ char *prefix = NULL;
 	_free_ char *format = NULL;
 
-	if (use_syslog == 0)
-		prefix = strdup("[" COLOR_RED "✘" COLOR_OFF "] ");
-
-	rc = asprintf(&format, "%s%s: %s\n", prefix ? prefix : "", fmt,
-							strerror(errno));
+	rc = asprintf(&format, "%s: %s", fmt, strerror(errno));
 	if (rc < 0) fail_printf("OOM");
 
 	va_start(args, fmt);
+	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", format, args);
+	va_end(args);
+
+	_exit(-1);
+}
+
+static void do_log(const char *pre, const char *fmt, va_list args) {
+	int rc;
+	static char format[LINE_MAX];
+
+	rc = snprintf(format, LINE_MAX, "%s%s\n", use_syslog ? "" : pre, fmt);
+	if (rc < 0) fail_printf("EIO");
+
 	if (use_syslog == 1)
 		vsyslog(LOG_CRIT, format, args);
 	else
 		vfprintf(stderr, format, args);
-	va_end(args);
-
-	_exit(-1);
 }
