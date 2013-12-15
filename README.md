@@ -125,7 +125,7 @@ that there's no guarantee that it'll work).
 ### Disable network inside the container
 
 ```bash
-$ sudo pflask --root=/path/to/container --netif /sbin/init
+$ sudo pflask --root=/path/to/container --netif /lib/systemd/systemd
 ```
 
 Using the `--netif` option without any argument creates a new network namespace
@@ -151,7 +151,7 @@ it look like a completely different device.
 Finally, create the container:
 
 ```bash
-$ sudo pflask --root=/path/to/container --netif=pflask-vlan0,eth0 /sbin/init
+$ sudo pflask --root=/path/to/container --netif=pflask-vlan0,eth0 /lib/systemd/systemd
 ```
 
 This will take the `pflask-vlan0` interface previously created, move it inside
@@ -170,7 +170,7 @@ a `vxlan` interface and connect the container to a VXLAN network, etc...
 ```bash
 $ sudo pflask --root=/path/to/container --no-userns \
   --mount=aufs,/tmp/overlay,/path/to/container \
-  /sbin/init
+  /lib/systemd/systemd
 ```
 
 This will mount a copy-on-write filesystem on the / of the container. Any change
