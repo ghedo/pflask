@@ -117,6 +117,8 @@ void process_pty(int master_fd) {
 	memcpy(&raw_attr, &stdin_attr, sizeof(stdin_attr));
 
 	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGTERM);
 	sigaddset(&mask, SIGCHLD);
 	sigaddset(&mask, SIGWINCH);
 
@@ -197,6 +199,14 @@ void process_pty(int master_fd) {
 
 				case SIGCHLD:
 					goto finish;
+
+				case SIGINT:
+				case SIGTERM:
+					rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
+					if (rc < 0) sysf_printf("tcsetattr()");
+
+					fail_printf("Parent was terminated");
+					break;
 			}
 		}
 
