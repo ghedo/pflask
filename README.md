@@ -161,10 +161,9 @@ $ sudo pflask --root=/path/to/container --no-userns \
   /sbin/init
 ```
 
-This is the same as the previous command, except that it will mount a
-copy-on-write filesystem on /. Any change to files and directories will be saved
-in `/tmp/overlay` so that the container directory (`/path/to/container`) will be
-unaffected.
+This will mount a copy-on-write filesystem on the / of the container. Any change
+to files and directories will be saved in `/tmp/overlay` so that the container
+root directory (`/path/to/container`) will be unaffected.
 
 Note that this requires support for AuFS on the host system. Also, AuFS does not
 (yet?) support user namespaces, so that they need to be disabled (that's what
