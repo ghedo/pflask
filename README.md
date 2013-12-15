@@ -102,13 +102,25 @@ can detach again by pressing _^@_ (Ctrl + @).
 
 ### Boot the OS inside the container
 
-```bash
-$ sudo pflask --root=/path/to/container /sbin/init
+First create a base Debian system using `debootstrap(8)`:
+
+``bash
+$ sudo debootstrap --include=systemd unstable /path/to/container
 ```
 
-This will simply execute the init system inside the container. It is recommended
-to use systemd inside the guest system, since it can detect whether it is
-run inside a container or not, and disable services accordingly.
+It is recommended to use systemd as init system inside the guest, since it can
+detect whether it is run inside a container or not, and disable not needed
+services accordingly.
+
+Then create the container:
+
+```bash
+$ sudo pflask --root=/path/to/container /lib/systemd/systemd
+```
+
+This will simply execute the init system (systemd) inside the container. Replace
+`/lib/systemd/systemd` with `/sbin/init` if you have a different init (but note
+that there's no guarantee that it'll work).
 
 ### Disable network inside the container
 
@@ -171,11 +183,11 @@ the `--no-userns` option is for).
 
 ### Build a Debian package inside a container
 
-First, create the chroot directory:
+First, create the base Debian system:
 
 ```bash
 $ sudo mkdir -p /var/cache/pflask
-$ sudo debootstrap --arch=amd64 --variant=buildd unstable /var/cache/pflask/base-unstable-amd64
+$ sudo debootstrap --variant=buildd unstable /var/cache/pflask/base-unstable-amd64
 ```
 
 Then retrieve the source package we want to build:
