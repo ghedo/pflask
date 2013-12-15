@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <syslog.h>
 
 #include <sys/syscall.h>
 
@@ -198,6 +199,9 @@ int main(int argc, char *argv[]) {
 	gid = getgid();
 
 	if (detach) {
+		openlog("pflask", LOG_NDELAY | LOG_PID, LOG_DAEMON);
+		use_syslog = 1;
+
 		rc = daemon(0, 0);
 		if (rc < 0) sysf_printf("daemon()");
 	}

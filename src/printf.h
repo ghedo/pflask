@@ -34,6 +34,8 @@
 #define COLOR_BGRED	"[1;41m"
 #define COLOR_OFF	"[0m"
 
+extern int use_syslog;
+
 extern void ok_printf(const char *fmt, ...);
 extern void debug_printf(const char *fmt, ...);
 extern void err_printf(const char *fmt, ...);
