@@ -30,6 +30,26 @@
 
 set -e
 
+if [ -z "$DEBUILD_DPKG_BUILDPACKAGE_OPTS" ]; then
+	DEBUILD_DPKG_BUILDPACKAGE_OPTS=""
+fi
+
+if [ -z "$DEBUILD_LINTIAN" ]; then
+	DEBUILD_LINTIAN="yes"
+fi
+
+if [ -z "$DEBUILD_LINTIAN_OPTS" ]; then
+	DEBUILD_LINTIAN_OPTS="-IE --pedantic"
+fi
+
+if [ -f "$HOME/.devscripts" ]; then
+	source "$HOME/.devscripts"
+fi
+
+if [ -f "/etc/devscripts.conf" ]; then
+	source "/etc/devscripts.conf"
+fi
+
 UNSTABLE_CODENAME="sid"
 TESTING_CODENAME="jessie"
 STABLE_CODENAME="wheezy"
@@ -81,8 +101,8 @@ PFLASK_TOOL="sudo $(which pflask) --no-userns"
 APT_TOOL="apt-get --no-install-recommends -y"
 TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot lintian"
 BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
-BUILD_TOOL="dpkg-buildpackage -tc -rfakeroot"
-LINT_TOOL="lintian --allow-root -IE --pedantic ../$CHANGES_FILE || true"
+BUILD_TOOL="dpkg-buildpackage -tc -rfakeroot $DEBUILD_DPKG_BUILDPACKAGE_OPTS"
+LINT_TOOL="lintian --allow-root $DEBUILD_LINTIAN_OPTS ../$CHANGES_FILE || true"
 CHOWN_TOOL="chown --from=root:root"
 DSIGN_TOOL="debsign"
 
@@ -109,7 +129,11 @@ do
 	BUILD_CMD="$BUILD_CMD && [ -f $TMPDIR/$FILE ] && $CHOWN_TOOL $UID:$UID $TMPDIR/$FILE || true"
 done
 
-BUILD_CMD="$BUILD_CMD && [ \$FAIL = 0 ] && $LINT_TOOL"
+BUILD_CMD="$BUILD_CMD && [ \$FAIL = 0 ]"
+
+if [ "$DEBUILD_LINTIAN" = "yes" ]; then
+	BUILD_CMD="$BUILD_CMD && $LINT_TOOL"
+fi
 
 $PFLASK_TOOL --root $BASEDIR				\
 	--mount "tmp,$OVERDIR"				\
