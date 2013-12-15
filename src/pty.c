@@ -233,33 +233,26 @@ void serve_pty(int fd) {
 	_close_ int sock = -1;
 	_close_ int signal_fd = -1;
 
-	struct sockaddr    *servaddr;
-	struct sockaddr_un  servaddr_un;
-	int                 servaddr_len;
-
 	_free_ char *path = NULL;
+
+	struct sockaddr_un  servaddr_un;
 
 	pid = getpid();
 
+	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
+
 	rc = asprintf(&path, SOCKET_PATH, pid);
 	if (rc < 0) fail_printf("OOM");
-
-	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
 
 	servaddr_un.sun_family  = AF_UNIX;
 	strcpy(servaddr_un.sun_path, path);
 
 	servaddr_un.sun_path[0] = '\0';
 
-	servaddr     = (struct sockaddr *) &servaddr_un;
-	servaddr_len = sizeof(struct sockaddr_un) -
-		       sizeof(servaddr_un.sun_path) +
-		       strlen(path);
-
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock < 0) sysf_printf("socket()");
 
-	rc = bind(sock, servaddr, servaddr_len);
+	rc = bind(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
 	if (rc < 0) sysf_printf("bind()");
 
 	rc = listen(sock, 1);
@@ -322,11 +315,9 @@ int recv_pty(pid_t pid) {
 	int rc;
 	int sock;
 
-	struct sockaddr    *servaddr;
-	struct sockaddr_un  servaddr_un;
-	int                 servaddr_len;
-
 	_free_ char *path = NULL;
+
+	struct sockaddr_un servaddr_un;
 
 	rc = asprintf(&path, SOCKET_PATH, pid);
 	if (rc < 0) fail_printf("OOM");
@@ -338,15 +329,10 @@ int recv_pty(pid_t pid) {
 
 	servaddr_un.sun_path[0] = '\0';
 
-	servaddr     = (struct sockaddr *) &servaddr_un;
-	servaddr_len = sizeof(struct sockaddr_un) -
-		       sizeof(servaddr_un.sun_path) +
-		       strlen(path);
-
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (sock < 0) sysf_printf("socket()");
 
-	rc = connect(sock, servaddr, servaddr_len);
+	rc = connect(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
 	if (rc < 0) sysf_printf("connect()");
 
 	return recv_fd(sock);
