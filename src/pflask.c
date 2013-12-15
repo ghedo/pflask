@@ -107,11 +107,6 @@ int main(int argc, char *argv[]) {
 
 	const char *short_opts = "+m:n::u:r:c:da:UMNIHPh";
 
-	if (argc < 2) {
-		help();
-		return 0;
-	}
-
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
 			case 'm':
