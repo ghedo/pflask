@@ -39,6 +39,8 @@ static inline void freep(void *p) {
 		return;
 
 	free(*(void **) p);
+
+	*(void **)p = NULL;
 }
 
 static inline void closep(int *p) {
