@@ -92,7 +92,7 @@ $ pflask --user=$USER --detach /bin/bash
 To reattach run pflask with the `--attach` option
 
 ```bash
-$ pgrep pflask
+$ pidof pflask
 29076
 $ pflask --attach=29076
 ```
