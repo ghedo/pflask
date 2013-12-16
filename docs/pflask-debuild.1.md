@@ -13,6 +13,20 @@ generated .changes file and sign the resulting package using `debsign(1)`.
 
 ## ENVIRONMENT
 
+`DIST`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The Debian release (e.g. _"unstable"_). It will be used when searching for the
+base Debian install under `/var/cache/pflask`. By default will be read from the
+`debian/changelog` of the package to be built.
+
+`ARCH`
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The Debian architecture (e.g. _"amd64"_). It will be used when searching for
+the base Debian install under `/var/cache/pflask`. If none is specified,
+`dpkg-architecture(1)` is used.
+
 `DEBUILD_DPKG_BUILDPACKAGE_OPTS`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -26,7 +40,8 @@ If set to _"yes"_ (default) `lintian(1)` will be run.
 `DEBUILD_LINTIAN_OPTS`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Options that should be passed to `lintian(1)` (default _"-IE --pedantic"_).
+Options that should be passed to `lintian(1)` (by default _"-IE --pedantic"_
+will be used).
 
 ## FILES
 

@@ -13,6 +13,18 @@
 \fBpflask\-debuild\fR is a wrapper aroung pflask that builds Debian packages inside a Linux namespace container\. It is also able to run \fBlintian(1)\fR on the generated \.changes file and sign the resulting package using \fBdebsign(1)\fR\.
 .
 .SH "ENVIRONMENT"
+\fBDIST\fR
+.
+.P
+\~\~\~\~\~\~ The Debian release (e\.g\. \fI"unstable"\fR)\. It will be used when searching for the base Debian install under \fB/var/cache/pflask\fR\. By default will be read from the \fBdebian/changelog\fR of the package to be built\.
+.
+.P
+\fBARCH\fR
+.
+.P
+\~\~\~\~\~\~ The Debian architecture (e\.g\. \fI"amd64"\fR)\. It will be used when searching for the base Debian install under \fB/var/cache/pflask\fR\. If none is specified, \fBdpkg\-architecture(1)\fR is used\.
+.
+.P
 \fBDEBUILD_DPKG_BUILDPACKAGE_OPTS\fR
 .
 .P
@@ -28,7 +40,7 @@
 \fBDEBUILD_LINTIAN_OPTS\fR
 .
 .P
-\~\~\~\~\~\~ Options that should be passed to \fBlintian(1)\fR (default \fI"\-IE \-\-pedantic"\fR)\.
+\~\~\~\~\~\~ Options that should be passed to \fBlintian(1)\fR (by default \fI"\-IE \-\-pedantic"\fR will be used)\.
 .
 .SH "FILES"
 \fB~/\.devscripts\fR
