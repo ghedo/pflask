@@ -92,7 +92,7 @@ TMPDIR="/mnt"
 if [ -r "debian/changelog" ]; then
 	SRC=$(dpkg-parsechangelog | sed -rne 's,^Source: (.+).*,\1,p')
 	VER=$(dpkg-parsechangelog | sed -rne 's,^Version: ([0-9]:)*(.+).*,\2,p')
-elif [ "$1" != "update" ]; then
+elif [ "$1" != "--update" ]; then
 	echo "E: Can't find 'debian/changelog'"
 	exit -1
 fi
@@ -129,7 +129,7 @@ if [ -r "debian/control" ]; then
 		FILES="$FILES ${PKG}_${VER}_all.deb"
 		FILES="$FILES ${PKG}_${VER}_all.udeb"
 	done
-elif [ "$1" != "update" ]; then
+elif [ "$1" != "--update" ]; then
 	echo "E: Can't find 'debian/control'"
 	exit -1
 fi
@@ -145,7 +145,7 @@ if [ "$DEBUILD_LINTIAN" = "yes" ]; then
 	BUILD_CMD="$BUILD_CMD && $LINT_TOOL"
 fi
 
-if [ "$1" = "update" ]; then
+if [ "$1" = "--update" ]; then
 	$PFLASK_TOOL --root $BASEDIR				\
 		--						\
 		sh -c "$APT_TOOL update && $APT_TOOL dist-upgrade"
