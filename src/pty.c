@@ -197,16 +197,10 @@ void process_pty(int master_fd) {
 					break;
 				}
 
-				case SIGCHLD:
-					goto finish;
-
 				case SIGINT:
 				case SIGTERM:
-					rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
-					if (rc < 0) sysf_printf("tcsetattr()");
-
-					fail_printf("Parent was terminated");
-					break;
+				case SIGCHLD:
+					goto finish;
 			}
 		}
 
@@ -301,6 +295,8 @@ void serve_pty(int fd) {
 			if (rc != sizeof(fdsi)) sysf_printf("read()");
 
 			switch (fdsi.ssi_signo) {
+				case SIGINT:
+				case SIGTERM:
 				case SIGCHLD:
 					return;
 			}

@@ -278,6 +278,8 @@ process:
 	if (pid == -1)
 		return 0;
 
+	kill(pid, SIGKILL);
+
 	rc = waitid(P_PID, pid, &status, WEXITED);
 	if (rc < 0) sysf_printf("waitid()");
 
