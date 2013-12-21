@@ -28,6 +28,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <string.h>
 
 #include <sys/uio.h>
@@ -47,15 +48,22 @@
 #define NLMSG_TAIL(nmsg) \
  ((struct rtattr *) (((unsigned char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
 
+typedef enum NETIF_TYPE {
+	MOVE,
+	MACVLAN
+} netif_type;
+
 typedef struct NETIF_LIST {
 	char *dev;
 	char *name;
+
+	enum NETIF_TYPE type;
 
 	struct NETIF_LIST *next;
 } netif_list;
 
 struct nlmsg {
-	struct nlmsghdr  hdr;
+	struct nlmsghdr hdr;
 	union {
 		struct ifinfomsg ifi;
 		struct nlmsgerr  err;
@@ -65,18 +73,22 @@ struct nlmsg {
 static netif_list *netifs = NULL;
 
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
+static void create_macvlan(int sock, int master, char *name);
 
 static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len);
+static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr);
+static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr);
 
 static void nl_send(int sock, struct nlmsg *nlmsg);
 static void nl_recv(int sock, struct nlmsg *nlmsg);
 
-void add_netif(char *dev, char *name) {
+void add_netif(netif_type type, char *dev, char *name) {
 	netif_list *nif = malloc(sizeof(netif_list));
 	if (nif == NULL) fail_printf("OOM");
 
 	nif -> dev  = strdup(dev);
 	nif -> name = strdup(name);
+	nif -> type = type;
 
 	nif -> next  = NULL;
 
@@ -99,9 +111,14 @@ void add_netif_from_spec(char *spec) {
 	size_t c = split_str(tmp, &opts, ",");
 	if (c == 0) fail_printf("Invalid netif spec '%s'", spec);
 
-	if (c < 2) fail_printf("Invalid netif spec '%s'", spec);
-
-	add_netif(opts[0], opts[1]);
+	if (if_nametoindex(opts[0])) {
+		if (c < 2) fail_printf("Invalid netif spec '%s'", spec);
+		add_netif(MOVE, opts[0], opts[1]);
+	} else if (strncmp(opts[0], "macvlan", 8) == 0) {
+		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
+		add_netif(MACVLAN, opts[1], opts[2]);
+	} else
+		fail_printf("Invalid netif spec '%s'", spec);
 }
 
 void do_netif(pid_t pid) {
@@ -134,6 +151,23 @@ void do_netif(pid_t pid) {
 		if (if_index == 0) sysf_printf("Error searching for '%s'",
 								i -> dev);
 
+		switch (i -> type) {
+			case MACVLAN: {
+				_free_ char *name = NULL;
+
+				rc = asprintf(&name, "pflask-%d", pid);
+				if (rc < 0) fail_printf("OOM");
+
+				create_macvlan(sock, if_index, name);
+
+				if_index = if_nametoindex(name);
+				break;
+			}
+
+			case MOVE:
+				break;
+		}
+
 		move_and_rename_if(sock, pid, if_index, i -> name);
 
 		i = i -> next;
@@ -164,6 +198,38 @@ static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name
 	}
 }
 
+static void create_macvlan(int sock, int master, char *name) {
+	struct rtattr *nested = NULL;
+
+	_free_ struct nlmsg *req = malloc(4096);
+
+	req -> hdr.nlmsg_seq   = 1;
+	req -> hdr.nlmsg_type  = RTM_NEWLINK;
+	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req -> hdr.nlmsg_flags = NLM_F_REQUEST |
+				 NLM_F_CREATE  |
+				 NLM_F_EXCL    |
+				 NLM_F_ACK;
+
+	req -> msg.ifi.ifi_family  = AF_UNSPEC;
+
+	nested = rtattr_start_nested(req, IFLA_LINKINFO);
+	rtattr_append(req, IFLA_INFO_KIND, "macvlan", 8);
+	rtattr_end_nested(req, nested);
+
+	rtattr_append(req, IFLA_LINK, &master, sizeof(master));
+	rtattr_append(req, IFLA_IFNAME, name, strlen(name) + 1);
+
+	nl_send(sock, req);
+	nl_recv(sock, req);
+
+	if (req -> hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req -> msg.err.error < 0)
+			fail_printf("Error sending netlink request: %s",
+					strerror(-req -> msg.err.error));
+	}
+}
+
 static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
 	struct rtattr *rtattr;
 	size_t rtalen = RTA_LENGTH(len);
@@ -172,10 +238,22 @@ static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
 	rtattr -> rta_type = attr;
 	rtattr -> rta_len  = rtalen;
 
-	memcpy(RTA_DATA(rtattr), d, rtalen);
+	memcpy(RTA_DATA(rtattr), d, len);
 
 	nlmsg -> hdr.nlmsg_len = NLMSG_ALIGN(nlmsg -> hdr.nlmsg_len) +
 				 RTA_ALIGN(rtalen);
+}
+
+static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
+	struct rtattr *rtattr = NLMSG_TAIL(&nlmsg -> hdr);
+
+	rtattr_append(nlmsg, attr, NULL, 0);
+
+	return rtattr;
+}
+
+static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr) {
+	rtattr -> rta_len = (void *) NLMSG_TAIL(&nlmsg -> hdr) - (void *) rtattr;
 }
 
 static void nl_send(int sock, struct nlmsg *nlmsg) {
