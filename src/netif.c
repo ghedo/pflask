@@ -46,7 +46,7 @@
 #include "util.h"
 
 #define NLMSG_TAIL(nmsg) \
- ((struct rtattr *) (((unsigned char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
+ ((struct rtattr *) (((char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
 
 typedef enum NETIF_TYPE {
 	MOVE,
@@ -253,7 +253,7 @@ static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
 }
 
 static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr) {
-	rtattr -> rta_len = (void *) NLMSG_TAIL(&nlmsg -> hdr) - (void *) rtattr;
+	rtattr -> rta_len = (char *) NLMSG_TAIL(&nlmsg -> hdr) - (char *) rtattr;
 }
 
 static void nl_send(int sock, struct nlmsg *nlmsg) {
