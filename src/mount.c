@@ -92,7 +92,7 @@ void add_mount_from_spec(char *spec) {
 	size_t c = split_str(tmp, &opts, ",");
 	if (c == 0) fail_printf("Invalid mount spec '%s'", spec);
 
-	if (strncmp(opts[0], "bind", 5) == 0) {
+	if (strncmp(opts[0], "bind", 4) == 0) {
 		_free_ char *src = NULL;
 		_free_ char *dst = NULL;
 
@@ -105,6 +105,9 @@ void add_mount_from_spec(char *spec) {
 		if (dst == NULL) sysf_printf("realpath()");
 
 		add_mount(src, dst, NULL, MS_BIND, NULL);
+
+		if (strncmp(opts[0], "bind-ro", 8) == 0)
+			add_mount(src, dst, NULL, MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
 	} else if (strncmp(opts[0], "aufs", 4) == 0) {
 		_free_ char *dst = NULL;
 		_free_ char *overlay = NULL;

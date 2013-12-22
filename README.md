@@ -45,9 +45,10 @@ filesystems mounted inside it won't affect the host system. pflask can also be
 told to create new mount points before the execution of the supplied command, 
 by using the `--mount` option. Supported mount point types are:
 
- * `bind` -- bind mount a directory/file to another directory/file
- * `aufs` -- stack a directory on top of another directory using AuFS
- * `tmp`  -- mount a tmpfs on a directory
+ * `bind`    -- bind mount a directory/file to another directory/file
+ * `bind-ro` -- like `bind`, but read-only
+ * `aufs`    -- stack a directory on top of another directory using AuFS
+ * `tmp`     -- mount a tmpfs on a directory
 
 ### Network namespace
 

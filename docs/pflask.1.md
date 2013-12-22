@@ -95,6 +95,12 @@ It bind mounts a directory/file to another directory/file
 
 Example: `--mount=bind,/source/path,/dest/path`
 
+### bind-ro
+
+Same as `bind`, but make the mount point read-only.
+
+Example: `--mount=bind-ro,/source/path,/dest/path`
+
 ### aufs
 
 It stacks a directory on top of another directory using AuFS

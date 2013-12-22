@@ -99,6 +99,12 @@ It bind mounts a directory/file to another directory/file
 .P
 Example: \fB\-\-mount=bind,/source/path,/dest/path\fR
 .
+.SS "bind\-ro"
+Same as \fBbind\fR, but make the mount point read\-only\.
+.
+.P
+Example: \fB\-\-mount=bind\-ro,/source/path,/dest/path\fR
+.
 .SS "aufs"
 It stacks a directory on top of another directory using AuFS
 .
