@@ -371,7 +371,7 @@ static inline void help(void) {
 	CMD_HELP("--no-netns",   "-N", "Disable net namespace support");
 	CMD_HELP("--no-ipcns",   "-I", "Disable IPC namespace support");
 	CMD_HELP("--no-utsns",   "-H", "Disable UTS namespace support");
-	CMD_HELP("--no-pidrns",  "-P", "Disable PID namespace support");
+	CMD_HELP("--no-pidns",   "-P", "Disable PID namespace support");
 
 	puts("");
 }
