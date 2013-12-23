@@ -16,13 +16,13 @@
 \fB\-m, \-\-mount=<type>,<opts>\fR
 .
 .P
-\~\~\~\~\~\~ Create a new \fI"type"\fR mount point inside the container\. See \fIMOUNT POINTS\fR for more info\.
+\~\~\~\~\~\~ Create a new \fI"type"\fR mount point inside the container\. See \fIMOUNT\fR\.
 .
 .P
-\fB\-n, \-\-netif[=<dev>,<name>]\fR
+\fB\-n, \-\-netif[=<opts>]\fR
 .
 .P
-\~\~\~\~\~\~ Create a new network namespace and if the argument is present, move the \fI"dev"\fR network interface inside the container and rename it to \fI"name"\fR\. Once the container terminates, this interface will be destroyed\.
+\~\~\~\~\~\~ Create a new network namespace and, optionally create/move a network interface inside the container\. See \fINETIF\fR\.
 .
 .P
 \fB\-u, \-\-user=<user>\fR
@@ -90,7 +90,7 @@
 .P
 \~\~\~\~\~\~ Disable PID namespace\.
 .
-.SH "MOUNT POINTS"
+.SH "MOUNT"
 pflask support the following mount point types:
 .
 .SS "bind"
@@ -116,6 +116,36 @@ It mounts a tmpfs on a directory\.
 .
 .P
 Example: \fB\-\-mount=tmp,/dest/path\fR
+.
+.SH "NETIF"
+When the \fB\-\-netif\fR option is used, pflask will create a new network namespace inside the container\. If the argument is set, the following actions will be taken:
+.
+.SS "move and rename"
+\~\~\~\~\~\~ \fB\-\-netif=<dev>,<name>\fR
+.
+.P
+If the \fI"dev"\fR option is an existing network interface, it will be moved inside the container "as is" and renamed to \fI"name"\fR\. No additional configuration will be applied to it\.
+.
+.P
+Example: \fB\-\-netif=vxlan0,eth0\fR
+.
+.SS "macvlan"
+\~\~\~\~\~\~ \fB\-\-netif=macvlan,<master>,<name>\fR
+.
+.P
+If the \fI"macvlan"\fR option is used, a new network interface of type \fBmacvlan\fR will be created using \fI"master"\fR as master interface, moved inside the container and renamed to \fI"name"\fR\. No additional configuration will be applied to it\.
+.
+.P
+Example: \fB\-\-netif=macvlan,eth0,eth0\fR
+.
+.SS "veth"
+\~\~\~\~\~\~ \fB\-\-netif=veth,<name_outside>,<name_inside>\fR
+.
+.P
+If the \fI"veth"\fR option is used, a new pair of network interfaces of type \fBveth\fR will be created and one of the two moved inside the container\. The twin outside the container will be named \fI"name_outside"\fR, while the twin inside the container will be named \fI"name_inside"\fR\. No additional configuration will be applied to them\.
+.
+.P
+Example: \fB\-\-netif=veth,veth0,eth0\fR
 .
 .SH "AUTHOR"
 Alessandro Ghedini \fIalessandro@ghedini\.me\fR

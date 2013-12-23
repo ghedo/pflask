@@ -19,15 +19,13 @@ also be used without changing the root directory inside the container.
 `-m, --mount=<type>,<opts>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Create a new _"type"_ mount point inside the container. See [MOUNT POINTS] for
-more info.
+Create a new _"type"_ mount point inside the container. See [MOUNT].
 
-`-n, --netif[=<dev>,<name>]`
+`-n, --netif[=<opts>]`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Create a new network namespace and if the argument is present, move the _"dev"_
-network interface inside the container and rename it to _"name"_. Once the
-container terminates, this interface will be destroyed.
+Create a new network namespace and, optionally create/move a network interface
+inside the container. See [NETIF].
 
 `-u, --user=<user>`
 
@@ -85,7 +83,7 @@ Disable UTS namespace.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Disable PID namespace.
 
-## MOUNT POINTS
+## MOUNT
 
 pflask support the following mount point types:
 
@@ -112,6 +110,47 @@ Example: `--mount=aufs,/overlay/path,/dest/path`
 It mounts a tmpfs on a directory.
 
 Example: `--mount=tmp,/dest/path`
+
+## NETIF
+
+When the `--netif` option is used, pflask will create a new network namespace
+inside the container. If the argument is set, the following actions will be
+taken:
+
+### move and rename
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+`--netif=<dev>,<name>`
+
+If the _"dev"_ option is an existing network interface, it will be moved inside
+the container "as is" and renamed to _"name"_. No additional configuration will
+be applied to it.
+
+Example: `--netif=vxlan0,eth0`
+
+### macvlan
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+`--netif=macvlan,<master>,<name>`
+
+If the _"macvlan"_ option is used, a new network interface of type `macvlan`
+will be created using _"master"_ as master interface, moved inside the container
+and renamed to _"name"_. No additional configuration will be applied to it.
+
+Example: `--netif=macvlan,eth0,eth0`
+
+### veth
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+`--netif=veth,<name_outside>,<name_inside>`
+
+If the _"veth"_ option is used, a new pair of network interfaces of type `veth`
+will be created and one of the two moved inside the container. The twin outside
+the container will be named _"name_outside"_, while the twin inside the
+container will be named _"name_inside"_. No additional configuration will be
+applied to them.
+
+Example: `--netif=veth,veth0,eth0`
 
 ## AUTHOR ##
 
