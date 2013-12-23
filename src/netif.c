@@ -41,6 +41,8 @@
 #include <linux/netlink.h>
 #include <linux/rtnetlink.h>
 
+#include <linux/veth.h>
+
 #include "netif.h"
 #include "printf.h"
 #include "util.h"
@@ -50,7 +52,8 @@
 
 typedef enum NETIF_TYPE {
 	MOVE,
-	MACVLAN
+	MACVLAN,
+	VETH
 } netif_type;
 
 typedef struct NETIF_LIST {
@@ -74,6 +77,7 @@ static netif_list *netifs = NULL;
 
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
 static void create_macvlan(int sock, int master, char *name);
+static void create_veth_pair(int sock, char *name_out, char *name_in);
 
 static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len);
 static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr);
@@ -117,6 +121,9 @@ void add_netif_from_spec(char *spec) {
 	} else if (strncmp(opts[0], "macvlan", 8) == 0) {
 		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
 		add_netif(MACVLAN, opts[1], opts[2]);
+	} else if (strncmp(opts[0], "veth", 5) == 0) {
+		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
+		add_netif(VETH, opts[1], opts[2]);
 	} else
 		fail_printf("Invalid netif spec '%s'", spec);
 }
@@ -147,9 +154,7 @@ void do_netif(pid_t pid) {
 	}
 
 	while (i != NULL) {
-		unsigned int if_index = if_nametoindex(i -> dev);
-		if (if_index == 0) sysf_printf("Error searching for '%s'",
-								i -> dev);
+		unsigned int if_index = 0;
 
 		switch (i -> type) {
 			case MACVLAN: {
@@ -158,13 +163,32 @@ void do_netif(pid_t pid) {
 				rc = asprintf(&name, "pflask-%d", pid);
 				if (rc < 0) fail_printf("OOM");
 
+				if_index = if_nametoindex(i -> dev);
+				if (if_index == 0) sysf_printf(
+					"Error searching for '%s'", i -> dev);
+
 				create_macvlan(sock, if_index, name);
 
 				if_index = if_nametoindex(name);
 				break;
 			}
 
+			case VETH: {
+				_free_ char *name = NULL;
+
+				rc = asprintf(&name, "pflask-%d", pid);
+				if (rc < 0) fail_printf("OOM");
+
+				create_veth_pair(sock, i -> dev, name);
+
+				if_index = if_nametoindex(name);
+				break;
+			}
+
 			case MOVE:
+				if_index = if_nametoindex(i -> dev);
+				if (if_index == 0) sysf_printf(
+					"Error searching for '%s'", i -> dev);
 				break;
 		}
 
@@ -219,6 +243,49 @@ static void create_macvlan(int sock, int master, char *name) {
 
 	rtattr_append(req, IFLA_LINK, &master, sizeof(master));
 	rtattr_append(req, IFLA_IFNAME, name, strlen(name) + 1);
+
+	nl_send(sock, req);
+	nl_recv(sock, req);
+
+	if (req -> hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req -> msg.err.error < 0)
+			fail_printf("Error sending netlink request: %s",
+					strerror(-req -> msg.err.error));
+	}
+}
+
+static void create_veth_pair(int sock, char *name_out, char *name_in) {
+	struct rtattr *nested_info = NULL;
+	struct rtattr *nested_data = NULL;
+	struct rtattr *nested_peer = NULL;
+
+	_free_ struct nlmsg *req = malloc(4096);
+
+	req -> hdr.nlmsg_seq   = 1;
+	req -> hdr.nlmsg_type  = RTM_NEWLINK;
+	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req -> hdr.nlmsg_flags = NLM_F_REQUEST |
+				 NLM_F_CREATE  |
+				 NLM_F_EXCL    |
+				 NLM_F_ACK;
+
+	req -> msg.ifi.ifi_family  = AF_UNSPEC;
+
+	nested_info = rtattr_start_nested(req, IFLA_LINKINFO);
+	rtattr_append(req, IFLA_INFO_KIND, "veth", 5);
+
+	nested_data = rtattr_start_nested(req, IFLA_INFO_DATA);
+	nested_peer = rtattr_start_nested(req, VETH_INFO_PEER);
+
+	req -> hdr.nlmsg_len += sizeof(struct ifinfomsg);
+	rtattr_append(req, IFLA_IFNAME, name_in, strlen(name_in) + 1);
+
+	rtattr_end_nested(req, nested_peer);
+	rtattr_end_nested(req, nested_data);
+
+	rtattr_end_nested(req, nested_info);
+
+	rtattr_append(req, IFLA_IFNAME, name_out, strlen(name_out) + 1);
 
 	nl_send(sock, req);
 	nl_recv(sock, req);
