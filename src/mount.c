@@ -108,7 +108,7 @@ void add_mount_from_spec(char *spec) {
 
 		if (strncmp(opts[0], "bind-ro", 8) == 0)
 			add_mount(src, dst, NULL, MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
-	} else if (strncmp(opts[0], "aufs", 4) == 0) {
+	} else if (strncmp(opts[0], "aufs", 5) == 0) {
 		_free_ char *dst = NULL;
 		_free_ char *overlay = NULL;
 		_free_ char *aufs_opts = NULL;
