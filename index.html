@@ -57,7 +57,8 @@
     <a href="#SYNOPSIS">SYNOPSIS</a>
     <a href="#DESCRIPTION">DESCRIPTION</a>
     <a href="#OPTIONS">OPTIONS</a>
-    <a href="#MOUNT-POINTS">MOUNT POINTS</a>
+    <a href="#MOUNT">MOUNT</a>
+    <a href="#NETIF">NETIF</a>
     <a href="#AUTHOR">AUTHOR</a>
     <a href="#COPYRIGHT">COPYRIGHT</a>
   </div>
@@ -91,15 +92,13 @@ also be used without changing the root directory inside the container.</p>
 <p><code>-m, --mount=&lt;type>,&lt;opts></code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Create a new <em>"type"</em> mount point inside the container. See <a href="#MOUNT-POINTS" title="MOUNT POINTS" data-bare-link="true">MOUNT POINTS</a> for
-more info.</p>
+Create a new <em>"type"</em> mount point inside the container. See <a href="#MOUNT" title="MOUNT" data-bare-link="true">MOUNT</a>.</p>
 
-<p><code>-n, --netif[=&lt;dev>,&lt;name>]</code></p>
+<p><code>-n, --netif[=&lt;opts>]</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Create a new network namespace and if the argument is present, move the <em>"dev"</em>
-network interface inside the container and rename it to <em>"name"</em>. Once the
-container terminates, this interface will be destroyed.</p>
+Create a new network namespace and, optionally create/move a network interface
+inside the container. See <a href="#NETIF" title="NETIF" data-bare-link="true">NETIF</a>.</p>
 
 <p><code>-u, --user=&lt;user></code></p>
 
@@ -157,7 +156,7 @@ Disable UTS namespace.</p>
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Disable PID namespace.</p>
 
-<h2 id="MOUNT-POINTS">MOUNT POINTS</h2>
+<h2 id="MOUNT">MOUNT</h2>
 
 <p>pflask support the following mount point types:</p>
 
@@ -185,13 +184,54 @@ Disable PID namespace.</p>
 
 <p>Example: <code>--mount=tmp,/dest/path</code></p>
 
+<h2 id="NETIF">NETIF</h2>
+
+<p>When the <code>--netif</code> option is used, pflask will create a new network namespace
+inside the container. If the argument is set, the following actions will be
+taken:</p>
+
+<h3 id="move-and-rename">move and rename</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<code>--netif=&lt;dev>,&lt;name></code></p>
+
+<p>If the <em>"dev"</em> option is an existing network interface, it will be moved inside
+the container "as is" and renamed to <em>"name"</em>. No additional configuration will
+be applied to it.</p>
+
+<p>Example: <code>--netif=vxlan0,eth0</code></p>
+
+<h3 id="macvlan">macvlan</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<code>--netif=macvlan,&lt;master>,&lt;name></code></p>
+
+<p>If the <em>"macvlan"</em> option is used, a new network interface of type <code>macvlan</code>
+will be created using <em>"master"</em> as master interface, moved inside the container
+and renamed to <em>"name"</em>. No additional configuration will be applied to it.</p>
+
+<p>Example: <code>--netif=macvlan,eth0,eth0</code></p>
+
+<h3 id="veth">veth</h3>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<code>--netif=veth,&lt;name_outside>,&lt;name_inside></code></p>
+
+<p>If the <em>"veth"</em> option is used, a new pair of network interfaces of type <code>veth</code>
+will be created and one of the two moved inside the container. The twin outside
+the container will be named <em>"name_outside"</em>, while the twin inside the
+container will be named <em>"name_inside"</em>. No additional configuration will be
+applied to them.</p>
+
+<p>Example: <code>--netif=veth,veth0,eth0</code></p>
+
 <h2 id="AUTHOR">AUTHOR</h2>
 
-<p>Alessandro Ghedini <a href="&#109;&#x61;&#105;&#x6c;&#116;&#111;&#x3a;&#97;&#x6c;&#x65;&#x73;&#x73;&#x61;&#110;&#100;&#114;&#x6f;&#64;&#x67;&#x68;&#101;&#x64;&#105;&#110;&#105;&#46;&#109;&#101;" data-bare-link="true">&#97;&#108;&#101;&#115;&#115;&#97;&#x6e;&#100;&#x72;&#111;&#64;&#103;&#x68;&#x65;&#100;&#x69;&#110;&#105;&#x2e;&#x6d;&#101;</a></p>
+<p>Alessandro Ghedini <a href="&#x6d;&#97;&#x69;&#x6c;&#116;&#x6f;&#58;&#x61;&#108;&#x65;&#x73;&#115;&#97;&#110;&#x64;&#114;&#111;&#64;&#103;&#104;&#x65;&#100;&#x69;&#x6e;&#105;&#x2e;&#x6d;&#x65;" data-bare-link="true">&#x61;&#x6c;&#101;&#x73;&#115;&#x61;&#110;&#100;&#x72;&#x6f;&#x40;&#x67;&#104;&#101;&#100;&#105;&#110;&#x69;&#x2e;&#109;&#101;</a></p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#109;&#97;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#97;&#x6c;&#x65;&#115;&#115;&#x61;&#110;&#100;&#114;&#x6f;&#64;&#x67;&#x68;&#101;&#x64;&#x69;&#110;&#x69;&#46;&#109;&#101;" data-bare-link="true">&#x61;&#x6c;&#101;&#x73;&#x73;&#x61;&#x6e;&#x64;&#114;&#111;&#64;&#103;&#104;&#101;&#100;&#x69;&#x6e;&#105;&#x2e;&#109;&#101;</a></p>
+<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#x6d;&#x61;&#x69;&#108;&#116;&#111;&#58;&#x61;&#x6c;&#x65;&#115;&#x73;&#97;&#x6e;&#x64;&#x72;&#111;&#x40;&#103;&#x68;&#x65;&#100;&#x69;&#x6e;&#105;&#x2e;&#109;&#x65;" data-bare-link="true">&#97;&#108;&#x65;&#115;&#x73;&#97;&#110;&#x64;&#x72;&#111;&#64;&#103;&#104;&#x65;&#x64;&#105;&#110;&#105;&#x2e;&#109;&#101;</a></p>
 
 <p>This program is released under the 2 clause BSD license.</p>
 
