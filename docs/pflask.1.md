@@ -78,7 +78,7 @@ Disable IPC namespace.
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Disable UTS namespace.
 
-`-P, --no-pidrns`
+`-P, --no-pidns`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Disable PID namespace.
