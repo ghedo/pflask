@@ -105,7 +105,7 @@ inside the container. See <a href="#NETIF" title="NETIF" data-bare-link="true">N
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Run the command as <em>"user"</em> inside the container.</p>
 
-<p><code>-r, --root=&lt;dir&gt;</code></p>
+<p><code>-r, --chroot=&lt;dir&gt;</code></p>
 
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Use <em>"dir"</em> as root directory inside the container.</p>
@@ -125,6 +125,12 @@ Detach from terminal.</p>
 <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Attach to the <em>"pid"</em> detached process. Only a process with the same UID of the
 detached process can attach to it. To detach again press <code>^@</code> (Ctrl + @).</p>
+
+<p>`-s, --setenv=<var>name</var>=<var>value</var>[,<var>name</var>=<var>value</var> ...]</p>
+
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Set additional environment variables. It takes a comma-separated list of
+variables of the form <code>name=value</code>.</p>
 
 <p><code>-U, --no-userns</code></p>
 
@@ -227,11 +233,11 @@ applied to them.</p>
 
 <h2 id="AUTHOR">AUTHOR</h2>
 
-<p>Alessandro Ghedini <a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#111;&#x3a;&#x61;&#108;&#101;&#x73;&#x73;&#97;&#110;&#100;&#114;&#x6f;&#64;&#103;&#104;&#x65;&#100;&#x69;&#110;&#x69;&#46;&#109;&#x65;" data-bare-link="true">&#97;&#108;&#x65;&#x73;&#x73;&#x61;&#110;&#100;&#x72;&#111;&#x40;&#x67;&#104;&#101;&#100;&#x69;&#x6e;&#105;&#x2e;&#109;&#x65;</a></p>
+<p>Alessandro Ghedini <a href="&#109;&#x61;&#x69;&#x6c;&#x74;&#x6f;&#x3a;&#97;&#x6c;&#x65;&#115;&#x73;&#x61;&#x6e;&#x64;&#114;&#111;&#x40;&#x67;&#104;&#101;&#x64;&#105;&#x6e;&#105;&#46;&#x6d;&#101;" data-bare-link="true">&#x61;&#x6c;&#101;&#115;&#x73;&#x61;&#x6e;&#100;&#x72;&#111;&#64;&#103;&#x68;&#101;&#x64;&#105;&#110;&#105;&#x2e;&#109;&#101;</a></p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#x6d;&#x61;&#105;&#x6c;&#116;&#x6f;&#58;&#97;&#x6c;&#x65;&#115;&#x73;&#x61;&#110;&#100;&#114;&#111;&#64;&#103;&#104;&#101;&#x64;&#x69;&#110;&#105;&#46;&#x6d;&#101;" data-bare-link="true">&#x61;&#108;&#x65;&#115;&#x73;&#97;&#x6e;&#x64;&#x72;&#111;&#64;&#103;&#x68;&#101;&#100;&#105;&#110;&#105;&#x2e;&#x6d;&#x65;</a></p>
+<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#109;&#97;&#105;&#x6c;&#116;&#x6f;&#58;&#97;&#108;&#101;&#x73;&#115;&#97;&#x6e;&#x64;&#114;&#111;&#x40;&#x67;&#x68;&#x65;&#x64;&#105;&#110;&#105;&#x2e;&#109;&#x65;" data-bare-link="true">&#97;&#108;&#x65;&#115;&#115;&#x61;&#110;&#100;&#114;&#111;&#64;&#x67;&#104;&#x65;&#x64;&#x69;&#x6e;&#105;&#x2e;&#x6d;&#x65;</a></p>
 
 <p>This program is released under the 2 clause BSD license.</p>
 
