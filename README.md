@@ -117,7 +117,7 @@ services accordingly.
 Then create the container:
 
 ```bash
-$ sudo pflask --root=/path/to/container /lib/systemd/systemd
+$ sudo pflask --chroot=/path/to/container /lib/systemd/systemd
 ```
 
 This will simply execute the init system (systemd) inside the container. Replace
@@ -127,7 +127,7 @@ that there's no guarantee that it'll work).
 ### Disable network inside the container
 
 ```bash
-$ sudo pflask --root=/path/to/container --netif /lib/systemd/systemd
+$ sudo pflask --chroot=/path/to/container --netif /lib/systemd/systemd
 ```
 
 Using the `--netif` option without any argument creates a new network namespace
@@ -153,7 +153,7 @@ it look like a completely different device.
 Finally, create the container:
 
 ```bash
-$ sudo pflask --root=/path/to/container --netif=pflask-vlan0,eth0 /lib/systemd/systemd
+$ sudo pflask --chroot=/path/to/container --netif=pflask-vlan0,eth0 /lib/systemd/systemd
 ```
 
 This will take the `pflask-vlan0` interface previously created, move it inside
@@ -170,7 +170,7 @@ a `vxlan` interface and connect the container to a VXLAN network, etc...
 ### Copy-on-write filesystem
 
 ```bash
-$ sudo pflask --root=/path/to/container --no-userns \
+$ sudo pflask --chroot=/path/to/container --no-userns \
   --mount=aufs,/tmp/overlay,/path/to/container \
   /lib/systemd/systemd
 ```

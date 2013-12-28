@@ -67,7 +67,7 @@ static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
 	{ "netif",     optional_argument, NULL, 'n' },
 	{ "user",      required_argument, NULL, 'u' },
-	{ "root",      required_argument, NULL, 'r' },
+	{ "chroot",    required_argument, NULL, 'r' },
 	{ "chdir",     required_argument, NULL, 'c' },
 	{ "detach",    no_argument,       NULL, 'd' },
 	{ "attach",    required_argument, NULL, 'a' },
@@ -354,7 +354,7 @@ static inline void help(void) {
 	CMD_HELP("--user",  "-u",
 		"Run the command as the specified user inside the container");
 
-	CMD_HELP("--root",  "-r",
+	CMD_HELP("--chroot",  "-r",
 		"Use the specified directory as root inside the container");
 	CMD_HELP("--chdir", "-c",
 		"Change to the specified directory inside the container");

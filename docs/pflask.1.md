@@ -32,7 +32,7 @@ inside the container. See [NETIF].
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Run the command as _"user"_ inside the container.
 
-`-r, --root=<dir>`
+`-r, --chroot=<dir>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Use _"dir"_ as root directory inside the container.

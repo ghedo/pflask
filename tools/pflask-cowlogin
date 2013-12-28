@@ -42,7 +42,7 @@ PFLASK_TOOL="sudo $(which pflask) --no-userns"
 
 shift
 
-$PFLASK_TOOL --root $BASEDIR				\
+$PFLASK_TOOL --chroot $BASEDIR				\
 	--mount "tmp,$OVERDIR"				\
 	--mount "aufs,$OVERDIR,$BASEDIR"		\
 	"$@"

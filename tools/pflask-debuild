@@ -146,11 +146,11 @@ if [ "$DEBUILD_LINTIAN" = "yes" ]; then
 fi
 
 if [ "$1" = "--update" ]; then
-	$PFLASK_TOOL --root $BASEDIR				\
+	$PFLASK_TOOL --chroot $BASEDIR				\
 		--						\
 		sh -c "$APT_TOOL update && $APT_TOOL dist-upgrade"
 else
-	$PFLASK_TOOL --root $BASEDIR				\
+	$PFLASK_TOOL --chroot $BASEDIR				\
 		--mount "tmp,$OVERDIR"				\
 		--mount "aufs,$OVERDIR,$BASEDIR"		\
 		--mount "bind,$RESDIR,$BASEDIR${TMPDIR}"	\
