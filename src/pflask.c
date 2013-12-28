@@ -71,6 +71,7 @@ static struct option long_opts[] = {
 	{ "chdir",     required_argument, NULL, 'c' },
 	{ "detach",    no_argument,       NULL, 'd' },
 	{ "attach",    required_argument, NULL, 'a' },
+	{ "setenv",    required_argument, NULL, 's' },
 	{ "no-userns", no_argument,       NULL, 'U' },
 	{ "no-mountns", no_argument,      NULL, 'M' },
 	{ "no-netns",  no_argument,       NULL, 'N' },
@@ -97,6 +98,7 @@ int main(int argc, char *argv[]) {
 	_free_ char *user   = NULL;
 	_free_ char *dest   = NULL;
 	_free_ char *change = NULL;
+	_free_ char *env    = NULL;
 
 	_close_ int master_fd = -1;
 
@@ -106,7 +108,7 @@ int main(int argc, char *argv[]) {
 
 	siginfo_t status;
 
-	const char *short_opts = "+m:n::u:r:c:da:UMNIHPh";
+	const char *short_opts = "+m:n::u:r:c:da:s:UMNIHPh";
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
@@ -150,6 +152,12 @@ int main(int argc, char *argv[]) {
 								optarg);
 				break;
 			}
+
+			case 's':
+				freep(&env);
+
+				env = strdup(optarg);
+				break;
 
 			case 'U':
 				clone_flags &= ~(CLONE_NEWUSER);
@@ -264,6 +272,26 @@ int main(int argc, char *argv[]) {
 			setenv("TERM", term, 1);
 		}
 
+		if (env != NULL) {
+			size_t i, c;
+
+			_free_ char **vars = NULL;
+
+			_free_ char *tmp = strdup(env);
+			if (tmp == NULL) fail_printf("OOM");
+
+			c = split_str(tmp, &vars, ",");
+			if (c == 0) fail_printf("Invalid env list '%s'", env);
+
+			for (i = 0; i < c; i++) {
+				if (vars[i] == '\0')
+					fail_printf("Invalid empty env var");
+
+				rc = putenv(strdup(vars[i]));
+				if (rc != 0) sysf_printf("putenv()");
+			}
+		}
+
 		setenv("container", "pflask", 1);
 
 		if (argc > optind)
@@ -370,6 +398,9 @@ static inline void help(void) {
 		"Detach from terminal");
 	CMD_HELP("--attach", "-a",
 		"Attach to the specified detached process");
+
+	CMD_HELP("--setenv", "-s",
+		"Set additional environment variables");
 
 	puts("");
 
