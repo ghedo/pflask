@@ -99,6 +99,7 @@ int main(int argc, char *argv[]) {
 	_free_ char *change = NULL;
 
 	_close_ int master_fd = -1;
+
 	char *master_name;
 
 	int   detach = 0;
@@ -119,15 +120,21 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'u':
+				freep(&user);
+
 				user = strdup(optarg);
 				break;
 
 			case 'r':
+				freep(&dest);
+
 				dest = realpath(optarg, NULL);
 				if (dest == NULL) sysf_printf("realpath()");
 				break;
 
 			case 'c':
+				freep(&change);
+
 				change = strdup(optarg);
 				break;
 
@@ -139,8 +146,8 @@ int main(int argc, char *argv[]) {
 				char *end;
 				pid = strtol(optarg, &end, 10);
 				if (*end != '\0')
-					fail_printf(
-						"Invalid option '%s'",optarg);
+					fail_printf("Invalid option '%s'",
+								optarg);
 				break;
 			}
 
