@@ -82,6 +82,7 @@ static struct option long_opts[] = {
 	{ 0, 0, 0, 0 }
 };
 
+static void do_daemonize(void);
 static void do_chroot(char *dest);
 static pid_t do_clone(void);
 
@@ -104,7 +105,7 @@ int main(int argc, char *argv[]) {
 
 	char *master_name;
 
-	int   detach = 0;
+	int detach = 0;
 
 	siginfo_t status;
 
@@ -209,7 +210,7 @@ int main(int argc, char *argv[]) {
 		if (master_fd < 0) fail_printf("Invalid PID '%u'", pid);
 
 		pid = -1;
-		goto process;
+		goto process_fd;
 	}
 
 	if (user == NULL) {
@@ -222,18 +223,12 @@ int main(int argc, char *argv[]) {
 	uid = getuid();
 	gid = getgid();
 
-	if (detach) {
-		openlog("pflask", LOG_NDELAY | LOG_PID, LOG_DAEMON);
-		use_syslog = 1;
-
-		rc = daemon(0, 0);
-		if (rc < 0) sysf_printf("daemon()");
-	}
+	if (detach == 1)
+		do_daemonize();
 
 	pid = do_clone();
 
 	if (pid == 0) {
-		/* TODO: register with machined */
 		/* TODO: cgroup */
 
 		rc = close(master_fd);
@@ -270,7 +265,7 @@ int main(int argc, char *argv[]) {
 
 		do_user(user);
 
-		if (change) {
+		if (change != NULL) {
 			rc = chdir(change);
 			if (rc < 0) sysf_printf("chdir()");
 		}
@@ -314,8 +309,8 @@ int main(int argc, char *argv[]) {
 
 	do_netif(pid);
 
-process:
-	if (detach)
+process_fd:
+	if (detach == 1)
 		serve_pty(master_fd);
 	else
 		process_pty(master_fd);
@@ -347,6 +342,16 @@ process:
 	}
 
 	return status.si_status;
+}
+
+static void do_daemonize(void) {
+	int rc;
+
+	openlog("pflask", LOG_NDELAY | LOG_PID, LOG_DAEMON);
+	use_syslog = 1;
+
+	rc = daemon(0, 0);
+	if (rc < 0) sysf_printf("daemon()");
 }
 
 static void do_chroot(char *dest) {

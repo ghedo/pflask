@@ -32,8 +32,8 @@
 #include <string.h>
 
 size_t split_str(char *orig, char ***dest, char *needle) {
-	size_t size = 0;
-	char  *token;
+	size_t size  = 0;
+	char  *token = NULL;
 
 	if (orig == NULL || dest == NULL)
 		return 0;

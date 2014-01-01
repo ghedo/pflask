@@ -41,17 +41,18 @@
 void make_ptmx(char *dest) {
 	int rc;
 
-	_free_ char *ptmx_dst = NULL;
+	_free_ char *target = NULL;
 
-	rc = asprintf(&ptmx_dst, "%s/dev/ptmx", dest);
+	rc = asprintf(&target, "%s/dev/ptmx", dest);
 	if (rc < 0) fail_printf("OOM");
 
-	rc = symlink("/dev/pts/ptmx", ptmx_dst);
+	rc = symlink("/dev/pts/ptmx", target);
 	if (rc < 0) sysf_printf("symlink()");
 }
 
 void make_console(char *dest, char *console) {
 	int rc;
+
 	struct stat sb;
 	_free_ char *target = NULL;
 
@@ -105,8 +106,7 @@ void make_symlinks(char *dest) {
 }
 
 void copy_nodes(char *dest) {
-	int i;
-	int rc;
+	int i, rc;
 
 	const char *nodes[] = {
 		"/dev/tty",

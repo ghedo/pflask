@@ -51,22 +51,21 @@
  ((struct rtattr *) (((char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
 
 typedef enum NETIF_TYPE {
-	MOVE,
-	MACVLAN,
-	VETH
+	MOVE, MACVLAN, VETH
 } netif_type;
 
 typedef struct NETIF_LIST {
+	enum NETIF_TYPE type;
+
 	char *dev;
 	char *name;
-
-	enum NETIF_TYPE type;
 
 	struct NETIF_LIST *next;
 } netif_list;
 
 struct nlmsg {
 	struct nlmsghdr hdr;
+
 	union {
 		struct ifinfomsg ifi;
 		struct nlmsgerr  err;
@@ -74,6 +73,8 @@ struct nlmsg {
 };
 
 static netif_list *netifs = NULL;
+
+static void add_netif(netif_type type, char *dev, char *name);
 
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
 static void create_macvlan(int sock, int master, char *name);
@@ -85,22 +86,6 @@ static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr);
 
 static void nl_send(int sock, struct nlmsg *nlmsg);
 static void nl_recv(int sock, struct nlmsg *nlmsg);
-
-void add_netif(netif_type type, char *dev, char *name) {
-	netif_list *nif = malloc(sizeof(netif_list));
-	if (nif == NULL) fail_printf("OOM");
-
-	nif -> dev  = strdup(dev);
-	nif -> name = strdup(name);
-	nif -> type = type;
-
-	nif -> next  = NULL;
-
-	if (netifs)
-		nif -> next = netifs;
-
-	netifs = nif;
-}
 
 void add_netif_from_spec(char *spec) {
 	_free_ char *tmp = NULL;
@@ -196,6 +181,22 @@ void do_netif(pid_t pid) {
 
 		i = i -> next;
 	}
+}
+
+static void add_netif(netif_type type, char *dev, char *name) {
+	netif_list *nif = malloc(sizeof(netif_list));
+	if (nif == NULL) fail_printf("OOM");
+
+	nif -> dev  = strdup(dev);
+	nif -> name = strdup(name);
+	nif -> type = type;
+
+	nif -> next  = NULL;
+
+	if (netifs)
+		nif -> next = netifs;
+
+	netifs = nif;
 }
 
 static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name) {

@@ -28,10 +28,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern void add_mount(char *src, char *dst, char *type,
-		      unsigned long f, void *d);
-extern void add_mount_inside(char *base, char *src, char *dst, char *type,
-			     unsigned long f, void *d);
 extern void add_mount_from_spec(char *spec);
 
 extern void do_mount(char *dest);

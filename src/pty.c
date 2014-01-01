@@ -377,7 +377,7 @@ static int recv_fd(int sock) {
 
 	union {
 		struct cmsghdr cmsg;
-		char           control [CMSG_SPACE(sizeof(int))];
+		char           control[CMSG_SPACE(sizeof(int))];
 	} msg_control;
 
 	struct cmsghdr *cmsg;

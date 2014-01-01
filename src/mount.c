@@ -52,44 +52,23 @@ typedef struct MOUNT_LIST {
 
 static mount_list *mounts = NULL;
 
-void add_mount(char *src, char *dst, char *type, unsigned long f, void *d) {
-	mount_list *mnt = malloc(sizeof(mount_list));
-	if (mnt == NULL) fail_printf("OOM");
+static void add_mount(char *src, char *dst, char *type,
+		      unsigned long f, void *d);
 
-	mnt -> src   = src  ? strdup(src)  : NULL;
-	mnt -> dst   = dst  ? strdup(dst)  : NULL;
-	mnt -> type  = type ? strdup(type) : NULL;
-	mnt -> flags = f;
-	mnt -> data  = d    ? strdup(d)    : NULL;
-
-	mnt -> next  = NULL;
-
-	if (mounts)
-		mnt -> next = mounts;
-
-	mounts = mnt;
-}
-
-void add_mount_inside(char *base, char *src, char *dst, char *type,
-					unsigned long f, void *d) {
-	int rc;
-
-	_free_ char *target = NULL;
-
-	rc = asprintf(&target, "%s%s", base, dst);
-	if (rc < 0) fail_printf("OOM");
-
-	add_mount(src, target, type, f, d);
-}
+static void add_mount_inside(char *base, char *src, char *dst,
+			     char *type, unsigned long f, void *d);
 
 void add_mount_from_spec(char *spec) {
 	int rc;
+
+	size_t c;
+
 	_free_ char **opts = NULL;
 
 	_free_ char *tmp = strdup(spec);
 	if (tmp == NULL) fail_printf("OOM");
 
-	size_t c = split_str(tmp, &opts, ",");
+	c = split_str(tmp, &opts, ",");
 	if (c == 0) fail_printf("Invalid mount spec '%s'", spec);
 
 	if (strncmp(opts[0], "bind", 4) == 0) {
@@ -198,4 +177,35 @@ void do_mount(char *dest) {
 
 		i = i -> next;
 	}
+}
+
+static void add_mount(char *src, char *dst, char *type,
+		      unsigned long f, void *d) {
+	mount_list *mnt = malloc(sizeof(mount_list));
+	if (mnt == NULL) fail_printf("OOM");
+
+	mnt -> src   = src  ? strdup(src)  : NULL;
+	mnt -> dst   = dst  ? strdup(dst)  : NULL;
+	mnt -> type  = type ? strdup(type) : NULL;
+	mnt -> flags = f;
+	mnt -> data  = d    ? strdup(d)    : NULL;
+
+	mnt -> next  = NULL;
+
+	if (mounts)
+		mnt -> next = mounts;
+
+	mounts = mnt;
+}
+
+static void add_mount_inside(char *base, char *src, char *dst,
+			     char *type, unsigned long f, void *d) {
+	int rc;
+
+	_free_ char *target = NULL;
+
+	rc = asprintf(&target, "%s%s", base, dst);
+	if (rc < 0) fail_printf("OOM");
+
+	add_mount(src, target, type, f, d);
 }
