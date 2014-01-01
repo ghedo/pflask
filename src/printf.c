@@ -75,7 +75,7 @@ void fail_printf(const char *fmt, ...) {
 	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args);
 	va_end(args);
 
-	_exit(-1);
+	_exit(EXIT_FAILURE);
 }
 
 void sysf_printf(const char *fmt, ...) {
@@ -91,7 +91,7 @@ void sysf_printf(const char *fmt, ...) {
 	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", format, args);
 	va_end(args);
 
-	_exit(-1);
+	_exit(EXIT_FAILURE);
 }
 
 static void do_log(const char *pre, const char *fmt, va_list args) {
