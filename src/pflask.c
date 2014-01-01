@@ -145,19 +145,33 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'a': {
-				char *end;
+				char *end = NULL;
 				pid = strtol(optarg, &end, 10);
 				if (*end != '\0')
-					fail_printf("Invalid option '%s'",
-								optarg);
+					fail_printf("Invalid value '%s' for --attach", optarg);
 				break;
 			}
 
-			case 's':
+			case 's': {
+				size_t i, c;
+				_free_ char **vars = NULL;
+
+				_free_ char *tmp = strdup(optarg);
+				if (tmp == NULL) fail_printf("OOM");
+
+				c = split_str(tmp, &vars, ",");
+				if (c == 0) fail_printf("Invalid value '%s' for --setenv", optarg);
+
+				for (i = 0; i < c; i++) {
+					if (vars[i] == '\0')
+						fail_printf("Invalid value '%s' for --setenv", optarg);
+				}
+
 				freep(&env);
 
 				env = strdup(optarg);
 				break;
+			}
 
 			case 'U':
 				clone_flags &= ~(CLONE_NEWUSER);
@@ -281,12 +295,8 @@ int main(int argc, char *argv[]) {
 			if (tmp == NULL) fail_printf("OOM");
 
 			c = split_str(tmp, &vars, ",");
-			if (c == 0) fail_printf("Invalid env list '%s'", env);
 
 			for (i = 0; i < c; i++) {
-				if (vars[i] == '\0')
-					fail_printf("Invalid empty env var");
-
 				rc = putenv(strdup(vars[i]));
 				if (rc != 0) sysf_printf("putenv()");
 			}
