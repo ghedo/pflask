@@ -58,7 +58,7 @@ Detach from terminal.
 Attach to the _"pid"_ detached process. Only a process with the same UID of the
 detached process can attach to it. To detach again press `^@` (Ctrl + @).
 
-`-s, --setenv=<name>=<value>[,<name>=<value> ...]
+`-s, --setenv=<name>=<value>[,<name>=<value> ...]`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Set additional environment variables. It takes a comma-separated list of
