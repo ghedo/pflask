@@ -56,3 +56,4 @@ static inline void closep(int *p) {
 }
 
 extern size_t split_str(char *orig, char ***dest, char *needle);
+extern size_t validate_optlist(char *name, char *opts);

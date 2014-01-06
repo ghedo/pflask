@@ -119,10 +119,14 @@ int main(int argc, char *argv[]) {
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
 			case 'm':
+				validate_optlist("--mount", optarg);
+
 				add_mount_from_spec(optarg);
 				break;
 
 			case 'n':
+				validate_optlist("--netif", optarg);
+
 				clone_flags |= CLONE_NEWNET;
 				add_netif_from_spec(optarg);
 				break;
@@ -147,6 +151,8 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'g':
+				validate_optlist("--cgroup", optarg);
+
 				freep(&change);
 
 				cgroup = strdup(optarg);
@@ -165,19 +171,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			case 's': {
-				size_t i, c;
-				_free_ char **vars = NULL;
-
-				_free_ char *tmp = strdup(optarg);
-				if (tmp == NULL) fail_printf("OOM");
-
-				c = split_str(tmp, &vars, ",");
-				if (c == 0) fail_printf("Invalid value '%s' for --setenv", optarg);
-
-				for (i = 0; i < c; i++) {
-					if (vars[i] == '\0')
-						fail_printf("Invalid value '%s' for --setenv", optarg);
-				}
+				validate_optlist("--setenv", optarg);
 
 				freep(&env);
 

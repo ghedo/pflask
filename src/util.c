@@ -31,6 +31,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "printf.h"
+#include "util.h"
+
 size_t split_str(char *orig, char ***dest, char *needle) {
 	size_t size  = 0;
 	char  *token = NULL;
@@ -55,4 +58,22 @@ size_t split_str(char *orig, char ***dest, char *needle) {
 	} while ((token = strtok(NULL, needle)) != NULL);
 
 	return size;
+}
+
+size_t validate_optlist(char *name, char *opts) {
+	size_t i, c;
+	_free_ char **vars = NULL;
+
+	_free_ char *tmp = strdup(opts);
+	if (tmp == NULL) fail_printf("OOM");
+
+	c = split_str(tmp, &vars, ",");
+	if (c == 0) fail_printf("Invalid value '%s' for %s", opts, name);
+
+	for (i = 0; i < c; i++) {
+		if (vars[i] == '\0')
+			fail_printf("Invalid value '%s' for %s", opts, name);
+	}
+
+	return c;
 }
