@@ -7,8 +7,7 @@ pflask
 used for running a command or even booting an OS inside an isolated container,
 created with the help of Linux namespaces. It is similar in functionality to
 `chroot(8)`, although pflask provides better isolation thanks to the use of
-namespaces. Unlike chroot and most other containerization solutions, pflask can
-also be used without changing the root directory inside the container.
+namespaces.
 
 Compared to [LXC] [LXC], pflask is easier to use since it doesn't require any
 pre-configuration (all the options can be passed via the command-line). pflask
@@ -19,6 +18,10 @@ Compared to [systemd-nspawn] [systemd], pflask doesn't require the use of
 systemd on the host system and provides additional options for manipulating
 mount points and network interfaces inside the container. On the other hand,
 systemd-nspawn is better integrated in the systemd ecosystem.
+
+Additionally, while most other containerization solutions (LXC, systemd-nspawn,
+...) are mostly targeted at containing whole systems, pflask can also be used to
+contain single programs, without the need to create ad-hoc chroots.
 
 [LXC]: http://linuxcontainers.org
 [systemd]: http://www.freedesktop.org/software/systemd/man/systemd-nspawn.html
