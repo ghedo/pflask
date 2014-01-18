@@ -125,10 +125,13 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'n':
-				validate_optlist("--netif", optarg);
-
 				clone_flags |= CLONE_NEWNET;
-				add_netif_from_spec(optarg);
+
+				if (optarg != NULL) {
+					validate_optlist("--netif", optarg);
+
+					add_netif_from_spec(optarg);
+				}
 				break;
 
 			case 'u':
