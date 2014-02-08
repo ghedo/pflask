@@ -30,6 +30,10 @@
 
 set -e
 
+if [ -z "$PFLASK_ROOTCMD" ]; then
+	PFLASK_ROOTCMD="sudo -E"
+fi
+
 if [ -z "$DEBUILD_DPKG_BUILDPACKAGE_OPTS" ]; then
 	DEBUILD_DPKG_BUILDPACKAGE_OPTS=""
 fi
@@ -102,7 +106,7 @@ DSC_FILE="${SRC}_${VER}.dsc"
 DEBIAN_FILE="${SRC}_${VER}.debian.tar.gz"
 DIFF_FILE="${SRC}_${VER}.diff.tar.gz"
 
-PFLASK_TOOL="sudo $(which pflask) --no-userns"
+PFLASK_TOOL="$PFLASK_ROOTCMD $(which pflask) --no-userns"
 APT_TOOL="apt-get --no-install-recommends -y"
 TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot lintian"
 BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
