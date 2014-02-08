@@ -74,6 +74,7 @@ static struct option long_opts[] = {
 	{ "detach",    no_argument,       NULL, 'd' },
 	{ "attach",    required_argument, NULL, 'a' },
 	{ "setenv",    required_argument, NULL, 's' },
+	{ "keepenv",   no_argument,       NULL, 'k' },
 	{ "no-userns", no_argument,       NULL, 'U' },
 	{ "no-mountns", no_argument,      NULL, 'M' },
 	{ "no-netns",  no_argument,       NULL, 'N' },
@@ -110,11 +111,12 @@ int main(int argc, char *argv[]) {
 
 	char *master_name;
 
-	int detach = 0;
+	int detach  = 0;
+	int keepenv = 0;
 
 	siginfo_t status;
 
-	const char *short_opts = "+m:n::u:r:c:g:da:s:UMNIHPh";
+	const char *short_opts = "+m:n::u:r:c:g:da:s:kUMNIHPh";
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
@@ -181,6 +183,10 @@ int main(int argc, char *argv[]) {
 				env = strdup(optarg);
 				break;
 			}
+
+			case 'k':
+				keepenv = 1;
+				break;
 
 			case 'U':
 				clone_flags &= ~(CLONE_NEWUSER);
@@ -281,7 +287,8 @@ int main(int argc, char *argv[]) {
 		if (dest != NULL) {
 			char *term = getenv("TERM");
 
-			clearenv();
+			if (keepenv == 0)
+				clearenv();
 
 			setenv("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
 			setenv("USER", user, 1);

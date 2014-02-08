@@ -150,7 +150,7 @@ if [ "$1" = "--update" ]; then
 		--						\
 		sh -c "$APT_TOOL update && $APT_TOOL dist-upgrade"
 else
-	$PFLASK_TOOL --chroot $BASEDIR				\
+	$PFLASK_TOOL --keepenv --chroot $BASEDIR		\
 		--mount "tmp,$OVERDIR"				\
 		--mount "aufs,$OVERDIR,$BASEDIR"		\
 		--mount "bind,$RESDIR,$BASEDIR${TMPDIR}"	\
