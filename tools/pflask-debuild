@@ -30,6 +30,9 @@
 
 set -e
 
+export LANG=C
+export LC_ALL=C
+
 if [ -z "$PFLASK_ROOTCMD" ]; then
 	PFLASK_ROOTCMD="sudo -E"
 fi
