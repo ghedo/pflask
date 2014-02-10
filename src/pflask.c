@@ -157,6 +157,7 @@ int main(int argc, char *argv[]) {
 
 			case 'g':
 				validate_optlist("--cgroup", optarg);
+				validate_cgroup_spec(optarg);
 
 				freep(&change);
 

@@ -43,6 +43,43 @@ static void create_cgroup(char *controller, char *name);
 static void attach_cgroup(char *controller, char *name, pid_t pid);
 static void destroy_cgroup(char *controller, char *name);
 
+void validate_cgroup_spec(char *spec) {
+	size_t c;
+	int rc, i;
+
+	_free_ char *tmp = NULL;
+	_free_ char **controllers = NULL;
+
+	if (spec == NULL)
+		return;
+
+	tmp = strdup(spec);
+	if (tmp == NULL) fail_printf("OOM");
+
+	c = split_str(tmp, &controllers, ",");
+	if (c == 0) fail_printf("Invalid cgroup spec '%s'", spec);
+
+	for (i = 0; i < c; i++) {
+		struct stat sb;
+		_free_ char *path = NULL;
+
+		rc = asprintf(&path, CGROUP_BASE "/%s", controllers[i]);
+		if (rc < 0) fail_printf("OOM");
+
+		rc = stat(path, &sb);
+		if (rc < 0) goto invalid_controller;
+
+		if (!S_ISDIR(sb.st_mode))
+			goto invalid_controller;
+
+		continue;
+
+		invalid_controller:
+			fail_printf("Invalid cgroup controller '%s'",
+							controllers[i]);
+	}
+}
+
 void do_cgroup(char *spec, pid_t pid) {
 	size_t c;
 	int rc, i;
