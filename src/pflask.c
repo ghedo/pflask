@@ -179,9 +179,17 @@ int main(int argc, char *argv[]) {
 			case 's': {
 				validate_optlist("--setenv", optarg);
 
-				freep(&env);
+				if (env != NULL) {
+					char *tmp = env;
 
-				env = strdup(optarg);
+					rc = asprintf(&env, "%s,%s", env, optarg);
+					if (rc < 0) fail_printf("OOM");
+
+					freep(&tmp);
+				} else {
+					env = strdup(optarg);
+				}
+
 				break;
 			}
 

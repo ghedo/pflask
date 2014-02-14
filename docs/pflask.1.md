@@ -65,7 +65,7 @@ detached process can attach to it. To detach again press `^@` (Ctrl + @).
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Set additional environment variables. It takes a comma-separated list of
-variables of the form `name=value`.
+variables of the form `name=value`. This option may be used more than once.
 
 `-k, --keepenv`
 
