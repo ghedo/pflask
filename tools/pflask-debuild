@@ -114,7 +114,7 @@ APT_TOOL="apt-get --no-install-recommends -y"
 TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot lintian"
 BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
 BUILD_TOOL="dpkg-buildpackage -tc -rfakeroot $DEBUILD_DPKG_BUILDPACKAGE_OPTS"
-LINT_TOOL="lintian --allow-root $DEBUILD_LINTIAN_OPTS ../$CHANGES_FILE || true"
+LINT_TOOL="lintian --allow-root $DEBUILD_LINTIAN_OPTS ../$CHANGES_FILE"
 CHOWN_TOOL="chown --from=root:root"
 DSIGN_TOOL="debsign"
 
