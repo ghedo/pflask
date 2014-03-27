@@ -58,11 +58,11 @@
 #include "version.h"
 
 static int clone_flags = SIGCHLD      |
-			 CLONE_NEWNS  |
-			 CLONE_NEWIPC |
-			 CLONE_NEWPID |
-			 CLONE_NEWUSER|
-			 CLONE_NEWUTS;
+                         CLONE_NEWNS  |
+                         CLONE_NEWIPC |
+                         CLONE_NEWPID |
+                         CLONE_NEWUSER|
+                         CLONE_NEWUTS;
 
 static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
@@ -351,7 +351,7 @@ process_fd:
 		case CLD_EXITED:
 			if (status.si_status != 0)
 				err_printf("Child failed with code '%d'",
-					   status.si_status);
+				           status.si_status);
 			else
 				ok_printf("Child exited");
 			break;

@@ -232,9 +232,9 @@ static void create_macvlan(int sock, int master, char *name) {
 	req -> hdr.nlmsg_type  = RTM_NEWLINK;
 	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
 	req -> hdr.nlmsg_flags = NLM_F_REQUEST |
-				 NLM_F_CREATE  |
-				 NLM_F_EXCL    |
-				 NLM_F_ACK;
+	                         NLM_F_CREATE  |
+	                         NLM_F_EXCL    |
+	                         NLM_F_ACK;
 
 	req -> msg.ifi.ifi_family  = AF_UNSPEC;
 
@@ -266,9 +266,9 @@ static void create_veth_pair(int sock, char *name_out, char *name_in) {
 	req -> hdr.nlmsg_type  = RTM_NEWLINK;
 	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
 	req -> hdr.nlmsg_flags = NLM_F_REQUEST |
-				 NLM_F_CREATE  |
-				 NLM_F_EXCL    |
-				 NLM_F_ACK;
+	                         NLM_F_CREATE  |
+	                         NLM_F_EXCL    |
+	                         NLM_F_ACK;
 
 	req -> msg.ifi.ifi_family  = AF_UNSPEC;
 
@@ -309,7 +309,7 @@ static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
 	memcpy(RTA_DATA(rtattr), d, len);
 
 	nlmsg -> hdr.nlmsg_len = NLMSG_ALIGN(nlmsg -> hdr.nlmsg_len) +
-				 RTA_ALIGN(rtalen);
+	                         RTA_ALIGN(rtalen);
 }
 
 static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {

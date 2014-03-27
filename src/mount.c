@@ -53,10 +53,10 @@ typedef struct MOUNT_LIST {
 static mount_list *mounts = NULL;
 
 static void add_mount(char *src, char *dst, char *type,
-		      unsigned long f, void *d);
+                      unsigned long f, void *d);
 
 static void add_mount_inside(char *base, char *src, char *dst,
-			     char *type, unsigned long f, void *d);
+                             char *type, unsigned long f, void *d);
 
 void add_mount_from_spec(char *spec) {
 	int rc;
@@ -180,7 +180,7 @@ void do_mount(char *dest) {
 }
 
 static void add_mount(char *src, char *dst, char *type,
-		      unsigned long f, void *d) {
+                      unsigned long f, void *d) {
 	mount_list *mnt = malloc(sizeof(mount_list));
 	if (mnt == NULL) fail_printf("OOM");
 
@@ -199,7 +199,7 @@ static void add_mount(char *src, char *dst, char *type,
 }
 
 static void add_mount_inside(char *base, char *src, char *dst,
-			     char *type, unsigned long f, void *d) {
+                             char *type, unsigned long f, void *d) {
 	int rc;
 
 	_free_ char *target = NULL;
