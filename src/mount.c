@@ -165,11 +165,21 @@ void do_mount(char *dest) {
 	}
 
 	while (i != NULL) {
-		struct stat sb;
+		rc = mkdir(i -> dst, 0755);
+		if (rc < 0) {
+			switch (errno) {
+				struct stat sb;
 
-		if (stat(i -> dst, &sb) < 0) {
-			rc = mkdir(i -> dst, 0755);
-			if (rc < 0) sysf_printf("mkdir(%s)", i -> dst);
+				case EEXIST:
+					if (!stat(i -> dst, &sb) &&
+					    !S_ISDIR(sb.st_mode))
+						fail_printf("Not a directory");
+					break;
+
+				default:
+					sysf_printf("mkdir(%s)", i -> dst);
+					break;
+			}
 		}
 
 		rc = mount(i->src, i -> dst, i -> type, i -> flags, i -> data);
