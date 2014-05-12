@@ -64,6 +64,8 @@ static int clone_flags = SIGCHLD      |
                          CLONE_NEWUSER|
                          CLONE_NEWUTS;
 
+static const char *short_opts = "+m:n::u:r:c:g:da:s:kUMNIHPh?";
+
 static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
 	{ "netif",     optional_argument, NULL, 'n' },
@@ -115,8 +117,6 @@ int main(int argc, char *argv[]) {
 	int keepenv = 0;
 
 	siginfo_t status;
-
-	const char *short_opts = "+m:n::u:r:c:g:da:s:kUMNIHPh";
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
