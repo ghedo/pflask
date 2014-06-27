@@ -108,6 +108,7 @@ CHANGES_FILE="${SRC}_${VER}_${ARCH}.changes"
 DSC_FILE="${SRC}_${VER}.dsc"
 DEBIAN_FILE="${SRC}_${VER}.debian.tar"
 DIFF_FILE="${SRC}_${VER}.diff.tar.gz"
+LOG_FILE="${SRC}_${VER}.build"
 
 PFLASK_TOOL="$PFLASK_ROOTCMD $(which pflask) --no-userns"
 APT_TOOL="apt-get --no-install-recommends -y --force-yes"
@@ -163,7 +164,7 @@ else
 		--mount "bind,$RESDIR,$BASEDIR${TMPDIR}"	\
 		--chdir "/mnt/$PKGDIR"				\
 		--						\
-		sh -c "$BUILD_CMD"
+		sh -c "$BUILD_CMD" | tee "../$LOG_FILE"
 
 	$DSIGN_TOOL "$RESDIR/$CHANGES_FILE"
 fi
