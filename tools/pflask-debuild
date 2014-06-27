@@ -106,7 +106,7 @@ fi
 
 CHANGES_FILE="${SRC}_${VER}_${ARCH}.changes"
 DSC_FILE="${SRC}_${VER}.dsc"
-DEBIAN_FILE="${SRC}_${VER}.debian.tar.gz"
+DEBIAN_FILE="${SRC}_${VER}.debian.tar"
 DIFF_FILE="${SRC}_${VER}.diff.tar.gz"
 
 PFLASK_TOOL="$PFLASK_ROOTCMD $(which pflask) --no-userns"
@@ -126,7 +126,7 @@ fi
 BUILD_CMD="$TOOLS_TOOL && $BDEPS_TOOL && $BUILD_TOOL; FAIL=\$?"
 BUILD_CMD="$BUILD_CMD && $CHOWN_TOOL -R $UID:$UID $TMPDIR/$PKGDIR"
 
-FILES="$CHANGES_FILE $DSC_FILE $DEBIAN_FILE $DIFF_FILE"
+FILES="$CHANGES_FILE $DSC_FILE $DEBIAN_FILE.gz $DEBIAN_FILE.xz $DIFF_FILE"
 
 if [ -r "debian/control" ]; then
 	for PKG in `dh_listpackages`;
