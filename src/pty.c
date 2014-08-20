@@ -38,7 +38,7 @@
 #include <termios.h>
 
 #include <sys/ioctl.h>
-#include <sys/select.h>
+#include <sys/epoll.h>
 #include <sys/signalfd.h>
 
 #include <sys/types.h>
@@ -103,13 +103,14 @@ void open_slave_pty(char *master_name) {
 void process_pty(int master_fd) {
 	int rc;
 
-	fd_set rfds;
-
 	sigset_t mask;
 
+	_close_ int epoll_fd  = -1;
 	_close_ int signal_fd = -1;
 
 	struct termios raw_attr;
+
+	struct epoll_event stdin_ev, master_ev, signal_ev, events[3];
 
 	int line_max = sysconf(_SC_LINE_MAX);
 	if (line_max < 0) sysf_printf("sysconf()");
@@ -137,16 +138,28 @@ void process_pty(int master_fd) {
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &raw_attr);
 	if (rc < 0) sysf_printf("tcsetattr()");
 
-	FD_ZERO(&rfds);
+	epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+	if (epoll_fd < 0) sysf_printf("epoll_create1()");
 
-	FD_SET(STDIN_FILENO, &rfds);
-	FD_SET(master_fd, &rfds);
-	FD_SET(signal_fd, &rfds);
+	stdin_ev.events = EPOLLIN; stdin_ev.data.fd = STDIN_FILENO;
+	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, stdin_ev.data.fd, &stdin_ev);
+	if (rc < 0) sysf_printf("epoll_ctl(STDIN_FILENO)");
 
-	while ((rc = select(signal_fd + 1, &rfds, NULL, NULL, NULL)) > 0) {
+	master_ev.events = EPOLLIN; master_ev.data.fd = master_fd;
+	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, master_ev.data.fd, &master_ev);
+	if (rc < 0) sysf_printf("epoll_ctl(master_fd)");
+
+	signal_ev.events = EPOLLIN; signal_ev.data.fd = signal_fd;
+	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, signal_ev.data.fd, &signal_ev);
+	if (rc < 0) sysf_printf("epoll_ctl(signal_fd)");
+
+	while (1) {
 		char buf[line_max];
 
-		if (FD_ISSET(STDIN_FILENO, &rfds)) {
+		rc = epoll_wait(epoll_fd, events, 1, -1);
+		if (rc < 0) sysf_printf("epoll_wait()");
+
+		if (events[0].data.fd == STDIN_FILENO) {
 			char *p;
 
 			int rc = read(STDIN_FILENO, buf, line_max);
@@ -160,13 +173,12 @@ void process_pty(int master_fd) {
 			if (rc < 0) sysf_printf("write()");
 
 			for (p = buf; p < buf + rc; p++) {
-				/* ^@ */
 				if (*p == '\0')
 					goto finish;
 			}
 		}
 
-		if (FD_ISSET(master_fd, &rfds)) {
+		if (events[0].data.fd == master_fd) {
 			rc = read(master_fd, buf, line_max);
 
 			if (rc == 0)
@@ -178,7 +190,7 @@ void process_pty(int master_fd) {
 			if (rc < 0) sysf_printf("write()");
 		}
 
-		if (FD_ISSET(signal_fd, &rfds)) {
+		if (events[0].data.fd == signal_fd) {
 			struct signalfd_siginfo fdsi;
 
 			rc = read(signal_fd, &fdsi, sizeof(fdsi));
@@ -188,7 +200,7 @@ void process_pty(int master_fd) {
 				case SIGWINCH: {
 					struct winsize ws;
 
-					rc = ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+					rc = ioctl(STDIN_FILENO,TIOCGWINSZ,&ws);
 					if (rc < 0) sysf_printf("ioctl()");
 
 					rc = ioctl(master_fd, TIOCSWINSZ, &ws);
@@ -203,12 +215,7 @@ void process_pty(int master_fd) {
 					goto finish;
 			}
 		}
-
-		FD_SET(STDIN_FILENO, &rfds);
-		FD_SET(master_fd, &rfds);
-		FD_SET(signal_fd, &rfds);
 	}
-	if (rc < 0) sysf_printf("select()");
 
 finish:
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
@@ -220,16 +227,17 @@ void serve_pty(int fd) {
 
 	pid_t pid;
 
-	fd_set rfds;
-
 	sigset_t mask;
 
 	_close_ int sock = -1;
+	_close_ int epoll_fd  = -1;
 	_close_ int signal_fd = -1;
 
 	_free_ char *path = NULL;
 
-	struct sockaddr_un  servaddr_un;
+	struct epoll_event sock_ev, signal_ev, events[3];
+
+	struct sockaddr_un servaddr_un;
 
 	pid = getpid();
 
@@ -266,25 +274,33 @@ void serve_pty(int fd) {
 	signal_fd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
 	if (signal_fd < 0) sysf_printf("signalfd()");
 
-	FD_ZERO(&rfds);
+	epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+	if (epoll_fd < 0) sysf_printf("epoll_create1()");
 
-	FD_SET(sock, &rfds);
-	FD_SET(signal_fd, &rfds);
+	sock_ev.events = EPOLLIN; sock_ev.data.fd = sock;
+	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock_ev.data.fd, &sock_ev);
+	if (rc < 0) sysf_printf("epoll_ctl(STDIN_FILENO)");
 
-	while ((rc = select(signal_fd + 1, &rfds, NULL, NULL, NULL)) > 0) {
-		if (FD_ISSET(sock, &rfds)) {
+	signal_ev.events = EPOLLIN; signal_ev.data.fd = signal_fd;
+	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, signal_ev.data.fd, &signal_ev);
+	if (rc < 0) sysf_printf("epoll_ctl(signal_fd)");
+
+	while (1) {
+		rc = epoll_wait(epoll_fd, events, 1, -1);
+		if (rc < 0) sysf_printf("epoll_wait()");
+
+		if (events[0].data.fd == sock) {
 			socklen_t len;
 			struct ucred ucred;
 
 			_close_ int send_sock = -1;
 
-			send_sock = accept(sock, (struct sockaddr *) NULL,
-									NULL);
+			send_sock = accept(sock, (struct sockaddr *) NULL,NULL);
 			if (send_sock < 0) sysf_printf("accept()");
 
 			len = sizeof(struct ucred);
 			rc = getsockopt(send_sock, SOL_SOCKET, SO_PEERCRED,
-								&ucred, &len);
+			                &ucred, &len);
 			if (rc < 0) sysf_printf("getsockopt(SO_PEERCRED)");
 
 			if (ucred.uid == geteuid())
@@ -293,7 +309,7 @@ void serve_pty(int fd) {
 				send_fd(send_sock, -1);
 		}
 
-		if (FD_ISSET(signal_fd, &rfds)) {
+		if (events[0].data.fd == signal_fd) {
 			struct signalfd_siginfo fdsi;
 
 			rc = read(signal_fd, &fdsi, sizeof(fdsi));
@@ -306,9 +322,6 @@ void serve_pty(int fd) {
 					return;
 			}
 		}
-
-		FD_SET(sock, &rfds);
-		FD_SET(signal_fd, &rfds);
 	}
 }
 
