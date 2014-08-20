@@ -88,6 +88,13 @@ All filesystem changes applied by the command will be available in /tmp/trash.
 Both commands can be run without root privileges as long as user namespaces are
 supported by the host system, and available to non-privileged users.
 
+For example, on Debian, user namespaces are enabled, but are restricted to root
+only. To enable them for unprivileged users run:
+
+```bash
+$ sudo sysctl kernel.unprivileged_userns_clone=1
+```
+
 ### Detach from terminal
 
 ```bash
