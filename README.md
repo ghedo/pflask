@@ -199,7 +199,7 @@ First, create the base Debian system:
 
 ```bash
 $ sudo mkdir -p /var/cache/pflask
-$ sudo debootstrap --include=devscripts,equivs,fakeroot,lintian --variant=buildd unstable /var/cache/pflask/base-unstable-amd64
+$ DIST=sid pflask-debuild --create
 ```
 
 Then retrieve the source package we want to build:
