@@ -160,7 +160,7 @@ if [ "$1" = "--create" ]; then
 elif [ "$1" = "--update" ]; then
 	$PFLASK_TOOL --chroot $BASEDIR				\
 		--						\
-		sh -c "$APT_TOOL update && $APT_TOOL dist-upgrade"
+		sh -c "$APT_TOOL update && $APT_TOOL dist-upgrade && $APT_TOOL autoremove --purge && $APT_TOOL autoclean"
 else
 	$PFLASK_TOOL --keepenv --chroot $BASEDIR		\
 		--mount "tmp,$OVERDIR"				\
