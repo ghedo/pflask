@@ -124,6 +124,13 @@ It stacks a directory on top of another directory using AuFS
 
 Example: `--mount=aufs,/overlay/path,/dest/path`
 
+### overlay
+
+Like aufs, but uses OverlayFS instead of AuFS. It either requires Linux 3.18 or
+the OverlayFS module installed.
+
+Example: `--mount=overlay,/overlay/path,/dest/path`
+
 ### tmp
 
 It mounts a tmpfs on a directory.

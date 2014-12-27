@@ -104,6 +104,23 @@ void add_mount_from_spec(char *spec) {
 		if (rc < 0) fail_printf("OOM");
 
 		add_mount(NULL, dst, "aufs", 0, aufs_opts);
+	} else if (strncmp(opts[0], "overlay", 8) == 0) {
+		_free_ char *dst = NULL;
+		_free_ char *overlay = NULL;
+		_free_ char *overlayfs_opts = NULL;
+
+		if (c < 3) fail_printf("Invalid mount spec '%s'", spec);
+
+		overlay = realpath(opts[1], NULL);
+		if (overlay == NULL) sysf_printf("realpath()");
+
+		dst = realpath(opts[2], NULL);
+		if (dst == NULL) sysf_printf("realpath()");
+
+		rc = asprintf(&overlayfs_opts, "upperdir=%s,lowerdir=%s,workdir=%s", overlay, dst, dst);
+		if (rc < 0) fail_printf("OOM");
+
+		add_mount(NULL, dst, "overlay", 0, overlayfs_opts);
 	} else if (strncmp(opts[0], "tmp", 4) == 0) {
 		_free_ char *dst = NULL;
 
