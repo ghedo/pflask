@@ -48,7 +48,7 @@
 #include "util.h"
 
 #define NLMSG_TAIL(nmsg) \
- ((struct rtattr *) (((char *) (nmsg)) + NLMSG_ALIGN((nmsg) -> nlmsg_len)))
+ ((struct rtattr *) (((char *) (nmsg)) + NLMSG_ALIGN((nmsg)->nlmsg_len)))
 
 typedef enum NETIF_TYPE {
 	MOVE, MACVLAN, VETH
@@ -132,8 +132,8 @@ void do_netif(pid_t pid) {
 	if (rc < 0) sysf_printf("bind()");
 
 	while (netifs) {
-		netif_list *next = netifs -> next;
-		netifs -> next = i;
+		netif_list *next = netifs->next;
+		netifs->next = i;
 		i = netifs;
 		netifs = next;
 	}
@@ -141,16 +141,16 @@ void do_netif(pid_t pid) {
 	while (i != NULL) {
 		unsigned int if_index = 0;
 
-		switch (i -> type) {
+		switch (i->type) {
 			case MACVLAN: {
 				_free_ char *name = NULL;
 
 				rc = asprintf(&name, "pflask-%d", pid);
 				if (rc < 0) fail_printf("OOM");
 
-				if_index = if_nametoindex(i -> dev);
+				if_index = if_nametoindex(i->dev);
 				if (if_index == 0) sysf_printf(
-					"Error searching for '%s'", i -> dev);
+					"Error searching for '%s'", i->dev);
 
 				create_macvlan(sock, if_index, name);
 
@@ -164,22 +164,22 @@ void do_netif(pid_t pid) {
 				rc = asprintf(&name, "pflask-%d", pid);
 				if (rc < 0) fail_printf("OOM");
 
-				create_veth_pair(sock, i -> dev, name);
+				create_veth_pair(sock, i->dev, name);
 
 				if_index = if_nametoindex(name);
 				break;
 			}
 
 			case MOVE:
-				if_index = if_nametoindex(i -> dev);
+				if_index = if_nametoindex(i->dev);
 				if (if_index == 0) sysf_printf(
-					"Error searching for '%s'", i -> dev);
+					"Error searching for '%s'", i->dev);
 				break;
 		}
 
-		move_and_rename_if(sock, pid, if_index, i -> name);
+		move_and_rename_if(sock, pid, if_index, i->name);
 
-		i = i -> next;
+		i = i->next;
 	}
 }
 
@@ -187,14 +187,14 @@ static void add_netif(netif_type type, char *dev, char *name) {
 	netif_list *nif = malloc(sizeof(netif_list));
 	if (nif == NULL) fail_printf("OOM");
 
-	nif -> dev  = strdup(dev);
-	nif -> name = strdup(name);
-	nif -> type = type;
+	nif->dev  = strdup(dev);
+	nif->name = strdup(name);
+	nif->type = type;
 
-	nif -> next  = NULL;
+	nif->next  = NULL;
 
 	if (netifs)
-		nif -> next = netifs;
+		nif->next = netifs;
 
 	netifs = nif;
 }
@@ -202,13 +202,13 @@ static void add_netif(netif_type type, char *dev, char *name) {
 static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name) {
 	_free_ struct nlmsg *req = malloc(4096);
 
-	req -> hdr.nlmsg_seq   = 1;
-	req -> hdr.nlmsg_type  = RTM_NEWLINK;
-	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
-	req -> hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
+	req->hdr.nlmsg_seq   = 1;
+	req->hdr.nlmsg_type  = RTM_NEWLINK;
+	req->hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req->hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
 
-	req -> msg.ifi.ifi_family  = AF_UNSPEC;
-	req -> msg.ifi.ifi_index   = if_index;
+	req->msg.ifi.ifi_family  = AF_UNSPEC;
+	req->msg.ifi.ifi_index   = if_index;
 
 	rtattr_append(req, IFLA_NET_NS_PID, &pid, sizeof(pid));
 	rtattr_append(req, IFLA_IFNAME, new_name, strlen(new_name) + 1);
@@ -216,10 +216,10 @@ static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req -> hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req -> msg.err.error < 0)
+	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req->msg.err.error < 0)
 			fail_printf("Error sending netlink request: %s",
-					strerror(-req -> msg.err.error));
+					strerror(-req->msg.err.error));
 	}
 }
 
@@ -228,15 +228,15 @@ static void create_macvlan(int sock, int master, char *name) {
 
 	_free_ struct nlmsg *req = malloc(4096);
 
-	req -> hdr.nlmsg_seq   = 1;
-	req -> hdr.nlmsg_type  = RTM_NEWLINK;
-	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
-	req -> hdr.nlmsg_flags = NLM_F_REQUEST |
+	req->hdr.nlmsg_seq   = 1;
+	req->hdr.nlmsg_type  = RTM_NEWLINK;
+	req->hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req->hdr.nlmsg_flags = NLM_F_REQUEST |
 	                         NLM_F_CREATE  |
 	                         NLM_F_EXCL    |
 	                         NLM_F_ACK;
 
-	req -> msg.ifi.ifi_family  = AF_UNSPEC;
+	req->msg.ifi.ifi_family  = AF_UNSPEC;
 
 	nested = rtattr_start_nested(req, IFLA_LINKINFO);
 	rtattr_append(req, IFLA_INFO_KIND, "macvlan", 8);
@@ -248,10 +248,10 @@ static void create_macvlan(int sock, int master, char *name) {
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req -> hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req -> msg.err.error < 0)
+	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req->msg.err.error < 0)
 			fail_printf("Error sending netlink request: %s",
-					strerror(-req -> msg.err.error));
+					strerror(-req->msg.err.error));
 	}
 }
 
@@ -262,15 +262,15 @@ static void create_veth_pair(int sock, char *name_out, char *name_in) {
 
 	_free_ struct nlmsg *req = malloc(4096);
 
-	req -> hdr.nlmsg_seq   = 1;
-	req -> hdr.nlmsg_type  = RTM_NEWLINK;
-	req -> hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
-	req -> hdr.nlmsg_flags = NLM_F_REQUEST |
+	req->hdr.nlmsg_seq   = 1;
+	req->hdr.nlmsg_type  = RTM_NEWLINK;
+	req->hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req->hdr.nlmsg_flags = NLM_F_REQUEST |
 	                         NLM_F_CREATE  |
 	                         NLM_F_EXCL    |
 	                         NLM_F_ACK;
 
-	req -> msg.ifi.ifi_family  = AF_UNSPEC;
+	req->msg.ifi.ifi_family  = AF_UNSPEC;
 
 	nested_info = rtattr_start_nested(req, IFLA_LINKINFO);
 	rtattr_append(req, IFLA_INFO_KIND, "veth", 5);
@@ -278,7 +278,7 @@ static void create_veth_pair(int sock, char *name_out, char *name_in) {
 	nested_data = rtattr_start_nested(req, IFLA_INFO_DATA);
 	nested_peer = rtattr_start_nested(req, VETH_INFO_PEER);
 
-	req -> hdr.nlmsg_len += sizeof(struct ifinfomsg);
+	req->hdr.nlmsg_len += sizeof(struct ifinfomsg);
 	rtattr_append(req, IFLA_IFNAME, name_in, strlen(name_in) + 1);
 
 	rtattr_end_nested(req, nested_peer);
@@ -291,10 +291,10 @@ static void create_veth_pair(int sock, char *name_out, char *name_in) {
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req -> hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req -> msg.err.error < 0)
+	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req->msg.err.error < 0)
 			fail_printf("Error sending netlink request: %s",
-					strerror(-req -> msg.err.error));
+					strerror(-req->msg.err.error));
 	}
 }
 
@@ -302,18 +302,18 @@ static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
 	struct rtattr *rtattr;
 	size_t rtalen = RTA_LENGTH(len);
 
-	rtattr = NLMSG_TAIL(&nlmsg -> hdr);
-	rtattr -> rta_type = attr;
-	rtattr -> rta_len  = rtalen;
+	rtattr = NLMSG_TAIL(&nlmsg->hdr);
+	rtattr->rta_type = attr;
+	rtattr->rta_len  = rtalen;
 
 	memcpy(RTA_DATA(rtattr), d, len);
 
-	nlmsg -> hdr.nlmsg_len = NLMSG_ALIGN(nlmsg -> hdr.nlmsg_len) +
+	nlmsg->hdr.nlmsg_len = NLMSG_ALIGN(nlmsg->hdr.nlmsg_len) +
 	                         RTA_ALIGN(rtalen);
 }
 
 static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
-	struct rtattr *rtattr = NLMSG_TAIL(&nlmsg -> hdr);
+	struct rtattr *rtattr = NLMSG_TAIL(&nlmsg->hdr);
 
 	rtattr_append(nlmsg, attr, NULL, 0);
 
@@ -321,7 +321,7 @@ static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
 }
 
 static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr) {
-	rtattr -> rta_len = (char *) NLMSG_TAIL(&nlmsg -> hdr) - (char *) rtattr;
+	rtattr->rta_len = (char *) NLMSG_TAIL(&nlmsg->hdr) - (char *) rtattr;
 }
 
 static void nl_send(int sock, struct nlmsg *nlmsg) {
@@ -330,7 +330,7 @@ static void nl_send(int sock, struct nlmsg *nlmsg) {
 
 	struct iovec iov = {
 		.iov_base = (void *) nlmsg,
-		.iov_len  = nlmsg -> hdr.nlmsg_len
+		.iov_len  = nlmsg->hdr.nlmsg_len
 	};
 
 	struct msghdr msg = {
@@ -355,7 +355,7 @@ static void nl_recv(int sock, struct nlmsg *nlmsg) {
 
 	struct iovec iov = {
 		.iov_base = (void *) nlmsg,
-		.iov_len  = nlmsg -> hdr.nlmsg_len
+		.iov_len  = nlmsg->hdr.nlmsg_len
 	};
 
 	struct msghdr msg = {

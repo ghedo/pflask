@@ -175,34 +175,34 @@ void do_mount(char *dest) {
 	}
 
 	while (mounts) {
-		mount_list *next = mounts -> next;
-		mounts -> next = i;
+		mount_list *next = mounts->next;
+		mounts->next = i;
 		i = mounts;
 		mounts = next;
 	}
 
 	while (i != NULL) {
-		rc = mkdir(i -> dst, 0755);
+		rc = mkdir(i->dst, 0755);
 		if (rc < 0) {
 			switch (errno) {
 				struct stat sb;
 
 				case EEXIST:
-					if (!stat(i -> dst, &sb) &&
+					if (!stat(i->dst, &sb) &&
 					    !S_ISDIR(sb.st_mode))
 						fail_printf("Not a directory");
 					break;
 
 				default:
-					sysf_printf("mkdir(%s)", i -> dst);
+					sysf_printf("mkdir(%s)", i->dst);
 					break;
 			}
 		}
 
-		rc = mount(i->src, i -> dst, i -> type, i -> flags, i -> data);
-		if (rc < 0) sysf_printf("mount(%s)", i -> type);
+		rc = mount(i->src, i->dst, i->type, i->flags, i->data);
+		if (rc < 0) sysf_printf("mount(%s)", i->type);
 
-		i = i -> next;
+		i = i->next;
 	}
 }
 
@@ -211,16 +211,16 @@ static void add_mount(char *src, char *dst, char *type,
 	mount_list *mnt = malloc(sizeof(mount_list));
 	if (mnt == NULL) fail_printf("OOM");
 
-	mnt -> src   = src  ? strdup(src)  : NULL;
-	mnt -> dst   = dst  ? strdup(dst)  : NULL;
-	mnt -> type  = type ? strdup(type) : NULL;
-	mnt -> flags = f;
-	mnt -> data  = d    ? strdup(d)    : NULL;
+	mnt->src   = src  ? strdup(src)  : NULL;
+	mnt->dst   = dst  ? strdup(dst)  : NULL;
+	mnt->type  = type ? strdup(type) : NULL;
+	mnt->flags = f;
+	mnt->data  = d    ? strdup(d)    : NULL;
 
-	mnt -> next  = NULL;
+	mnt->next  = NULL;
 
 	if (mounts)
-		mnt -> next = mounts;
+		mnt->next = mounts;
 
 	mounts = mnt;
 }

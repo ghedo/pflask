@@ -383,9 +383,9 @@ static void send_fd(int sock, int fd) {
 
 	cmsg = CMSG_FIRSTHDR(&msg);
 
-	cmsg -> cmsg_len   = CMSG_LEN(sizeof(int));
-	cmsg -> cmsg_level = SOL_SOCKET;
-	cmsg -> cmsg_type  = SCM_RIGHTS;
+	cmsg->cmsg_len   = CMSG_LEN(sizeof(int));
+	cmsg->cmsg_level = SOL_SOCKET;
+	cmsg->cmsg_type  = SCM_RIGHTS;
 
 	memcpy(CMSG_DATA(cmsg), &fd, sizeof(fd));
 
@@ -426,9 +426,9 @@ static int recv_fd(int sock) {
 	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
 		int fd;
 
-		if (cmsg -> cmsg_len   != CMSG_LEN(sizeof(int)) ||
-		    cmsg -> cmsg_level != SOL_SOCKET  ||
-		    cmsg -> cmsg_type  != SCM_RIGHTS)
+		if (cmsg->cmsg_len   != CMSG_LEN(sizeof(int)) ||
+		    cmsg->cmsg_level != SOL_SOCKET  ||
+		    cmsg->cmsg_type  != SCM_RIGHTS)
 			continue;
 
 		fd = *((int *) CMSG_DATA(cmsg));

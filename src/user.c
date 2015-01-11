@@ -65,8 +65,8 @@ void map_user_to_user(uid_t uid, gid_t gid, char *user) {
 			else       fail_printf("Invalid user '%s'", user);
 		}
 
-		pw_uid = pwd -> pw_uid;
-		pw_gid = pwd -> pw_gid;
+		pw_uid = pwd->pw_uid;
+		pw_gid = pwd->pw_gid;
 	}
 
 	rc = asprintf(&uid_map, "%d %d 1", pw_uid, uid);
@@ -107,8 +107,8 @@ void do_user(char *user) {
 			else       fail_printf("Invalid user '%s'", user);
 		}
 
-		pw_uid = pwd -> pw_uid;
-		pw_gid = pwd -> pw_gid;
+		pw_uid = pwd->pw_uid;
+		pw_gid = pwd->pw_gid;
 	}
 
 	rc = initgroups(user, pw_gid);
