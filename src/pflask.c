@@ -55,7 +55,6 @@
 #include "netif.h"
 #include "printf.h"
 #include "util.h"
-#include "version.h"
 
 static int clone_flags = SIGCHLD      |
                          CLONE_NEWNS  |
@@ -92,7 +91,6 @@ static void do_chroot(char *dest);
 static pid_t do_clone(void);
 
 static inline void help(void);
-static inline void version(void);
 
 int main(int argc, char *argv[]) {
 	int rc, i;
@@ -407,10 +405,6 @@ static pid_t do_clone(void) {
 	if (pid < 0) sysf_printf("clone()");
 
 	return pid;
-}
-
-static inline void version(void) {
-	printf("pflask v%s\n", PFLASK_VERSION);
 }
 
 static inline void help(void) {
