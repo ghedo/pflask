@@ -327,7 +327,8 @@ void serve_pty(int fd) {
 
 int recv_pty(pid_t pid) {
 	int rc;
-	int sock;
+
+	_close_ int sock = -1;
 
 	_free_ char *path = NULL;
 
