@@ -50,6 +50,8 @@
 #define NLMSG_TAIL(nmsg) \
  ((struct rtattr *) (((char *) (nmsg)) + NLMSG_ALIGN((nmsg)->nlmsg_len)))
 
+#define NLMSG_GOOD_SIZE (sizeof(struct nlmsg) * 256)
+
 typedef enum NETIF_TYPE {
 	MOVE, MACVLAN, VETH
 } netif_type;
@@ -200,7 +202,7 @@ static void add_netif(netif_type type, char *dev, char *name) {
 }
 
 static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name) {
-	_free_ struct nlmsg *req = malloc(4096);
+	_free_ struct nlmsg *req = malloc(NLMSG_GOOD_SIZE);
 
 	req->hdr.nlmsg_seq   = 1;
 	req->hdr.nlmsg_type  = RTM_NEWLINK;
@@ -226,7 +228,7 @@ static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name
 static void create_macvlan(int sock, int master, char *name) {
 	struct rtattr *nested = NULL;
 
-	_free_ struct nlmsg *req = malloc(4096);
+	_free_ struct nlmsg *req = malloc(NLMSG_GOOD_SIZE);
 
 	req->hdr.nlmsg_seq   = 1;
 	req->hdr.nlmsg_type  = RTM_NEWLINK;
@@ -260,7 +262,7 @@ static void create_veth_pair(int sock, char *name_out, char *name_in) {
 	struct rtattr *nested_data = NULL;
 	struct rtattr *nested_peer = NULL;
 
-	_free_ struct nlmsg *req = malloc(4096);
+	_free_ struct nlmsg *req = malloc(NLMSG_GOOD_SIZE);
 
 	req->hdr.nlmsg_seq   = 1;
 	req->hdr.nlmsg_type  = RTM_NEWLINK;
