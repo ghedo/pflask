@@ -251,6 +251,7 @@ int main(int argc, char *argv[]) {
 
 	if (pid == 0) {
 		rc = close(master_fd);
+		master_fd = -1;
 		if (rc < 0) sysf_printf("close()");
 
 		open_slave_pty(master_name);
