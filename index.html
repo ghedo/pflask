@@ -193,9 +193,18 @@ Disable PID namespace.</p>
 
 <h3 id="aufs">aufs</h3>
 
-<p>It stacks a directory on top of another directory using AuFS</p>
+<p>It stacks a directory on top of another directory using AuFS. Note that AuFS
+doesn't support user namespaces, so <code>--no-userns</code> will also be needed.</p>
 
 <p>Example: <code>--mount=aufs,/overlay/path,/dest/path</code></p>
+
+<h3 id="overlay">overlay</h3>
+
+<p>Like aufs, but uses OverlayFS instead of AuFS. It either requires Linux 3.18 or
+the OverlayFS module installed. Note that OverlayFS doesn't support user
+namespaces, so <code>--no-userns</code> will also be needed.</p>
+
+<p>Example: <code>--mount=overlay,/overlay/path,/dest/path</code></p>
 
 <h3 id="tmp">tmp</h3>
 
@@ -246,18 +255,18 @@ applied to them.</p>
 
 <h2 id="AUTHOR">AUTHOR</h2>
 
-<p>Alessandro Ghedini <a href="&#x6d;&#x61;&#x69;&#x6c;&#116;&#111;&#x3a;&#97;&#108;&#x65;&#115;&#115;&#97;&#110;&#x64;&#114;&#111;&#64;&#103;&#x68;&#x65;&#x64;&#x69;&#x6e;&#105;&#x2e;&#x6d;&#x65;" data-bare-link="true">&#97;&#108;&#101;&#x73;&#x73;&#x61;&#110;&#x64;&#x72;&#x6f;&#x40;&#x67;&#104;&#x65;&#100;&#105;&#110;&#x69;&#x2e;&#109;&#x65;</a></p>
+<p>Alessandro Ghedini <a href="&#x6d;&#97;&#x69;&#x6c;&#x74;&#111;&#x3a;&#x61;&#x6c;&#x65;&#115;&#x73;&#x61;&#x6e;&#x64;&#x72;&#x6f;&#64;&#103;&#x68;&#101;&#100;&#105;&#x6e;&#x69;&#46;&#x6d;&#x65;" data-bare-link="true">&#x61;&#108;&#x65;&#115;&#x73;&#x61;&#x6e;&#100;&#x72;&#111;&#x40;&#x67;&#x68;&#x65;&#100;&#x69;&#110;&#x69;&#46;&#x6d;&#x65;</a></p>
 
 <h2 id="COPYRIGHT">COPYRIGHT</h2>
 
-<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#x6d;&#97;&#105;&#108;&#x74;&#111;&#58;&#97;&#x6c;&#x65;&#115;&#x73;&#97;&#x6e;&#x64;&#x72;&#x6f;&#64;&#x67;&#104;&#101;&#100;&#105;&#x6e;&#105;&#46;&#x6d;&#x65;" data-bare-link="true">&#x61;&#108;&#101;&#115;&#115;&#x61;&#110;&#x64;&#x72;&#111;&#x40;&#103;&#104;&#x65;&#x64;&#105;&#110;&#105;&#x2e;&#x6d;&#x65;</a></p>
+<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#109;&#x61;&#x69;&#108;&#x74;&#111;&#x3a;&#x61;&#x6c;&#101;&#x73;&#115;&#x61;&#x6e;&#x64;&#114;&#x6f;&#x40;&#103;&#x68;&#101;&#x64;&#x69;&#x6e;&#x69;&#46;&#x6d;&#101;" data-bare-link="true">&#97;&#x6c;&#x65;&#115;&#115;&#97;&#110;&#x64;&#x72;&#x6f;&#x40;&#103;&#x68;&#101;&#100;&#105;&#x6e;&#x69;&#x2e;&#109;&#101;</a></p>
 
 <p>This program is released under the 2 clause BSD license.</p>
 
 
   <ol class='man-decor man-foot man foot'>
     <li class='tl'></li>
-    <li class='tc'>February 2014</li>
+    <li class='tc'>January 2015</li>
     <li class='tr'>pflask(1)</li>
   </ol>
 
