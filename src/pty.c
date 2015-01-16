@@ -305,8 +305,6 @@ void serve_pty(int fd) {
 
 			if (ucred.uid == geteuid())
 				send_fd(send_sock, fd);
-			else
-				send_fd(send_sock, -1);
 		}
 
 		if (events[0].data.fd == signal_fd) {
