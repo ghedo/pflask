@@ -250,8 +250,7 @@ int main(int argc, char *argv[]) {
 	pid = do_clone();
 
 	if (pid == 0) {
-		rc = closep(&master_fd);
-		if (rc < 0) sysf_printf("close()");
+		closep(&master_fd);
 
 		open_slave_pty(master_name);
 
