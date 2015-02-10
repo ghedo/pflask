@@ -43,6 +43,7 @@
 void map_user_to_user(uid_t uid, gid_t gid, char *user) {
 	int rc;
 
+	_close_ int setgroups_fd = -1;
 	_close_ int uid_map_fd = -1;
 	_close_ int gid_map_fd = -1;
 
@@ -67,6 +68,12 @@ void map_user_to_user(uid_t uid, gid_t gid, char *user) {
 
 		pw_uid = pwd->pw_uid;
 		pw_gid = pwd->pw_gid;
+	}
+
+	setgroups_fd = open("/proc/self/setgroups", O_RDWR);
+	if (setgroups_fd >= 0) {
+		rc = write(setgroups_fd, "deny", 4);
+		if (rc < 0) sysf_printf("write(setgroups)");
 	}
 
 	rc = asprintf(&uid_map, "%d %d 1", pw_uid, uid);
@@ -110,9 +117,6 @@ void do_user(char *user) {
 		pw_uid = pwd->pw_uid;
 		pw_gid = pwd->pw_gid;
 	}
-
-	rc = initgroups(user, pw_gid);
-	if (rc < 0) sysf_printf("initgroups()");
 
 	rc = setresgid(pw_gid, pw_gid, pw_gid);
 	if (rc < 0) sysf_printf("setresgid()");
