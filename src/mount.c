@@ -144,15 +144,15 @@ void do_mount(char *dest) {
 	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
 
 	if (dest != NULL) {
-		/* add_mount(dest, dest, NULL, MS_BIND, NULL); */
+		/* add_mount(dest, dest, NULL, MS_BIND, "bind"); */
 
 		add_mount_inside(dest, "proc", "/proc", "proc",
 			MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 
-		add_mount_inside(dest, "/proc/sys", "/proc/sys", NULL,
+		add_mount_inside(dest, "/proc/sys", "/proc/sys", "proc/sys",
 			MS_BIND, NULL);
 
-		add_mount_inside(dest, NULL, "/proc/sys", NULL,
+		add_mount_inside(dest, NULL, "/proc/sys", "proc/sys-ro",
 			MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
 
 		add_mount_inside(dest, "sysfs", "/sys", "sysfs",
@@ -171,7 +171,7 @@ void do_mount(char *dest) {
 		add_mount_inside(dest, "tmpfs", "/run", "tmpfs",
 			MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
 
-		/* add_mount(dest, "/", NULL, MS_MOVE, NULL); */
+		/* add_mount(dest, "/", NULL, MS_MOVE, "move"); */
 	}
 
 	while (mounts) {
