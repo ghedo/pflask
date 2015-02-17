@@ -60,7 +60,6 @@ static int clone_flags = SIGCHLD      |
                          CLONE_NEWNS  |
                          CLONE_NEWIPC |
                          CLONE_NEWPID |
-                         CLONE_NEWUSER|
                          CLONE_NEWUTS;
 
 static const char *short_opts = "+m:n::u:r:c:g:da:s:kUMNIHPh?";
@@ -135,6 +134,8 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'u':
+				clone_flags |= CLONE_NEWUSER;
+
 				freep(&user);
 
 				user = strdup(optarg);

@@ -33,7 +33,8 @@ inside the container. See [NETIF].
 `-u, --user=<user>`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Run the command as _"user"_ inside the container.
+Run the command as _"user"_ inside the container. If ``--no-userns` is not used,
+this will also create a new user namespace.
 
 `-r, --chroot=<dir>`
 
