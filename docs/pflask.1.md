@@ -71,7 +71,7 @@ variables of the form `name=value`. This option may be used more than once.
 `-k, --keepenv`
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Do not clear environment (only relevant when used with `--root`).
+Do not clear environment (only relevant when used with `--chroot`).
 
 `-U, --no-userns`
 
