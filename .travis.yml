@@ -1,14 +1,11 @@
 language: c
 
-install:
- - sudo apt-get update
- - sudo apt-get install cmake pkg-config
-
 before_script:
- - cmake .
+ - ./bootstrap.py
+ - ./waf configure
 
 script:
- - make
+ - ./waf build
 
 notifications:
   recipient:
