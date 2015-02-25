@@ -99,11 +99,15 @@ def build(bld):
 	]
 
 	bld(
-		target       = 'pflask',
+		name         = 'pflask',
 		features     = 'c cprogram',
 		source       = sources,
+		target       = 'pflask',
 		install_path = bld.env.BINDIR,
 	)
+
+	bld.install_files('${BINDIR}', bld.path.ant_glob('tools/pflask-*'),
+	                  chmod=Utils.O755)
 
 	bld.declare_chain(
 		name         = 'ronn',
@@ -116,6 +120,6 @@ def build(bld):
 
 	if bld.env['RONN']:
 		bld(
-			name    = 'manpages',
-			source  = bld.path.ant_glob('docs/*.md'),
+			name         = 'manpages',
+			source       = bld.path.ant_glob('docs/*.md'),
 		)
