@@ -60,29 +60,17 @@ def configure(cfg):
 	# ronn
 	cfg.find_program('ronn', mandatory=False)
 
-	if cfg.options.sanitize == 'address':
-		cfg.env.CFLAGS  += [ '-fsanitize=address' ]
-		cfg.env.LINKFLAGS += [ '-fsanitize=address' ]
+	if cfg.options.sanitize:
+		cflags = [ '-fsanitize=' + cfg.options.sanitize ]
+		lflags = [ '-fsanitize=' + cfg.options.sanitize ]
 
-		cfg.msg('Checking for sanitizer', 'address')
+		if cfg.options.sanitize == 'thread':
+			cflags += [ '-fPIC' ]
+			lflags += [ '-pie' ]
 
-	if cfg.options.sanitize == 'thread':
-		cfg.env.CFLAGS  += [ '-fsanitize=thread', '-fPIC' ]
-		cfg.env.LINKFLAGS += [ '-fsanitize=thread', '-pie' ]
-
-		cfg.msg('Checking for sanitizer', 'thread')
-
-	if cfg.options.sanitize == 'undefined':
-		cfg.env.CFLAGS  += [ '-fsanitize=undefined' ]
-		cfg.env.LINKFLAGS += [ '-fsanitize=undefined' ]
-
-		cfg.msg('Checking for sanitizer', 'thread')
-
-	if cfg.options.sanitize == 'leak':
-		cfg.env.CFLAGS  += [ '-fsanitize=leak' ]
-		cfg.env.LINKFLAGS += [ '-fsanitize=leak' ]
-
-		cfg.msg('Checking for sanitizer', 'leak')
+		if cfg.check_cc(cflags=cflags,linkflags=lflags,mandatory=False):
+			cfg.env.CFLAGS    += cflags
+			cfg.env.LINKFLAGS += lflags
 
 def build(bld):
 	sources = [
