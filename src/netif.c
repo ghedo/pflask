@@ -78,6 +78,7 @@ static netif_list *netifs = NULL;
 
 static void add_netif(netif_type type, char *dev, char *name);
 
+static void if_up(int sock, int if_index);
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
 static void create_macvlan(int sock, int master, char *name);
 static void create_veth_pair(int sock, char *name_out, char *name_in);
@@ -86,6 +87,7 @@ static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len);
 static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr);
 static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr);
 
+static int nl_open(void);
 static void nl_send(int sock, struct nlmsg *nlmsg);
 static void nl_recv(int sock, struct nlmsg *nlmsg);
 
@@ -117,21 +119,9 @@ void add_netif_from_spec(char *spec) {
 
 void do_netif(pid_t pid) {
 	int rc;
-	_close_ int sock = -1;
+	_close_ int sock = nl_open();
 
 	netif_list *i = NULL;
-	struct sockaddr_nl addr;
-
-	sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-	if (sock < 0) sysf_printf("socket()");
-
-	addr.nl_family = AF_NETLINK;
-	addr.nl_pad    = 0;
-	addr.nl_pid    = getpid();
-	addr.nl_groups = 0;
-
-	rc = bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_nl));
-	if (rc < 0) sysf_printf("bind()");
 
 	while (netifs) {
 		netif_list *next = netifs->next;
@@ -185,6 +175,11 @@ void do_netif(pid_t pid) {
 	}
 }
 
+void setup_loopback(void) {
+	_close_ int sock = nl_open();
+	if_up(sock, 1);
+}
+
 static void add_netif(netif_type type, char *dev, char *name) {
 	netif_list *nif = malloc(sizeof(netif_list));
 	if (nif == NULL) fail_printf("OOM");
@@ -199,6 +194,29 @@ static void add_netif(netif_type type, char *dev, char *name) {
 		nif->next = netifs;
 
 	netifs = nif;
+}
+
+static void if_up(int sock, int if_index) {
+	_free_ struct nlmsg *req = malloc(NLMSG_GOOD_SIZE);
+
+	req->hdr.nlmsg_seq   = 1;
+	req->hdr.nlmsg_type  = RTM_NEWLINK;
+	req->hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req->hdr.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
+
+	req->msg.ifi.ifi_family  = AF_UNSPEC;
+	req->msg.ifi.ifi_index   = if_index;
+	req->msg.ifi.ifi_flags   = IFF_UP;
+	req->msg.ifi.ifi_change  = IFF_UP;
+
+	nl_send(sock, req);
+	nl_recv(sock, req);
+
+	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req->msg.err.error < 0)
+			fail_printf("Error sending netlink request: %s",
+					strerror(-req->msg.err.error));
+	}
 }
 
 static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name) {
@@ -324,6 +342,26 @@ static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
 
 static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr) {
 	rtattr->rta_len = (char *) NLMSG_TAIL(&nlmsg->hdr) - (char *) rtattr;
+}
+
+static int nl_open(void) {
+	int rc;
+	int sock = -1;
+
+	struct sockaddr_nl addr;
+
+	sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+	if (sock < 0) sysf_printf("socket()");
+
+	addr.nl_family = AF_NETLINK;
+	addr.nl_pad    = 0;
+	addr.nl_pid    = getpid();
+	addr.nl_groups = 0;
+
+	rc = bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_nl));
+	if (rc < 0) sysf_printf("bind()");
+
+	return sock;
 }
 
 static void nl_send(int sock, struct nlmsg *nlmsg) {

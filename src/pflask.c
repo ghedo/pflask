@@ -280,6 +280,9 @@ int main(int argc, char *argv[]) {
 			do_chroot(dest);
 		}
 
+		if (clone_flags & CLONE_NEWNET)
+			setup_loopback();
+
 		umask(0022);
 
 		/* TODO: drop capabilities */
