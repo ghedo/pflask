@@ -106,7 +106,9 @@ void make_symlinks(char *dest) {
 }
 
 void copy_nodes(char *dest) {
-	int i, rc;
+	int rc;
+
+	mode_t u = umask(0000);
 
 	const char *nodes[] = {
 		"/dev/tty",
@@ -117,7 +119,7 @@ void copy_nodes(char *dest) {
 		"/dev/urandom"
 	};
 
-	for (i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
+	for (int i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
 		struct stat sb;
 		_free_ char *target = NULL;
 
@@ -130,4 +132,6 @@ void copy_nodes(char *dest) {
 		rc = mknod(target, sb.st_mode, sb.st_rdev);
 		if (rc < 0) sysf_printf("mknod()");
 	}
+
+	umask(u);
 }
