@@ -122,17 +122,22 @@ Example: `--mount=bind-ro,/source/path,/dest/path`
 ### aufs
 
 It stacks a directory on top of another directory using AuFS. Note that AuFS
-doesn't support user namespaces, so `--no-userns` will also be needed.
+doesn't support user namespaces, so the `--user` option is incompatible with
+this mount type unless `--no-userns` is also used.
 
 Example: `--mount=aufs,/overlay/path,/dest/path`
 
 ### overlay
 
-Like aufs, but uses OverlayFS instead of AuFS. It either requires Linux 3.18 or
-the OverlayFS module installed. Note that OverlayFS doesn't support user
-namespaces, so `--no-userns` will also be needed.
+Like aufs, but uses OverlayFS instead of AuFS. It takes an additional parameter
+for the work directory, which needs to be an empty directory on the same
+filesystem as the overlay parameter (the "/overlay/path" in the example below).
 
-Example: `--mount=overlay,/overlay/path,/dest/path`
+It either requires Linux 3.18 or the OverlayFS module to be installed. Note that
+OverlayFS doesn't support user namespaces, so the `--user` option is
+incompatible with this mount type unless `--no-userns` is also used.
+
+Example: `--mount=overlay,/overlay/path,/dest/path,/overlay/workdir`
 
 ### tmp
 
