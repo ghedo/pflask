@@ -37,6 +37,8 @@
 #include <sys/mount.h>
 #include <sys/stat.h>
 
+#include <linux/version.h>
+
 #include "printf.h"
 #include "util.h"
 
@@ -121,12 +123,21 @@ void add_mount_from_spec(char *spec) {
 		workdir = realpath(opts[3], NULL);
 		if (workdir == NULL) sysf_printf("realpath()");
 
+#ifdef HAVE_AUFS
+		rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dst);
+		if (rc < 0) fail_printf("OOM");
+
+		add_mount(NULL, dst, "aufs", 0, overlayfs_opts);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 		rc = asprintf(&overlayfs_opts,
 		              "upperdir=%s,lowerdir=%s,workdir=%s",
 		              overlay, dst, workdir);
 		if (rc < 0) fail_printf("OOM");
 
 		add_mount(NULL, dst, "overlay", 0, overlayfs_opts);
+#else
+		fail_printf("The 'overlay' mount type is not supported");
+#endif
 	} else if (strncmp(opts[0], "tmp", 4) == 0) {
 		_free_ char *dst = NULL;
 

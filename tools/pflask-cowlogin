@@ -28,10 +28,14 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-set -e
-
 BASEDIR=$1
-OVERDIR="/mnt"
+
+OVERPATH=$(mktemp -d)
+OVERDIR="$OVERPATH/root"
+WORKDIR="$OVERPATH/work"
+
+mkdir -p $OVERDIR
+mkdir -p $WORKDIR
 
 if [ -z "$PFLASK_ROOTCMD" ]; then
 	PFLASK_ROOTCMD="sudo -E"
@@ -47,6 +51,7 @@ PFLASK_TOOL="$PFLASK_ROOTCMD $(which pflask) --no-userns"
 shift
 
 $PFLASK_TOOL --chroot $BASEDIR				\
-	--mount "tmp,$OVERDIR"				\
-	--mount "aufs,$OVERDIR,$BASEDIR"		\
+	--mount "overlay,$OVERDIR,$BASEDIR,$WORKDIR"	\
 	"$@"
+
+$PFLASK_ROOTCMD rm -rf $OVERPATH

@@ -57,6 +57,10 @@ def configure(cfg):
 	# OS
 	my_check_os(cfg)
 
+	# AuFS
+	my_check_cc(cfg, 'aufs', header_name='linux/aufs_type.h',
+	            define_name='HAVE_AUFS', mandatory=False)
+
 	# ronn
 	cfg.find_program('ronn', mandatory=False)
 

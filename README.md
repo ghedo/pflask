@@ -51,7 +51,7 @@ by using the `--mount` option. Supported mount point types are:
 
  * `bind`    -- bind mount a directory/file to another directory/file
  * `bind-ro` -- like `bind`, but read-only
- * `aufs`    -- stack a directory on top of another directory using AuFS
+ * `overlay` -- stack a directory on top of another directory using AuFS or OVL
  * `tmp`     -- mount a tmpfs on a directory
 
 ### Network namespace
@@ -180,8 +180,8 @@ a `vxlan` interface and connect the container to a VXLAN network, etc...
 ### Copy-on-write filesystem
 
 ```bash
-$ sudo pflask --chroot=/path/to/container --no-userns \
-  --mount=aufs,/tmp/overlay,/path/to/container \
+$ sudo pflask --chroot=/path/to/container \
+  --mount=overlay,/tmp/overlay/root,/path/to/container,/tmp/overlay/work \
   /lib/systemd/systemd
 ```
 
@@ -189,9 +189,7 @@ This will mount a copy-on-write filesystem on the / of the container. Any change
 to files and directories will be saved in `/tmp/overlay` so that the container
 root directory (`/path/to/container`) will be unaffected.
 
-Note that this requires support for AuFS on the host system. Also, AuFS does not
-(yet?) support user namespaces, so that they need to be disabled (that's what
-the `--no-userns` option is for).
+Note that this requires support for either AuFS or OverlayFS on the host system.
 
 ### Build a Debian package inside a container
 
