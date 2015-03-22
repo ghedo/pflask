@@ -6,7 +6,7 @@ from __future__ import print_function
 import os, sys, stat, hashlib, subprocess
 
 WAFRELEASE = "waf-1.8.6"
-WAFURL     = "http://ftp.waf.io/pub/release/" + WAFRELEASE
+WAFURL     = "ftp://ftp.waf.io/pub/release/" + WAFRELEASE
 SHA256HASH = "81c4e6a3144c7b2021a839e7277bdaf1cedbbc87302186897b4ae03f4effcbf5"
 
 if os.path.exists("waf"):
