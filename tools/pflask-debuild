@@ -55,32 +55,11 @@ if [ -f "/etc/devscripts.conf" ]; then
 	source "/etc/devscripts.conf"
 fi
 
-UNSTABLE_CODENAME="sid"
-TESTING_CODENAME="jessie"
-STABLE_CODENAME="wheezy"
-
-DEBIAN_SUITES=(
-	$UNSTABLE_CODENAME $TESTING_CODENAME $STABLE_CODENAME
-	"experimental" "unstable" "testing" "stable" "oldstable"
-)
-
 if [ -z "${DIST}" ] && [ -r "debian/changelog" ]; then
 	DIST=$(dpkg-parsechangelog | awk '/^Distribution: / {print $2}')
 fi
 
 : ${DIST:="$(lsb_release --short --codename)"}
-
-case "$DIST" in
-	$UNSTABLE_CODENAME)
-		DIST="unstable"
-		;;
-	$TESTING_CODENAME)
-		DIST="testing"
-		;;
-	$STABLE_CODENAME)
-		DIST="stable"
-		;;
-esac
 
 : ${ARCH:="$(dpkg --print-architecture)"}
 
