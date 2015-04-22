@@ -49,7 +49,7 @@ def configure(cfg):
 			cfg.env[varname] = \
 			  Utils.subst_vars(cfg.env[varname], cfg.env)
 
-	cfg.env.CFLAGS   += [ '-Wall', '-pedantic', '-g', '-std=gnu99' ]
+	cfg.env.CFLAGS   += [ '-Wall', '-Wextra', '-pedantic', '-g', '-std=gnu99' ]
 	cfg.env.CPPFLAGS += [ '-D_GNU_SOURCE' ]
 
 	cfg.env.deps = []

@@ -44,8 +44,7 @@ static void attach_cgroup(char *controller, char *name, pid_t pid);
 static void destroy_cgroup(char *controller, char *name);
 
 void validate_cgroup_spec(char *spec) {
-	size_t c;
-	int rc, i;
+	int rc;
 
 	_free_ char *tmp = NULL;
 	_free_ char **controllers = NULL;
@@ -56,10 +55,10 @@ void validate_cgroup_spec(char *spec) {
 	tmp = strdup(spec);
 	if (tmp == NULL) fail_printf("OOM");
 
-	c = split_str(tmp, &controllers, ",");
+	size_t c = split_str(tmp, &controllers, ",");
 	if (c == 0) fail_printf("Invalid cgroup spec '%s'", spec);
 
-	for (i = 0; i < c; i++) {
+	for (size_t i = 0; i < c; i++) {
 		struct stat sb;
 		_free_ char *path = NULL;
 
@@ -81,8 +80,7 @@ void validate_cgroup_spec(char *spec) {
 }
 
 void do_cgroup(char *spec, pid_t pid) {
-	size_t c;
-	int rc, i;
+	int rc;
 
 	_free_ char *tmp = NULL;
 	_free_ char **controllers = NULL;
@@ -93,10 +91,10 @@ void do_cgroup(char *spec, pid_t pid) {
 	tmp = strdup(spec);
 	if (tmp == NULL) fail_printf("OOM");
 
-	c = split_str(tmp, &controllers, ",");
+	size_t c = split_str(tmp, &controllers, ",");
 	if (c == 0) fail_printf("Invalid cgroup spec '%s'", spec);
 
-	for (i = 0; i < c; i++) {
+	for (size_t i = 0; i < c; i++) {
 		_free_ char *name = NULL;
 
 		rc = asprintf(&name, "pflask.%d", pid);
@@ -108,8 +106,7 @@ void do_cgroup(char *spec, pid_t pid) {
 }
 
 void undo_cgroup(char *spec, pid_t pid) {
-	size_t c;
-	int rc, i;
+	int rc;
 
 	_free_ char *tmp = NULL;
 	_free_ char **controllers = NULL;
@@ -120,10 +117,10 @@ void undo_cgroup(char *spec, pid_t pid) {
 	tmp = strdup(spec);
 	if (tmp == NULL) fail_printf("OOM");
 
-	c = split_str(tmp, &controllers, ",");
+	size_t c = split_str(tmp, &controllers, ",");
 	if (c == 0) fail_printf("Invalid cgroup spec '%s'", spec);
 
-	for (i = 0; i < c; i++) {
+	for (size_t i = 0; i < c; i++) {
 		_free_ char *name = NULL;
 
 		rc = asprintf(&name, "pflask.%d", pid);
@@ -135,6 +132,7 @@ void undo_cgroup(char *spec, pid_t pid) {
 
 static void create_cgroup(char *controller, char *name) {
 	int rc;
+
 	_free_ char *path = NULL;
 
 	rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);
@@ -172,6 +170,7 @@ static void attach_cgroup(char *controller, char *name, pid_t pid) {
 
 static void destroy_cgroup(char *controller, char *name) {
 	int rc;
+
 	_free_ char *path = NULL;
 
 	rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);

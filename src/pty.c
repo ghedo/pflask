@@ -246,7 +246,7 @@ void serve_pty(int fd) {
 	rc = asprintf(&path, SOCKET_PATH, pid);
 	if (rc < 0) fail_printf("OOM");
 
-	if (rc >= sizeof(servaddr_un.sun_path))
+	if ((size_t) rc >= sizeof(servaddr_un.sun_path))
 		fail_printf("Socket path too long");
 
 	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
@@ -335,7 +335,7 @@ int recv_pty(pid_t pid) {
 	rc = asprintf(&path, SOCKET_PATH, pid);
 	if (rc < 0) fail_printf("OOM");
 
-	if (rc >= sizeof(servaddr_un.sun_path))
+	if ((size_t) rc >= sizeof(servaddr_un.sun_path))
 		fail_printf("Socket path too long");
 
 	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));

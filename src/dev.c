@@ -76,7 +76,7 @@ void make_console(char *dest, char *console) {
 }
 
 void make_symlinks(char *dest) {
-	int i, rc;
+	int rc;
 
 	const char *src[] = {
 		"/proc/kcore",
@@ -94,7 +94,7 @@ void make_symlinks(char *dest) {
 		"/dev/stderr"
 	};
 
-	for (i = 0; i <  sizeof(src) / sizeof(*src); i++) {
+	for (size_t i = 0; i <  sizeof(src) / sizeof(*src); i++) {
 		_free_ char *link = NULL;
 
 		rc = asprintf(&link, "%s/%s", dest, dst[i]);
@@ -119,7 +119,7 @@ void copy_nodes(char *dest) {
 		"/dev/urandom"
 	};
 
-	for (int i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
+	for (size_t i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
 		struct stat sb;
 		_free_ char *target = NULL;
 
