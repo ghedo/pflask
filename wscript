@@ -61,8 +61,8 @@ def configure(cfg):
 	my_check_cc(cfg, 'aufs', header_name='linux/aufs_type.h',
 	            define_name='HAVE_AUFS', mandatory=False)
 
-	# ronn
-	cfg.find_program('ronn', mandatory=False)
+	# sphinx
+	cfg.find_program('sphinx-build', mandatory=False)
 
 	if cfg.options.sanitize:
 		cflags = [ '-fsanitize=' + cfg.options.sanitize ]
@@ -110,8 +110,31 @@ def build(bld):
 		install_path = bld.env.MANDIR + '/man1',
 	)
 
-	if bld.env['RONN']:
+	if bld.env['SPHINX_BUILD']:
 		bld(
-			name         = 'manpages',
-			source       = bld.path.ant_glob('docs/*.md'),
+			name     = 'docs config',
+			features = 'subst',
+			source   = 'docs/conf.py.in',
+			target   = 'docs/conf.py',
+			VERSION  = VERSION,
+		)
+
+		bld(
+			name   = 'man docs',
+			cwd    = 'docs',
+			rule   = 'sphinx-build -c ../build/docs/ -b man . ../build/docs/man',
+			source = bld.path.ant_glob('docs/pflask.rst') +
+			         bld.path.ant_glob('build/docs/conf.py'),
+			target = 'docs/man/pflask.1',
+			install_path = bld.env.MANDIR
+		)
+
+		bld(
+			name   = 'html docs',
+			cwd    = 'docs',
+			rule   = 'sphinx-build -c ../build/docs/ -b html . ../build/docs/html',
+			source = bld.path.ant_glob('docs/*.rst') +
+			         bld.path.ant_glob('docs/README.rst') +
+			         bld.path.ant_glob('build/docs/conf.py'),
+			target = 'docs/html/index.html',
 		)
