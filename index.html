@@ -80,14 +80,12 @@ user namespaces is not available.</p>
 filesystems mounted inside it won&#8217;t affect the host system. pflask can also be
 told to create new mount points before the execution of the supplied command,
 by using the <cite>&#8211;mount</cite> option. Supported mount point types are:</p>
-<blockquote>
-<div><ul class="simple">
+<ul class="simple">
 <li><cite>bind</cite>    &#8211; bind mount a directory/file to another directory/file</li>
 <li><cite>bind-ro</cite> &#8211; like <cite>bind</cite>, but read-only</li>
 <li><cite>overlay</cite> &#8211; stack a directory on top of another directory using AuFS or OVL</li>
 <li><cite>tmp</cite>     &#8211; mount a tmpfs on a directory</li>
 </ul>
-</div></blockquote>
 </div>
 <div class="section" id="network-namespace">
 <h3>Network namespace<a class="headerlink" href="#network-namespace" title="Permalink to this headline">¶</a></h3>
@@ -105,7 +103,7 @@ container from the host system.</p>
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="hide-directories-from-an-application">
 <h3>Hide directories from an application<a class="headerlink" href="#hide-directories-from-an-application" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>$ pflask --user=$USER --mount=tmp,$HOME chromium --disable-setuid-sandbox
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --mount<span class="o">=</span>tmp,<span class="nv">$HOME</span> chromium --disable-setuid-sandbox
 </pre></div>
 </div>
 <p>This command does not require a pre-generated chroot (it will use the current
@@ -113,7 +111,7 @@ root) and will mount a tmpfs on <cite>$HOME</cite> so that the application (chro
 example) won&#8217;t be able to access your precious files. Any change will be also
 discarded once the process terminates. A bind mount can be used to retain the
 modifications:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ pflask --user=$USER --mount=bind,/tmp/trash,$HOME  chromium --disable-setuid-sandbox
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --mount<span class="o">=</span><span class="nb">bind</span>,/tmp/trash,<span class="nv">$HOME</span>  chromium --disable-setuid-sandbox
 </pre></div>
 </div>
 <p>All filesystem changes applied by the command will be available in /tmp/trash.</p>
@@ -121,19 +119,19 @@ modifications:</p>
 supported by the host system, and available to non-privileged users.</p>
 <p>For example, on Debian, user namespaces are enabled, but are restricted to root
 only. To enable them for unprivileged users run:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo sysctl kernel.unprivileged_userns_clone=1
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo sysctl kernel.unprivileged_userns_clone<span class="o">=</span>1
 </pre></div>
 </div>
 </div>
 <div class="section" id="detach-from-terminal">
 <h3>Detach from terminal<a class="headerlink" href="#detach-from-terminal" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>$ pflask --user=$USER --detach /bin/bash
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --detach /bin/bash
 </pre></div>
 </div>
 <p>To reattach run pflask with the <cite>&#8211;attach</cite> option:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ pidof pflask
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pidof pflask
 29076
-$ pflask --attach=29076
+<span class="nv">$ </span>pflask --attach<span class="o">=</span>29076
 </pre></div>
 </div>
 <p>Where <cite>29076</cite> is the PID of the detached pflask process. Once reattached, one
@@ -142,14 +140,14 @@ can detach again by pressing <cite>^&#64;</cite> (Ctrl + &#64;).</p>
 <div class="section" id="boot-the-os-inside-the-container">
 <h3>Boot the OS inside the container<a class="headerlink" href="#boot-the-os-inside-the-container" title="Permalink to this headline">¶</a></h3>
 <p>First create a base Debian system using <cite>debootstrap(8)</cite>:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo debootstrap --include=systemd unstable /path/to/container
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo debootstrap --include<span class="o">=</span>systemd unstable /path/to/container
 </pre></div>
 </div>
 <p>It is recommended to use systemd as init system inside the guest, since it can
 detect whether it is run inside a container or not, and disable not needed
 services accordingly.</p>
 <p>Then create the container:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container /lib/systemd/systemd
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container /lib/systemd/systemd
 </pre></div>
 </div>
 <p>This will simply execute the init system (systemd) inside the container. Replace
@@ -158,7 +156,7 @@ that there&#8217;s no guarantee that it&#8217;ll work).</p>
 </div>
 <div class="section" id="disable-network-inside-the-container">
 <h3>Disable network inside the container<a class="headerlink" href="#disable-network-inside-the-container" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container --netif /lib/systemd/systemd
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --netif /lib/systemd/systemd
 </pre></div>
 </div>
 <p>Using the <cite>&#8211;netif</cite> option without any argument creates a new network namespace
@@ -171,7 +169,7 @@ system working.</p>
 <h3>Use a private network interface inside the container<a class="headerlink" href="#use-a-private-network-interface-inside-the-container" title="Permalink to this headline">¶</a></h3>
 <p>First, let&#8217;s create the new network interface thet will be used inside the
 container:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo ip link add name pflask-vlan0 link eth0 type macvlan
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo ip link add name pflask-vlan0 link eth0 <span class="nb">type </span>macvlan
 </pre></div>
 </div>
 <p>This will create a new interface, <cite>pflask-vlan0</cite>, of type <cite>macvlan</cite> using the
@@ -179,7 +177,7 @@ container:</p>
 give a second MAC address to a network adapter (in this case <cite>eth0</cite>) and make
 it look like a completely different device.</p>
 <p>Finally, create the container:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container --netif=pflask-vlan0,eth0 /lib/systemd/systemd
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --netif<span class="o">=</span>pflask-vlan0,eth0 /lib/systemd/systemd
 </pre></div>
 </div>
 <p>This will take the <cite>pflask-vlan0</cite> interface previously created, move it inside
@@ -194,8 +192,8 @@ a <cite>vxlan</cite> interface and connect the container to a VXLAN network, etc
 </div>
 <div class="section" id="copy-on-write-filesystem">
 <h3>Copy-on-write filesystem<a class="headerlink" href="#copy-on-write-filesystem" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container \
-  --mount=overlay,/tmp/overlay/root,/path/to/container,/tmp/overlay/work \
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container <span class="se">\</span>
+  --mount<span class="o">=</span>overlay,/tmp/overlay/root,/path/to/container,/tmp/overlay/work <span class="se">\</span>
   /lib/systemd/systemd
 </pre></div>
 </div>
@@ -207,18 +205,18 @@ root directory (<cite>/path/to/container</cite>) will be unaffected.</p>
 <div class="section" id="build-a-debian-package-inside-a-container">
 <h3>Build a Debian package inside a container<a class="headerlink" href="#build-a-debian-package-inside-a-container" title="Permalink to this headline">¶</a></h3>
 <p>First, create the base Debian system:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ sudo mkdir -p /var/cache/pflask
-$ DIST=sid pflask-debuild --create
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo mkdir -p /var/cache/pflask
+<span class="nv">$ DIST</span><span class="o">=</span>sid pflask-debuild --create
 </pre></div>
 </div>
 <p>Then retrieve the source package we want to build:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ apt-get source somepackage
-$ cd somepackage-XYX
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>apt-get <span class="nb">source </span>somepackage
+<span class="nv">$ </span><span class="nb">cd </span>somepackage-XYX
 </pre></div>
 </div>
 <p>Where _somepackage_ is the desired package, and _XYZ_ is the package version.</p>
 <p>Finally build the package:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ DIST=sid pflask-debuild
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ DIST</span><span class="o">=</span>sid pflask-debuild
 </pre></div>
 </div>
 <p>The script will take care of creating a new container, installing all the
@@ -232,10 +230,10 @@ all situations.</p>
 </div>
 <div class="section" id="building">
 <h2>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h2>
-<p>pflask is distributed as source code. Install with:</p>
-<div class="highlight-python"><div class="highlight"><pre>$ ./bootstrap.py
-$ ./waf configure
-$ ./waf build
+<p>pflask is distributed as source code. Build with:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>./bootstrap.py
+<span class="nv">$ </span>./waf configure
+<span class="nv">$ </span>./waf build
 </pre></div>
 </div>
 </div>
