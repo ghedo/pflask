@@ -184,8 +184,10 @@ htmlhelp_basename = 'pflaskdoc'
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('pflask', 'pflask',
-     u'scriptable, asynchronous network packet generator/analyzer',
+    ('pflask', 'pflask', u'the process in the flask',
+     [u'Alessandro Ghedini'], 1),
+    ('pflask-debuild', 'pflask-debuild',
+     u'build Debian packages inside Linux namespace containers',
      [u'Alessandro Ghedini'], 1)
 ]
 
