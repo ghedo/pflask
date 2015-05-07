@@ -60,7 +60,7 @@ size_t split_str(char *orig, char ***dest, char *needle) {
 	return size;
 }
 
-size_t validate_optlist(char *name, char *opts) {
+size_t validate_optlist(const char *name, const char *opts) {
 	size_t i, c;
 	_free_ char **vars = NULL;
 

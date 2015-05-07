@@ -28,7 +28,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern void make_ptmx(char *dest);
-extern void make_console(char *dest, char *console);
-extern void make_symlinks(char *dest);
-extern void copy_nodes(char *dest);
+extern void make_ptmx(const char *dest);
+extern void make_console(const char *dest, const char *console);
+extern void make_symlinks(const char *dest);
+extern void copy_nodes(const char *dest);

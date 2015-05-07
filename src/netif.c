@@ -91,7 +91,7 @@ static int nl_open(void);
 static void nl_send(int sock, struct nlmsg *nlmsg);
 static void nl_recv(int sock, struct nlmsg *nlmsg);
 
-void add_netif_from_spec(char *spec) {
+void add_netif_from_spec(const char *spec) {
 	_free_ char *tmp = NULL;
 	_free_ char **opts = NULL;
 

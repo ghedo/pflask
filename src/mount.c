@@ -54,13 +54,13 @@ typedef struct MOUNT_LIST {
 
 static mount_list *mounts = NULL;
 
-static void add_mount(char *src, char *dst, char *type,
+static void add_mount(const char *src, const char *dst, const char *type,
                       unsigned long f, void *d);
 
-static void add_mount_inside(char *base, char *src, char *dst,
-                             char *type, unsigned long f, void *d);
+static void add_mount_inside(const char *base, const char *src, const char *dst,
+                             const char *type, unsigned long f, void *d);
 
-void add_mount_from_spec(char *spec) {
+void add_mount_from_spec(const char *spec) {
 	int rc;
 
 	size_t c;
@@ -152,7 +152,7 @@ void add_mount_from_spec(char *spec) {
 	}
 }
 
-void do_mount(char *dest) {
+void do_mount(const char *dest) {
 	int rc;
 
 	mount_list *i = NULL;
@@ -223,7 +223,7 @@ void do_mount(char *dest) {
 	}
 }
 
-static void add_mount(char *src, char *dst, char *type,
+static void add_mount(const char *src, const char *dst, const char *type,
                       unsigned long f, void *d) {
 	mount_list *mnt = malloc(sizeof(mount_list));
 	if (mnt == NULL) fail_printf("OOM");
@@ -242,8 +242,8 @@ static void add_mount(char *src, char *dst, char *type,
 	mounts = mnt;
 }
 
-static void add_mount_inside(char *base, char *src, char *dst,
-                             char *type, unsigned long f, void *d) {
+static void add_mount_inside(const char *base, const char *src, const char *dst,
+                             const char *type, unsigned long f, void *d) {
 	int rc;
 
 	_free_ char *target = NULL;

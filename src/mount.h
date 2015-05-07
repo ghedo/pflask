@@ -28,6 +28,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern void add_mount_from_spec(char *spec);
+extern void add_mount_from_spec(const char *spec);
 
-extern void do_mount(char *dest);
+extern void do_mount(const char *dest);

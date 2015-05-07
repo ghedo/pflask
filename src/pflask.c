@@ -86,7 +86,7 @@ static struct option long_opts[] = {
 };
 
 static void do_daemonize(void);
-static void do_chroot(char *dest);
+static void do_chroot(const char *dest);
 static pid_t do_clone(void);
 
 static inline void help(void);
@@ -381,7 +381,7 @@ static void do_daemonize(void) {
 	if (rc < 0) sysf_printf("daemon()");
 }
 
-static void do_chroot(char *dest) {
+static void do_chroot(const char *dest) {
 	int rc;
 
 	rc = chdir(dest);

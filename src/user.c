@@ -40,7 +40,7 @@
 #include "printf.h"
 #include "util.h"
 
-void map_user_to_user(uid_t uid, gid_t gid, char *user) {
+void map_user_to_user(uid_t uid, gid_t gid, const char *user) {
 	int rc;
 
 	_close_ int setgroups_fd = -1;
@@ -95,7 +95,7 @@ void map_user_to_user(uid_t uid, gid_t gid, char *user) {
 	if (rc < 0) sysf_printf("write(gid_map)");
 }
 
-void do_user(char *user) {
+void do_user(const char *user) {
 	int rc;
 
 	uid_t pw_uid;

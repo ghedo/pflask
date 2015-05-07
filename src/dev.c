@@ -38,7 +38,7 @@
 #include "printf.h"
 #include "util.h"
 
-void make_ptmx(char *dest) {
+void make_ptmx(const char *dest) {
 	int rc;
 
 	_free_ char *target = NULL;
@@ -50,7 +50,7 @@ void make_ptmx(char *dest) {
 	if (rc < 0) sysf_printf("symlink()");
 }
 
-void make_console(char *dest, char *console) {
+void make_console(const char *dest, const char *console) {
 	int rc;
 
 	struct stat sb;
@@ -75,7 +75,7 @@ void make_console(char *dest, char *console) {
 	if (rc < 0) sysf_printf("mount()");
 }
 
-void make_symlinks(char *dest) {
+void make_symlinks(const char *dest) {
 	int rc;
 
 	const char *src[] = {
@@ -105,7 +105,7 @@ void make_symlinks(char *dest) {
 	}
 }
 
-void copy_nodes(char *dest) {
+void copy_nodes(const char *dest) {
 	int rc;
 
 	mode_t u = umask(0000);

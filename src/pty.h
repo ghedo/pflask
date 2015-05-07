@@ -29,7 +29,7 @@
  */
 
 extern void open_master_pty(int *master_fd, char **master_name);
-extern void open_slave_pty(char *master_name);
+extern void open_slave_pty(const char *master_name);
 
 extern void process_pty(int master_fd);
 

@@ -39,11 +39,11 @@
 
 #define CGROUP_BASE "/sys/fs/cgroup"
 
-static void create_cgroup(char *controller, char *name);
-static void attach_cgroup(char *controller, char *name, pid_t pid);
-static void destroy_cgroup(char *controller, char *name);
+static void create_cgroup(const char *controller, const char *name);
+static void attach_cgroup(const char *controller, const char *name, pid_t pid);
+static void destroy_cgroup(const char *controller, const char *name);
 
-void validate_cgroup_spec(char *spec) {
+void validate_cgroup_spec(const char *spec) {
 	int rc;
 
 	_free_ char *tmp = NULL;
@@ -79,7 +79,7 @@ void validate_cgroup_spec(char *spec) {
 	}
 }
 
-void do_cgroup(char *spec, pid_t pid) {
+void do_cgroup(const char *spec, pid_t pid) {
 	int rc;
 
 	_free_ char *tmp = NULL;
@@ -105,7 +105,7 @@ void do_cgroup(char *spec, pid_t pid) {
 	}
 }
 
-void undo_cgroup(char *spec, pid_t pid) {
+void undo_cgroup(const char *spec, pid_t pid) {
 	int rc;
 
 	_free_ char *tmp = NULL;
@@ -130,7 +130,7 @@ void undo_cgroup(char *spec, pid_t pid) {
 	}
 }
 
-static void create_cgroup(char *controller, char *name) {
+static void create_cgroup(const char *controller, const char *name) {
 	int rc;
 
 	_free_ char *path = NULL;
@@ -150,7 +150,7 @@ static void create_cgroup(char *controller, char *name) {
 	}
 }
 
-static void attach_cgroup(char *controller, char *name, pid_t pid) {
+static void attach_cgroup(const char *controller, const char *name, pid_t pid) {
 	int rc;
 
 	FILE *tasks = NULL;
@@ -168,7 +168,7 @@ static void attach_cgroup(char *controller, char *name, pid_t pid) {
 	if (rc < 0) sysf_printf("fclose()");
 }
 
-static void destroy_cgroup(char *controller, char *name) {
+static void destroy_cgroup(const char *controller, const char *name) {
 	int rc;
 
 	_free_ char *path = NULL;

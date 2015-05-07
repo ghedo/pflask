@@ -75,7 +75,7 @@ void open_master_pty(int *master_fd, char **master_name) {
 	if (rc < 0) sysf_printf("unlckpt()");
 }
 
-void open_slave_pty(char *master_name) {
+void open_slave_pty(const char *master_name) {
 	int rc;
 	_close_ int slave_fd = -1;
 

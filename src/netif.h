@@ -28,7 +28,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern void add_netif_from_spec(char *spec);
+extern void add_netif_from_spec(const char *spec);
 
 extern void setup_loopback(void);
 extern void do_netif(pid_t pid);
