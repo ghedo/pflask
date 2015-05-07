@@ -1,275 +1,317 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta http-equiv='content-type' value='text/html;charset=utf8'>
-  <meta name='generator' value='Ronn/v0.7.3 (http://github.com/rtomayko/ronn/tree/0.7.3)'>
-  <title>pflask(1) - the process in the flask</title>
-  <style type='text/css' media='all'>
-  /* style: man */
-  body#manpage {margin:0}
-  .mp {max-width:100ex;padding:0 9ex 1ex 4ex}
-  .mp p,.mp pre,.mp ul,.mp ol,.mp dl {margin:0 0 20px 0}
-  .mp h2 {margin:10px 0 0 0}
-  .mp > p,.mp > pre,.mp > ul,.mp > ol,.mp > dl {margin-left:8ex}
-  .mp h3 {margin:0 0 0 4ex}
-  .mp dt {margin:0;clear:left}
-  .mp dt.flush {float:left;width:8ex}
-  .mp dd {margin:0 0 0 9ex}
-  .mp h1,.mp h2,.mp h3,.mp h4 {clear:left}
-  .mp pre {margin-bottom:20px}
-  .mp pre+h2,.mp pre+h3 {margin-top:22px}
-  .mp h2+pre,.mp h3+pre {margin-top:5px}
-  .mp img {display:block;margin:auto}
-  .mp h1.man-title {display:none}
-  .mp,.mp code,.mp pre,.mp tt,.mp kbd,.mp samp,.mp h3,.mp h4 {font-family:monospace;font-size:14px;line-height:1.42857142857143}
-  .mp h2 {font-size:16px;line-height:1.25}
-  .mp h1 {font-size:20px;line-height:2}
-  .mp {text-align:justify;background:#fff}
-  .mp,.mp code,.mp pre,.mp pre code,.mp tt,.mp kbd,.mp samp {color:#131211}
-  .mp h1,.mp h2,.mp h3,.mp h4 {color:#030201}
-  .mp u {text-decoration:underline}
-  .mp code,.mp strong,.mp b {font-weight:bold;color:#131211}
-  .mp em,.mp var {font-style:italic;color:#232221;text-decoration:none}
-  .mp a,.mp a:link,.mp a:hover,.mp a code,.mp a pre,.mp a tt,.mp a kbd,.mp a samp {color:#0000ff}
-  .mp b.man-ref {font-weight:normal;color:#434241}
-  .mp pre {padding:0 4ex}
-  .mp pre code {font-weight:normal;color:#434241}
-  .mp h2+pre,h3+pre {padding-left:0}
-  ol.man-decor,ol.man-decor li {margin:3px 0 10px 0;padding:0;float:left;width:33%;list-style-type:none;text-transform:uppercase;color:#999;letter-spacing:1px}
-  ol.man-decor {width:100%}
-  ol.man-decor li.tl {text-align:left}
-  ol.man-decor li.tc {text-align:center;letter-spacing:4px}
-  ol.man-decor li.tr {text-align:right;float:right}
-  </style>
-</head>
-<!--
-  The following styles are deprecated and will be removed at some point:
-  div#man, div#man ol.man, div#man ol.head, div#man ol.man.
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-  The .man-page, .man-decor, .man-head, .man-foot, .man-title, and
-  .man-navigation should be used instead.
--->
-<body id='manpage'>
-  <div class='mp' id='man'>
 
-  <div class='man-navigation' style='display:none'>
-    <a href="#NAME">NAME</a>
-    <a href="#SYNOPSIS">SYNOPSIS</a>
-    <a href="#DESCRIPTION">DESCRIPTION</a>
-    <a href="#OPTIONS">OPTIONS</a>
-    <a href="#MOUNT">MOUNT</a>
-    <a href="#NETIF">NETIF</a>
-    <a href="#AUTHOR">AUTHOR</a>
-    <a href="#COPYRIGHT">COPYRIGHT</a>
-  </div>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pflask &mdash; pflask 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pflask 0.2 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="#">pflask 0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
 
-  <ol class='man-decor man-head man head'>
-    <li class='tl'>pflask(1)</li>
-    <li class='tc'></li>
-    <li class='tr'>pflask(1)</li>
-  </ol>
-
-  <h2 id="NAME">NAME</h2>
-<p class="man-name">
-  <code>pflask</code> - <span class="man-whatis">the process in the flask</span>
-</p>
-
-<h2 id="SYNOPSIS">SYNOPSIS</h2>
-
-<p><code>pflask [OPTIONS] [COMMAND [ARGS...]]</code></p>
-
-<h2 id="DESCRIPTION">DESCRIPTION</h2>
-
-<p><strong>pflask</strong> is a simple tool for creating Linux namespace containers. It can be
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pflask">
+<h1>pflask<a class="headerlink" href="#pflask" title="Permalink to this headline">¶</a></h1>
+<a class="reference external image-reference" href="https://travis-ci.org/ghedo/pflask"><img alt="https://travis-ci.org/ghedo/pflask.png" src="https://travis-ci.org/ghedo/pflask.png" /></a>
+<p><a class="reference external" href="https://ghedo.github.io/pflask">pflask</a> is a simple tool for creating Linux namespace containers. It can be
 used for running a command or even booting an OS inside an isolated container,
 created with the help of Linux namespaces. It is similar in functionality to
-<code>chroot(8)</code>, although pflask provides better isolation thanks to the use of
+<cite>chroot(8)</cite>, although pflask provides better isolation thanks to the use of
 namespaces.</p>
-
+<p>Compared to <a class="reference external" href="http://linuxcontainers.org">LXC</a>, pflask is easier to use since it doesn&#8217;t require any
+pre-configuration (all the options can be passed via the command-line). pflask
+is mostly intended for testing, building and experimenting, whereas LXC is a
+more complete solution, better suited for production environments.</p>
+<p>Compared to <a class="reference external" href="http://www.freedesktop.org/software/systemd/man/systemd-nspawn.html">systemd-nspawn</a>, pflask doesn&#8217;t require the use of systemd on the
+host system and provides additional options for manipulating mount points and
+network interfaces inside the container. On the other hand, systemd-nspawn is
+better integrated in the systemd ecosystem.</p>
 <p>Additionally, while most other containerization solutions (LXC, systemd-nspawn,
 ...) are mostly targeted at containing whole systems, pflask can also be used to
 contain single programs, without the need to create ad-hoc chroots.</p>
-
-<h2 id="OPTIONS">OPTIONS</h2>
-
-<p><code>-m, --mount=&lt;type>,&lt;opts></code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Create a new <em>"type"</em> mount point inside the container. See <a href="#MOUNT" title="MOUNT" data-bare-link="true">MOUNT</a>.</p>
-
-<p><code>-n, --netif[=&lt;opts>]</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Create a new network namespace and, optionally create/move a network interface
-inside the container. See <a href="#NETIF" title="NETIF" data-bare-link="true">NETIF</a>.</p>
-
-<p><code>-u, --user=&lt;user></code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Run the command as <em>"user"</em> inside the container. If <code>`--no-userns</code> is not used,
-this will also create a new user namespace.</p>
-
-<p><code>-r, --chroot=&lt;dir&gt;</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Use <em>"dir"</em> as root directory inside the container.</p>
-
-<p><code>-c, --chdir=&lt;dir&gt;</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Change to <em>"dir"</em>  inside the container.</p>
-
-<p><code>-g, --cgroup=&lt;controller>[,&lt;controller> ...]</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Create new cgroups in the given controllers and move the container inside them.</p>
-
-<p><code>-d, --detach</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Detach from terminal.</p>
-
-<p><code>-a, --attach=&lt;pid></code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Attach to the <em>"pid"</em> detached process. Only a process with the same UID of the
-detached process can attach to it. To detach again press <code>^@</code> (Ctrl + @).</p>
-
-<p><code>-s, --setenv=&lt;name>=&lt;value>[,&lt;name>=&lt;value> ...]</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Set additional environment variables. It takes a comma-separated list of
-variables of the form <code>name=value</code>. This option may be used more than once.</p>
-
-<p><code>-k, --keepenv</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Do not clear environment (only relevant when used with <code>--chroot</code>).</p>
-
-<p><code>-U, --no-userns</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Disable user namespace.</p>
-
-<p><code>-M, --no-mountns</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Disable mount namespace.</p>
-
-<p><code>-N, --no-netns</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Disable net namespace.</p>
-
-<p><code>-I, --no-ipcns</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Disable IPC namespace.</p>
-
-<p><code>-H, --no-utsns</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Disable UTS namespace.</p>
-
-<p><code>-P, --no-pidns</code></p>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-Disable PID namespace.</p>
-
-<h2 id="MOUNT">MOUNT</h2>
-
-<p>pflask support the following mount point types:</p>
-
-<h3 id="bind">bind</h3>
-
-<p>It bind mounts a directory/file to another directory/file</p>
-
-<p>Example: <code>--mount=bind,/source/path,/dest/path</code></p>
-
-<h3 id="bind-ro">bind-ro</h3>
-
-<p>Same as <code>bind</code>, but make the mount point read-only.</p>
-
-<p>Example: <code>--mount=bind-ro,/source/path,/dest/path</code></p>
-
-<h3 id="overlay">overlay</h3>
-
-<p>It stacks a directory on top of another directory using either AuFS or OverlayFS
-depending on what is found at compile-time.</p>
-
-<p>Note that AuFS and OverlayFS don't support user namespaces, so the <code>--user</code>
-option is incompatible with this mount type unless <code>--no-userns</code> is also used.</p>
-
-<p>In the following example, "/overlay/path" is stacked on top of "/dest/path". The
-"/overlay/work" directory needs to be an empty directory on the same filesystem
-as "/overlay/path".</p>
-
-<p>Example: <code>--mount=overlay,/overlay/path,/dest/path,/overlay/work</code></p>
-
-<h3 id="tmp">tmp</h3>
-
-<p>It mounts a tmpfs on a directory.</p>
-
-<p>Example: <code>--mount=tmp,/dest/path</code></p>
-
-<h2 id="NETIF">NETIF</h2>
-
-<p>When the <code>--netif</code> option is used, pflask will create a new network namespace
-inside the container. If the argument is set, the following actions will be
-taken:</p>
-
-<h3 id="move-and-rename">move and rename</h3>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<code>--netif=&lt;dev>,&lt;name></code></p>
-
-<p>If the <em>"dev"</em> option is an existing network interface, it will be moved inside
-the container "as is" and renamed to <em>"name"</em>. No additional configuration will
-be applied to it.</p>
-
-<p>Example: <code>--netif=vxlan0,eth0</code></p>
-
-<h3 id="macvlan">macvlan</h3>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<code>--netif=macvlan,&lt;master>,&lt;name></code></p>
-
-<p>If the <em>"macvlan"</em> option is used, a new network interface of type <code>macvlan</code>
-will be created using <em>"master"</em> as master interface, moved inside the container
-and renamed to <em>"name"</em>. No additional configuration will be applied to it.</p>
-
-<p>Example: <code>--netif=macvlan,eth0,eth0</code></p>
-
-<h3 id="veth">veth</h3>
-
-<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<code>--netif=veth,&lt;name_outside>,&lt;name_inside></code></p>
-
-<p>If the <em>"veth"</em> option is used, a new pair of network interfaces of type <code>veth</code>
-will be created and one of the two moved inside the container. The twin outside
-the container will be named <em>"name_outside"</em>, while the twin inside the
-container will be named <em>"name_inside"</em>. No additional configuration will be
-applied to them.</p>
-
-<p>Example: <code>--netif=veth,veth0,eth0</code></p>
-
-<h2 id="AUTHOR">AUTHOR</h2>
-
-<p>Alessandro Ghedini <a href="&#x6d;&#97;&#105;&#x6c;&#116;&#x6f;&#58;&#97;&#x6c;&#101;&#115;&#115;&#97;&#110;&#100;&#114;&#111;&#64;&#103;&#104;&#101;&#x64;&#x69;&#110;&#105;&#x2e;&#109;&#x65;" data-bare-link="true">&#x61;&#x6c;&#101;&#115;&#115;&#97;&#x6e;&#100;&#x72;&#x6f;&#64;&#x67;&#104;&#101;&#x64;&#105;&#110;&#x69;&#46;&#x6d;&#x65;</a></p>
-
-<h2 id="COPYRIGHT">COPYRIGHT</h2>
-
-<p>Copyright (C) 2013 Alessandro Ghedini <a href="&#109;&#x61;&#x69;&#x6c;&#116;&#x6f;&#x3a;&#x61;&#x6c;&#101;&#115;&#x73;&#97;&#110;&#x64;&#114;&#x6f;&#x40;&#103;&#x68;&#101;&#x64;&#x69;&#110;&#105;&#x2e;&#x6d;&#x65;" data-bare-link="true">&#x61;&#108;&#101;&#x73;&#x73;&#x61;&#110;&#x64;&#114;&#x6f;&#64;&#x67;&#x68;&#x65;&#100;&#x69;&#x6e;&#x69;&#x2e;&#x6d;&#x65;</a></p>
-
-<p>This program is released under the 2 clause BSD license.</p>
-
-
-  <ol class='man-decor man-foot man foot'>
-    <li class='tl'></li>
-    <li class='tc'>March 2015</li>
-    <li class='tr'>pflask(1)</li>
-  </ol>
-
-  </div>
-</body>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="user-namespace">
+<h3>User namespace<a class="headerlink" href="#user-namespace" title="Permalink to this headline">¶</a></h3>
+<p>When the host system allows it, pflask creates a new user namespace inside the
+container, and automatically maps the user running pflask to the root user
+inside the container. This means that a user could create and have full root
+privileges inside a container, while having none on the host system.</p>
+<p>Note that this has been the cause of security vulnerabilities in the past, so
+that most OS vendors (reasonably) decided to either disable user namespace
+support altogether, or restrict the functionality to root.</p>
+<p>pflask can disable the relevant functionality when it detects that support for
+user namespaces is not available.</p>
+</div>
+<div class="section" id="mount-namespace">
+<h3>Mount namespace<a class="headerlink" href="#mount-namespace" title="Permalink to this headline">¶</a></h3>
+<p>By default, pflask creates a new mount namespace inside the container, so that
+filesystems mounted inside it won&#8217;t affect the host system. pflask can also be
+told to create new mount points before the execution of the supplied command,
+by using the <cite>&#8211;mount</cite> option. Supported mount point types are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>bind</cite>    &#8211; bind mount a directory/file to another directory/file</li>
+<li><cite>bind-ro</cite> &#8211; like <cite>bind</cite>, but read-only</li>
+<li><cite>overlay</cite> &#8211; stack a directory on top of another directory using AuFS or OVL</li>
+<li><cite>tmp</cite>     &#8211; mount a tmpfs on a directory</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="network-namespace">
+<h3>Network namespace<a class="headerlink" href="#network-namespace" title="Permalink to this headline">¶</a></h3>
+<p>When supplied the <cite>&#8211;netif</cite> option, pflask will create a new network namespace
+and move/rename the supplied network interface inside the container.</p>
+</div>
+<div class="section" id="pid-ipc-and-uts-namespaces">
+<h3>PID, IPC and UTS namespaces<a class="headerlink" href="#pid-ipc-and-uts-namespaces" title="Permalink to this headline">¶</a></h3>
+<p>By default, pflask creates new PID, IPC and UTS namespaces inside the container,
+in order to isolate processes, IPC resources and the node/domain name of the
+container from the host system.</p>
+</div>
+</div>
+<div class="section" id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="hide-directories-from-an-application">
+<h3>Hide directories from an application<a class="headerlink" href="#hide-directories-from-an-application" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>$ pflask --user=$USER --mount=tmp,$HOME chromium --disable-setuid-sandbox
+</pre></div>
+</div>
+<p>This command does not require a pre-generated chroot (it will use the current
+root) and will mount a tmpfs on <cite>$HOME</cite> so that the application (chromium in the
+example) won&#8217;t be able to access your precious files. Any change will be also
+discarded once the process terminates. A bind mount can be used to retain the
+modifications:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ pflask --user=$USER --mount=bind,/tmp/trash,$HOME  chromium --disable-setuid-sandbox
+</pre></div>
+</div>
+<p>All filesystem changes applied by the command will be available in /tmp/trash.</p>
+<p>Both commands can be run without root privileges as long as user namespaces are
+supported by the host system, and available to non-privileged users.</p>
+<p>For example, on Debian, user namespaces are enabled, but are restricted to root
+only. To enable them for unprivileged users run:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo sysctl kernel.unprivileged_userns_clone=1
+</pre></div>
+</div>
+</div>
+<div class="section" id="detach-from-terminal">
+<h3>Detach from terminal<a class="headerlink" href="#detach-from-terminal" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>$ pflask --user=$USER --detach /bin/bash
+</pre></div>
+</div>
+<p>To reattach run pflask with the <cite>&#8211;attach</cite> option:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ pidof pflask
+29076
+$ pflask --attach=29076
+</pre></div>
+</div>
+<p>Where <cite>29076</cite> is the PID of the detached pflask process. Once reattached, one
+can detach again by pressing <cite>^&#64;</cite> (Ctrl + &#64;).</p>
+</div>
+<div class="section" id="boot-the-os-inside-the-container">
+<h3>Boot the OS inside the container<a class="headerlink" href="#boot-the-os-inside-the-container" title="Permalink to this headline">¶</a></h3>
+<p>First create a base Debian system using <cite>debootstrap(8)</cite>:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo debootstrap --include=systemd unstable /path/to/container
+</pre></div>
+</div>
+<p>It is recommended to use systemd as init system inside the guest, since it can
+detect whether it is run inside a container or not, and disable not needed
+services accordingly.</p>
+<p>Then create the container:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container /lib/systemd/systemd
+</pre></div>
+</div>
+<p>This will simply execute the init system (systemd) inside the container. Replace
+<cite>/lib/systemd/systemd</cite> with <cite>/sbin/init</cite> if you have a different init (but note
+that there&#8217;s no guarantee that it&#8217;ll work).</p>
+</div>
+<div class="section" id="disable-network-inside-the-container">
+<h3>Disable network inside the container<a class="headerlink" href="#disable-network-inside-the-container" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container --netif /lib/systemd/systemd
+</pre></div>
+</div>
+<p>Using the <cite>&#8211;netif</cite> option without any argument creates a new network namespace
+inside the container without adding any new interface, therefore leaving the
+_lo_ interface as the only one inside the container and disabling network access
+to the outside world while at the same time leaving the network on the host
+system working.</p>
+</div>
+<div class="section" id="use-a-private-network-interface-inside-the-container">
+<h3>Use a private network interface inside the container<a class="headerlink" href="#use-a-private-network-interface-inside-the-container" title="Permalink to this headline">¶</a></h3>
+<p>First, let&#8217;s create the new network interface thet will be used inside the
+container:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo ip link add name pflask-vlan0 link eth0 type macvlan
+</pre></div>
+</div>
+<p>This will create a new interface, <cite>pflask-vlan0</cite>, of type <cite>macvlan</cite> using the
+<cite>eth0</cite> interface on the host as master. <cite>macvlan</cite> interfaces can be used to
+give a second MAC address to a network adapter (in this case <cite>eth0</cite>) and make
+it look like a completely different device.</p>
+<p>Finally, create the container:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container --netif=pflask-vlan0,eth0 /lib/systemd/systemd
+</pre></div>
+</div>
+<p>This will take the <cite>pflask-vlan0</cite> interface previously created, move it inside
+the container and rename it to <cite>eth0</cite>. The container will thus have what it
+looks like a private <cite>eth0</cite> network interface that can be configured
+independently from the host <cite>eth0</cite>. Once the container terminates, its network
+interface will be destroyed as well.</p>
+<p>Note that <cite>macvlan</cite> is just one of the possibilities. One could create a pair
+of <cite>veth</cite> interfaces, move one of them inside the container and connect the
+other to a bridge (e.g. an Open VSwitch bridge). Alternatively one could create
+a <cite>vxlan</cite> interface and connect the container to a VXLAN network, etc...</p>
+</div>
+<div class="section" id="copy-on-write-filesystem">
+<h3>Copy-on-write filesystem<a class="headerlink" href="#copy-on-write-filesystem" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo pflask --chroot=/path/to/container \
+  --mount=overlay,/tmp/overlay/root,/path/to/container,/tmp/overlay/work \
+  /lib/systemd/systemd
+</pre></div>
+</div>
+<p>This will mount a copy-on-write filesystem on the / of the container. Any change
+to files and directories will be saved in <cite>/tmp/overlay</cite> so that the container
+root directory (<cite>/path/to/container</cite>) will be unaffected.</p>
+<p>Note that this requires support for either AuFS or OverlayFS on the host system.</p>
+</div>
+<div class="section" id="build-a-debian-package-inside-a-container">
+<h3>Build a Debian package inside a container<a class="headerlink" href="#build-a-debian-package-inside-a-container" title="Permalink to this headline">¶</a></h3>
+<p>First, create the base Debian system:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ sudo mkdir -p /var/cache/pflask
+$ DIST=sid pflask-debuild --create
+</pre></div>
+</div>
+<p>Then retrieve the source package we want to build:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ apt-get source somepackage
+$ cd somepackage-XYX
+</pre></div>
+</div>
+<p>Where _somepackage_ is the desired package, and _XYZ_ is the package version.</p>
+<p>Finally build the package:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ DIST=sid pflask-debuild
+</pre></div>
+</div>
+<p>The script will take care of creating a new container, installing all the
+required dependncies (inside the container), building and signing the package.</p>
+<p>A copy-on-write filesystem is also mounted on the / of the container, so that
+the same clean chroot can be re-used to build other packages.</p>
+<p>Note that the <a class="reference external" href="https://ghedo.github.io/pflask/pflask-debuild.html">pflask-debuild</a> tool is far from perfect, and may not work in
+all situations.</p>
+<p>See the <a class="reference external" href="https://ghedo.github.io/pflask/pflask.html">man page</a> for more information.</p>
+</div>
+</div>
+<div class="section" id="building">
+<h2>Building<a class="headerlink" href="#building" title="Permalink to this headline">¶</a></h2>
+<p>pflask is distributed as source code. Install with:</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./bootstrap.py
+$ ./waf configure
+$ ./waf build
+</pre></div>
+</div>
+</div>
+<div class="section" id="copyright">
+<h2>Copyright<a class="headerlink" href="#copyright" title="Permalink to this headline">¶</a></h2>
+<p>Copyright (C) 2013 Alessandro Ghedini &lt;<a class="reference external" href="mailto:alessandro&#37;&#52;&#48;ghedini&#46;me">alessandro<span>&#64;</span>ghedini<span>&#46;</span>me</a>&gt;</p>
+<p>See <a class="reference external" href="https://github.com/ghedo/pflask/tree/master/COPYING">COPYING</a> for the license.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pflask</a><ul>
+<li><a class="reference internal" href="#features">Features</a><ul>
+<li><a class="reference internal" href="#user-namespace">User namespace</a></li>
+<li><a class="reference internal" href="#mount-namespace">Mount namespace</a></li>
+<li><a class="reference internal" href="#network-namespace">Network namespace</a></li>
+<li><a class="reference internal" href="#pid-ipc-and-uts-namespaces">PID, IPC and UTS namespaces</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#examples">Examples</a><ul>
+<li><a class="reference internal" href="#hide-directories-from-an-application">Hide directories from an application</a></li>
+<li><a class="reference internal" href="#detach-from-terminal">Detach from terminal</a></li>
+<li><a class="reference internal" href="#boot-the-os-inside-the-container">Boot the OS inside the container</a></li>
+<li><a class="reference internal" href="#disable-network-inside-the-container">Disable network inside the container</a></li>
+<li><a class="reference internal" href="#use-a-private-network-interface-inside-the-container">Use a private network interface inside the container</a></li>
+<li><a class="reference internal" href="#copy-on-write-filesystem">Copy-on-write filesystem</a></li>
+<li><a class="reference internal" href="#build-a-debian-package-inside-a-container">Build a Debian package inside a container</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#building">Building</a></li>
+<li><a class="reference internal" href="#copyright">Copyright</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="#">pflask 0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Alessandro Ghedini.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
 </html>

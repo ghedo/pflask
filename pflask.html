@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pflask &mdash; pflask 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pflask 0.2 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">pflask 0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pflask">
+<span id="pflask-1"></span><h1>pflask<a class="headerlink" href="#pflask" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p><strong>pflask [options] [&#8211;] [command [args...]]</strong></p>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><strong>pflask</strong> is a simple tool for creating Linux namespace containers. It can be
+used for running a command or even booting an OS inside an isolated container,
+created with the help of Linux namespaces. It is similar in functionality to
+<cite>chroot(8)</cite>, although pflask provides better isolation thanks to the use of
+namespaces.</p>
+<p>Additionally, while most other containerization solutions (LXC, systemd-nspawn,
+...) are mostly targeted at containing whole systems, pflask can also be used to
+contain single programs, without the need to create ad-hoc chroots.</p>
+</div>
+<div class="section" id="options">
+<h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
+<dl class="option">
+<dt id="cmdoption-pflask-m">
+<span id="cmdoption-pflask--mount"></span><tt class="descname">-m</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--mount</tt><tt class="descclassname">=&lt;type&gt;,&lt;opts&gt;</tt><a class="headerlink" href="#cmdoption-pflask-m" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Create a new _&#8221;type&#8221;_ mount point inside the container. See <a class="reference internal" href="#mount">MOUNT</a>.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-n">
+<span id="cmdoption-pflask--netif"></span><tt class="descname">-n</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--netif</tt><tt class="descclassname">[=&lt;opts&gt;]</tt><a class="headerlink" href="#cmdoption-pflask-n" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Create a new network namespace and, optionally create/move a network interface
+inside the container. See <a class="reference internal" href="#netif">NETIF</a>.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-u">
+<span id="cmdoption-pflask--user"></span><tt class="descname">-u</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user</tt><tt class="descclassname">=&lt;user&gt;</tt><a class="headerlink" href="#cmdoption-pflask-u" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Run the command as _&#8221;user&#8221;_ inside the container. If <tt class="docutils literal"><span class="pre">--no-userns</span></tt> is not
+used, this will also create a new user namespace.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-r">
+<span id="cmdoption-pflask--chroot"></span><tt class="descname">-r</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--chroot</tt><tt class="descclassname">=&lt;dir&gt;</tt><a class="headerlink" href="#cmdoption-pflask-r" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Use _&#8221;dir&#8221;_ as root directory inside the container.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-c">
+<span id="cmdoption-pflask--chdir"></span><tt class="descname">-c</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--chdir</tt><tt class="descclassname">=&lt;dir&gt;</tt><a class="headerlink" href="#cmdoption-pflask-c" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Change to _&#8221;dir&#8221;_  inside the container.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-g">
+<span id="cmdoption-pflask--cgroup"></span><tt class="descname">-g</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--cgroup</tt><tt class="descclassname">=&lt;controller&gt;[,&lt;controller&gt; ...]</tt><a class="headerlink" href="#cmdoption-pflask-g" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Create new cgroups in the given controllers and move the container inside them.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-d">
+<span id="cmdoption-pflask--detach"></span><tt class="descname">-d</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--detach</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-d" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Detach from terminal.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-a">
+<span id="cmdoption-pflask--attach"></span><tt class="descname">-a</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--attach</tt><tt class="descclassname">=&lt;pid&gt;</tt><a class="headerlink" href="#cmdoption-pflask-a" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Attach to the _&#8221;pid&#8221;_ detached process. Only a process with the same UID of the
+detached process can attach to it. To detach again press <cite>^&#64;</cite> (Ctrl + &#64;).</p>
+<dl class="option">
+<dt id="cmdoption-pflask-s">
+<span id="cmdoption-pflask--setenv"></span><tt class="descname">-s</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--setenv</tt><tt class="descclassname">=&lt;name&gt;=&lt;value&gt;[,&lt;name&gt;=&lt;value&gt; ...]</tt><a class="headerlink" href="#cmdoption-pflask-s" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Set additional environment variables. It takes a comma-separated list of
+variables of the form <cite>name=value</cite>. This option may be used more than once.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-k">
+<span id="cmdoption-pflask--keepenv"></span><tt class="descname">-k</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--keepenv</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-k" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Do not clear environment (only relevant when used with <cite>&#8211;chroot</cite>).</p>
+<dl class="option">
+<dt id="cmdoption-pflask-U">
+<span id="cmdoption-pflask--no-userns"></span><tt class="descname">-U</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-userns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-U" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Disable user namespace.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-M">
+<span id="cmdoption-pflask--no-mountns"></span><tt class="descname">-M</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-mountns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-M" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Disable mount namespace.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-N">
+<span id="cmdoption-pflask--no-netns"></span><tt class="descname">-N</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-netns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-N" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Disable net namespace.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-I">
+<span id="cmdoption-pflask--no-ipcns"></span><tt class="descname">-I</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-ipcns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-I" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Disable IPC namespace.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-H">
+<span id="cmdoption-pflask--no-utsns"></span><tt class="descname">-H</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-utsns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-H" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Disable UTS namespace.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-P">
+<span id="cmdoption-pflask--no-pidns"></span><tt class="descname">-P</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-pidns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-P" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Disable PID namespace.</p>
+</div>
+<div class="section" id="mount">
+<h2>MOUNT<a class="headerlink" href="#mount" title="Permalink to this headline">¶</a></h2>
+<p>pflask support the following mount point types:</p>
+<div class="section" id="bind">
+<h3>bind<a class="headerlink" href="#bind" title="Permalink to this headline">¶</a></h3>
+<p>It bind mounts a directory/file to another directory/file</p>
+<p>Example: <cite>&#8211;mount=bind,/source/path,/dest/path</cite></p>
+</div>
+<div class="section" id="bind-ro">
+<h3>bind-ro<a class="headerlink" href="#bind-ro" title="Permalink to this headline">¶</a></h3>
+<p>Same as <cite>bind</cite>, but make the mount point read-only.</p>
+<p>Example: <cite>&#8211;mount=bind-ro,/source/path,/dest/path</cite></p>
+</div>
+<div class="section" id="overlay">
+<h3>overlay<a class="headerlink" href="#overlay" title="Permalink to this headline">¶</a></h3>
+<p>It stacks a directory on top of another directory using either AuFS or OverlayFS
+depending on what is found at compile-time.</p>
+<p>Note that AuFS and OverlayFS don&#8217;t support user namespaces, so the <cite>&#8211;user</cite>
+option is incompatible with this mount type unless <cite>&#8211;no-userns</cite> is also used.</p>
+<p>In the following example, &#8220;/overlay/path&#8221; is stacked on top of &#8220;/dest/path&#8221;. The
+&#8220;/overlay/work&#8221; directory needs to be an empty directory on the same filesystem
+as &#8220;/overlay/path&#8221;.</p>
+<p>Example: <cite>&#8211;mount=overlay,/overlay/path,/dest/path,/overlay/work</cite></p>
+</div>
+<div class="section" id="tmp">
+<h3>tmp<a class="headerlink" href="#tmp" title="Permalink to this headline">¶</a></h3>
+<p>It mounts a tmpfs on a directory.</p>
+<p>Example: <cite>&#8211;mount=tmp,/dest/path</cite></p>
+</div>
+</div>
+<div class="section" id="netif">
+<h2>NETIF<a class="headerlink" href="#netif" title="Permalink to this headline">¶</a></h2>
+<p>When the <cite>&#8211;netif</cite> option is used, pflask will create a new network namespace
+inside the container. If the argument is set, the following actions will be
+taken:</p>
+<div class="section" id="move-and-rename">
+<h3>move and rename<a class="headerlink" href="#move-and-rename" title="Permalink to this headline">¶</a></h3>
+<p><cite>&#8211;netif=&lt;dev&gt;,&lt;name&gt;</cite></p>
+<p>If the _&#8221;dev&#8221;_ option is an existing network interface, it will be moved inside
+the container &#8220;as is&#8221; and renamed to _&#8221;name&#8221;_. No additional configuration will
+be applied to it.</p>
+<p>Example: <cite>&#8211;netif=vxlan0,eth0</cite></p>
+</div>
+<div class="section" id="macvlan">
+<h3>macvlan<a class="headerlink" href="#macvlan" title="Permalink to this headline">¶</a></h3>
+<p><cite>&#8211;netif=macvlan,&lt;master&gt;,&lt;name&gt;</cite></p>
+<p>If the _&#8221;macvlan&#8221;_ option is used, a new network interface of type <cite>macvlan</cite>
+will be created using _&#8221;master&#8221;_ as master interface, moved inside the container
+and renamed to _&#8221;name&#8221;_. No additional configuration will be applied to it.</p>
+<p>Example: <cite>&#8211;netif=macvlan,eth0,eth0</cite></p>
+</div>
+<div class="section" id="veth">
+<h3>veth<a class="headerlink" href="#veth" title="Permalink to this headline">¶</a></h3>
+<p><cite>&#8211;netif=veth,&lt;name_outside&gt;,&lt;name_inside&gt;</cite></p>
+<p>If the _&#8221;veth&#8221;_ option is used, a new pair of network interfaces of type <cite>veth</cite>
+will be created and one of the two moved inside the container. The twin outside
+the container will be named _&#8221;name_outside&#8221;_, while the twin inside the
+container will be named _&#8221;name_inside&#8221;_. No additional configuration will be
+applied to them.</p>
+<p>Example: <cite>&#8211;netif=veth,veth0,eth0</cite></p>
+</div>
+</div>
+<div class="section" id="author">
+<h2>AUTHOR<a class="headerlink" href="#author" title="Permalink to this headline">¶</a></h2>
+<p>Alessandro Ghedini &lt;<a class="reference external" href="mailto:alessandro&#37;&#52;&#48;ghedini&#46;me">alessandro<span>&#64;</span>ghedini<span>&#46;</span>me</a>&gt;</p>
+</div>
+<div class="section" id="copyright">
+<h2>COPYRIGHT<a class="headerlink" href="#copyright" title="Permalink to this headline">¶</a></h2>
+<p>Copyright (C) 2013 Alessandro Ghedini &lt;<a class="reference external" href="mailto:alessandro&#37;&#52;&#48;ghedini&#46;me">alessandro<span>&#64;</span>ghedini<span>&#46;</span>me</a>&gt;</p>
+<p>This program is released under the 2 clause BSD license.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pflask</a><ul>
+<li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li><a class="reference internal" href="#options">OPTIONS</a></li>
+<li><a class="reference internal" href="#mount">MOUNT</a><ul>
+<li><a class="reference internal" href="#bind">bind</a></li>
+<li><a class="reference internal" href="#bind-ro">bind-ro</a></li>
+<li><a class="reference internal" href="#overlay">overlay</a></li>
+<li><a class="reference internal" href="#tmp">tmp</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#netif">NETIF</a><ul>
+<li><a class="reference internal" href="#move-and-rename">move and rename</a></li>
+<li><a class="reference internal" href="#macvlan">macvlan</a></li>
+<li><a class="reference internal" href="#veth">veth</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#author">AUTHOR</a></li>
+<li><a class="reference internal" href="#copyright">COPYRIGHT</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pflask.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">pflask 0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Alessandro Ghedini.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

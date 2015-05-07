@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pflask-debuild &mdash; pflask 0.2 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="pflask 0.2 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">pflask 0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pflask-debuild">
+<span id="pflask-debuild-1"></span><h1>pflask-debuild<a class="headerlink" href="#pflask-debuild" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="synopsis">
+<h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
+<p><strong>pflask-debuild</strong></p>
+</div>
+<div class="section" id="description">
+<h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p><strong>pflask-debuild</strong> is a wrapper aroung pflask that builds Debian packages
+inside a Linux namespace container. It is also able to run <cite>lintian(1)</cite> on the
+generated .changes file and sign the resulting package using <cite>debsign(1)</cite>.</p>
+</div>
+<div class="section" id="environment">
+<h2>ENVIRONMENT<a class="headerlink" href="#environment" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="dist">
+<h3>DIST<a class="headerlink" href="#dist" title="Permalink to this headline">¶</a></h3>
+<p>The Debian release (e.g. _&#8221;unstable&#8221;_). It will be used when searching for the
+base Debian install under <cite>/var/cache/pflask</cite>. By default will be read from the
+<cite>debian/changelog</cite> of the package to be built.</p>
+</div>
+<div class="section" id="arch">
+<h3>ARCH<a class="headerlink" href="#arch" title="Permalink to this headline">¶</a></h3>
+<p>The Debian architecture (e.g. _&#8221;amd64&#8221;_). It will be used when searching for
+the base Debian install under <cite>/var/cache/pflask</cite>. If none is specified,
+<cite>dpkg-architecture(1)</cite> is used.</p>
+</div>
+<div class="section" id="debuild-dpkg-buildpackage-opts">
+<h3>DEBUILD_DPKG_BUILDPACKAGE_OPTS<a class="headerlink" href="#debuild-dpkg-buildpackage-opts" title="Permalink to this headline">¶</a></h3>
+<p>Options that should be passed to <cite>dpkg-buildpackage(1)</cite>.</p>
+</div>
+<div class="section" id="debuild-lintian">
+<h3>DEBUILD_LINTIAN<a class="headerlink" href="#debuild-lintian" title="Permalink to this headline">¶</a></h3>
+<p>If set to _&#8221;yes&#8221;_ (default) <cite>lintian(1)</cite> will be run.</p>
+</div>
+<div class="section" id="debuild-lintian-opts">
+<h3>DEBUILD_LINTIAN_OPTS<a class="headerlink" href="#debuild-lintian-opts" title="Permalink to this headline">¶</a></h3>
+<p>Options that should be passed to <cite>lintian(1)</cite> (by default _&#8221;-IE &#8211;pedantic&#8221;_
+will be used).</p>
+</div>
+</div>
+<div class="section" id="files">
+<h2>FILES<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="devscripts">
+<h3>~/.devscripts<a class="headerlink" href="#devscripts" title="Permalink to this headline">¶</a></h3>
+<p>User-specific configuration file.</p>
+</div>
+<div class="section" id="etc-devscripts-conf">
+<h3>/etc/devscripts.conf<a class="headerlink" href="#etc-devscripts-conf" title="Permalink to this headline">¶</a></h3>
+<p>System-wide configuration file.</p>
+</div>
+</div>
+<div class="section" id="author">
+<h2>AUTHOR<a class="headerlink" href="#author" title="Permalink to this headline">¶</a></h2>
+<p>Alessandro Ghedini &lt;<a class="reference external" href="mailto:alessandro&#37;&#52;&#48;ghedini&#46;me">alessandro<span>&#64;</span>ghedini<span>&#46;</span>me</a>&gt;</p>
+</div>
+<div class="section" id="copyright">
+<h2>COPYRIGHT<a class="headerlink" href="#copyright" title="Permalink to this headline">¶</a></h2>
+<p>Copyright (C) 2013 Alessandro Ghedini &lt;<a class="reference external" href="mailto:alessandro&#37;&#52;&#48;ghedini&#46;me">alessandro<span>&#64;</span>ghedini<span>&#46;</span>me</a>&gt;</p>
+<p>This program is released under the 2 clause BSD license.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pflask-debuild</a><ul>
+<li><a class="reference internal" href="#synopsis">SYNOPSIS</a></li>
+<li><a class="reference internal" href="#description">DESCRIPTION</a></li>
+<li><a class="reference internal" href="#environment">ENVIRONMENT</a><ul>
+<li><a class="reference internal" href="#dist">DIST</a></li>
+<li><a class="reference internal" href="#arch">ARCH</a></li>
+<li><a class="reference internal" href="#debuild-dpkg-buildpackage-opts">DEBUILD_DPKG_BUILDPACKAGE_OPTS</a></li>
+<li><a class="reference internal" href="#debuild-lintian">DEBUILD_LINTIAN</a></li>
+<li><a class="reference internal" href="#debuild-lintian-opts">DEBUILD_LINTIAN_OPTS</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#files">FILES</a><ul>
+<li><a class="reference internal" href="#devscripts">~/.devscripts</a></li>
+<li><a class="reference internal" href="#etc-devscripts-conf">/etc/devscripts.conf</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#author">AUTHOR</a></li>
+<li><a class="reference internal" href="#copyright">COPYRIGHT</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/pflask-debuild.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">pflask 0.2 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013, Alessandro Ghedini.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
