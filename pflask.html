@@ -65,7 +65,7 @@ contain single programs, without the need to create ad-hoc chroots.</p>
 <span id="cmdoption-pflask--mount"></span><tt class="descname">-m</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--mount</tt><tt class="descclassname">=&lt;type&gt;,&lt;opts&gt;</tt><a class="headerlink" href="#cmdoption-pflask-m" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>Create a new _&#8221;type&#8221;_ mount point inside the container. See <a class="reference internal" href="#mount">MOUNT</a>.</p>
+<p>Create a new <em>type</em> mount point inside the container. See <a class="reference internal" href="#mount">MOUNT</a>.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-n">
 <span id="cmdoption-pflask--netif"></span><tt class="descname">-n</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--netif</tt><tt class="descclassname">[=&lt;opts&gt;]</tt><a class="headerlink" href="#cmdoption-pflask-n" title="Permalink to this definition">¶</a></dt>
@@ -78,20 +78,20 @@ inside the container. See <a class="reference internal" href="#netif">NETIF</a>.
 <span id="cmdoption-pflask--user"></span><tt class="descname">-u</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user</tt><tt class="descclassname">=&lt;user&gt;</tt><a class="headerlink" href="#cmdoption-pflask-u" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>Run the command as _&#8221;user&#8221;_ inside the container. If <tt class="docutils literal"><span class="pre">--no-userns</span></tt> is not
+<p>Run the command as <em>user</em> inside the container. If <tt class="docutils literal"><span class="pre">--no-userns</span></tt> is not
 used, this will also create a new user namespace.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-r">
 <span id="cmdoption-pflask--chroot"></span><tt class="descname">-r</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--chroot</tt><tt class="descclassname">=&lt;dir&gt;</tt><a class="headerlink" href="#cmdoption-pflask-r" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>Use _&#8221;dir&#8221;_ as root directory inside the container.</p>
+<p>Use <em>dir</em> as root directory inside the container.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-c">
 <span id="cmdoption-pflask--chdir"></span><tt class="descname">-c</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--chdir</tt><tt class="descclassname">=&lt;dir&gt;</tt><a class="headerlink" href="#cmdoption-pflask-c" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>Change to _&#8221;dir&#8221;_  inside the container.</p>
+<p>Change to <em>dir</em>  inside the container.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-g">
 <span id="cmdoption-pflask--cgroup"></span><tt class="descname">-g</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--cgroup</tt><tt class="descclassname">=&lt;controller&gt;[,&lt;controller&gt; ...]</tt><a class="headerlink" href="#cmdoption-pflask-g" title="Permalink to this definition">¶</a></dt>
@@ -109,7 +109,7 @@ used, this will also create a new user namespace.</p>
 <span id="cmdoption-pflask--attach"></span><tt class="descname">-a</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--attach</tt><tt class="descclassname">=&lt;pid&gt;</tt><a class="headerlink" href="#cmdoption-pflask-a" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>Attach to the _&#8221;pid&#8221;_ detached process. Only a process with the same UID of the
+<p>Attach to the <em>pid</em> detached process. Only a process with the same UID of the
 detached process can attach to it. To detach again press <cite>^&#64;</cite> (Ctrl + &#64;).</p>
 <dl class="option">
 <dt id="cmdoption-pflask-s">
@@ -199,26 +199,26 @@ taken:</p>
 <div class="section" id="move-and-rename">
 <h3>move and rename<a class="headerlink" href="#move-and-rename" title="Permalink to this headline">¶</a></h3>
 <p><cite>&#8211;netif=&lt;dev&gt;,&lt;name&gt;</cite></p>
-<p>If the _&#8221;dev&#8221;_ option is an existing network interface, it will be moved inside
-the container &#8220;as is&#8221; and renamed to _&#8221;name&#8221;_. No additional configuration will
+<p>If the <em>dev</em> option is an existing network interface, it will be moved inside
+the container &#8220;as is&#8221; and renamed to <em>name</em>. No additional configuration will
 be applied to it.</p>
 <p>Example: <cite>&#8211;netif=vxlan0,eth0</cite></p>
 </div>
 <div class="section" id="macvlan">
 <h3>macvlan<a class="headerlink" href="#macvlan" title="Permalink to this headline">¶</a></h3>
 <p><cite>&#8211;netif=macvlan,&lt;master&gt;,&lt;name&gt;</cite></p>
-<p>If the _&#8221;macvlan&#8221;_ option is used, a new network interface of type <cite>macvlan</cite>
-will be created using _&#8221;master&#8221;_ as master interface, moved inside the container
-and renamed to _&#8221;name&#8221;_. No additional configuration will be applied to it.</p>
+<p>If the <em>macvlan</em> option is used, a new network interface of type <cite>macvlan</cite>
+will be created using <em>master</em> as master interface, moved inside the container
+and renamed to <em>name</em>. No additional configuration will be applied to it.</p>
 <p>Example: <cite>&#8211;netif=macvlan,eth0,eth0</cite></p>
 </div>
 <div class="section" id="veth">
 <h3>veth<a class="headerlink" href="#veth" title="Permalink to this headline">¶</a></h3>
 <p><cite>&#8211;netif=veth,&lt;name_outside&gt;,&lt;name_inside&gt;</cite></p>
-<p>If the _&#8221;veth&#8221;_ option is used, a new pair of network interfaces of type <cite>veth</cite>
+<p>If the <em>veth</em> option is used, a new pair of network interfaces of type <cite>veth</cite>
 will be created and one of the two moved inside the container. The twin outside
-the container will be named _&#8221;name_outside&#8221;_, while the twin inside the
-container will be named _&#8221;name_inside&#8221;_. No additional configuration will be
+the container will be named <em>name_outside</em>, while the twin inside the
+container will be named <em>name_inside</em>. No additional configuration will be
 applied to them.</p>
 <p>Example: <cite>&#8211;netif=veth,veth0,eth0</cite></p>
 </div>

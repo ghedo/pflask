@@ -28,7 +28,7 @@ OPTIONS
 
 .. option:: -m, --mount=<type>,<opts>
 
-Create a new _"type"_ mount point inside the container. See MOUNT_.
+Create a new *type* mount point inside the container. See MOUNT_.
 
 .. option:: -n, --netif[=<opts>]
 
@@ -37,16 +37,16 @@ inside the container. See NETIF_.
 
 .. option:: -u, --user=<user>
 
-Run the command as _"user"_ inside the container. If ``--no-userns`` is not
+Run the command as *user* inside the container. If ``--no-userns`` is not
 used, this will also create a new user namespace.
 
 .. option:: -r, --chroot=<dir>
 
-Use _"dir"_ as root directory inside the container.
+Use *dir* as root directory inside the container.
 
 .. option:: -c, --chdir=<dir>
 
-Change to _"dir"_  inside the container.
+Change to *dir*  inside the container.
 
 .. option:: -g, --cgroup=<controller>[,<controller> ...]
 
@@ -58,7 +58,7 @@ Detach from terminal.
 
 .. option:: -a, --attach=<pid>
 
-Attach to the _"pid"_ detached process. Only a process with the same UID of the
+Attach to the *pid* detached process. Only a process with the same UID of the
 detached process can attach to it. To detach again press `^@` (Ctrl + @).
 
 .. option:: -s, --setenv=<name>=<value>[,<name>=<value> ...]
@@ -147,8 +147,8 @@ move and rename
 
 `--netif=<dev>,<name>`
 
-If the _"dev"_ option is an existing network interface, it will be moved inside
-the container "as is" and renamed to _"name"_. No additional configuration will
+If the *dev* option is an existing network interface, it will be moved inside
+the container "as is" and renamed to *name*. No additional configuration will
 be applied to it.
 
 Example: `--netif=vxlan0,eth0`
@@ -158,9 +158,9 @@ macvlan
 
 `--netif=macvlan,<master>,<name>`
 
-If the _"macvlan"_ option is used, a new network interface of type `macvlan`
-will be created using _"master"_ as master interface, moved inside the container
-and renamed to _"name"_. No additional configuration will be applied to it.
+If the *macvlan* option is used, a new network interface of type `macvlan`
+will be created using *master* as master interface, moved inside the container
+and renamed to *name*. No additional configuration will be applied to it.
 
 Example: `--netif=macvlan,eth0,eth0`
 
@@ -169,10 +169,10 @@ veth
 
 `--netif=veth,<name_outside>,<name_inside>`
 
-If the _"veth"_ option is used, a new pair of network interfaces of type `veth`
+If the *veth* option is used, a new pair of network interfaces of type `veth`
 will be created and one of the two moved inside the container. The twin outside
-the container will be named _"name_outside"_, while the twin inside the
-container will be named _"name_inside"_. No additional configuration will be
+the container will be named *name_outside*, while the twin inside the
+container will be named *name_inside*. No additional configuration will be
 applied to them.
 
 Example: `--netif=veth,veth0,eth0`
