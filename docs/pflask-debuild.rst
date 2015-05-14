@@ -23,14 +23,14 @@ ENVIRONMENT
 DIST
 ~~~~
 
-The Debian release (e.g. _"unstable"_). It will be used when searching for the
+The Debian release (e.g. *unstable*). It will be used when searching for the
 base Debian install under `/var/cache/pflask`. By default will be read from the
 `debian/changelog` of the package to be built.
 
 ARCH
 ~~~~
 
-The Debian architecture (e.g. _"amd64"_). It will be used when searching for
+The Debian architecture (e.g. *amd64*). It will be used when searching for
 the base Debian install under `/var/cache/pflask`. If none is specified,
 `dpkg-architecture(1)` is used.
 
@@ -42,12 +42,12 @@ Options that should be passed to `dpkg-buildpackage(1)`.
 DEBUILD_LINTIAN
 ~~~~~~~~~~~~~~~
 
-If set to _"yes"_ (default) `lintian(1)` will be run.
+If set to *yes* (default) `lintian(1)` will be run.
 
 DEBUILD_LINTIAN_OPTS
 ~~~~~~~~~~~~~~~~~~~~
 
-Options that should be passed to `lintian(1)` (by default _"-IE --pedantic"_
+Options that should be passed to `lintian(1)` (by default *-IE --pedantic*
 will be used).
 
 FILES
