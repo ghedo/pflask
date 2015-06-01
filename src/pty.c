@@ -252,8 +252,8 @@ void serve_pty(int fd) {
 	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
 
 	servaddr_un.sun_family  = AF_UNIX;
-	strncpy(servaddr_un.sun_path, path, sizeof(servaddr_un.sun_path) - 1);
 
+	snprintf(servaddr_un.sun_path, sizeof(servaddr_un.sun_path), "%s", path);
 	servaddr_un.sun_path[0] = '\0';
 
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -341,8 +341,8 @@ int recv_pty(pid_t pid) {
 	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
 
 	servaddr_un.sun_family = AF_UNIX;
-	strncpy(servaddr_un.sun_path, path, sizeof(servaddr_un.sun_path) - 1);
 
+	snprintf(servaddr_un.sun_path, sizeof(servaddr_un.sun_path), "%s", path);
 	servaddr_un.sun_path[0] = '\0';
 
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
