@@ -66,16 +66,9 @@ void validate_cgroup_spec(const char *spec) {
 		if (rc < 0) fail_printf("OOM");
 
 		rc = stat(path, &sb);
-		if (rc < 0) goto invalid_controller;
-
-		if (!S_ISDIR(sb.st_mode))
-			goto invalid_controller;
-
-		continue;
-
-		invalid_controller:
+		if ((rc < 0) || !S_ISDIR(sb.st_mode))
 			fail_printf("Invalid cgroup controller '%s'",
-							controllers[i]);
+			            controllers[i]);
 	}
 }
 

@@ -165,16 +165,16 @@ void process_pty(int master_fd) {
 			int rc = read(STDIN_FILENO, buf, line_max);
 
 			if (rc == 0)
-				goto finish;
+				goto done;
 			else if (rc < 0)
-				goto finish;
+				goto done;
 
 			rc = write(master_fd, buf, rc);
 			if (rc < 0) sysf_printf("write()");
 
 			for (p = buf; p < buf + rc; p++) {
 				if (*p == '\0')
-					goto finish;
+					goto done;
 			}
 		}
 
@@ -182,9 +182,9 @@ void process_pty(int master_fd) {
 			rc = read(master_fd, buf, line_max);
 
 			if (rc == 0)
-				goto finish;
+				goto done;
 			else if (rc < 0)
-				goto finish;
+				goto done;
 
 			rc = write(STDOUT_FILENO, buf, rc);
 			if (rc < 0) sysf_printf("write()");
@@ -212,12 +212,12 @@ void process_pty(int master_fd) {
 				case SIGINT:
 				case SIGTERM:
 				case SIGCHLD:
-					goto finish;
+					goto done;
 			}
 		}
 	}
 
-finish:
+done:
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
 	if (rc < 0) sysf_printf("tcsetattr()");
 }
