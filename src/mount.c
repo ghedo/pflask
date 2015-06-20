@@ -256,7 +256,7 @@ static void add_overlay_mount(struct mount **list, const char *overlay,
 	rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dst);
 	if (rc < 0) fail_printf("OOM");
 
-	add_mount(NULL, dst, "aufs", 0, overlayfs_opts);
+	add_mount(list, NULL, dst, "aufs", 0, overlayfs_opts);
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 	rc = asprintf(&overlayfs_opts,
 		      "upperdir=%s,lowerdir=%s,workdir=%s",
