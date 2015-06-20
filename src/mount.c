@@ -57,8 +57,8 @@ struct mount {
 
 static struct mount *mounts = NULL;
 
-static void add_mount(const char *src, const char *dst, const char *type,
-                      unsigned long f, void *d);
+static void add_mount(struct mount **list, const char *src, const char *dst,
+                      const char *type, unsigned long f, void *d);
 
 void add_mount_from_spec(const char *spec) {
 	int rc;
@@ -85,10 +85,11 @@ void add_mount_from_spec(const char *spec) {
 		dst = realpath(opts[2], NULL);
 		if (dst == NULL) sysf_printf("realpath()");
 
-		add_mount(src, dst, "bind", MS_BIND, NULL);
+		add_mount(&mounts, src, dst, "bind", MS_BIND, NULL);
 
 		if (strncmp(opts[0], "bind-ro", 8) == 0)
-			add_mount(src, dst, "bind-ro", MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
+			add_mount(&mounts, src, dst, "bind-ro",
+			          MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
 	} else if (strncmp(opts[0], "aufs", 5) == 0) {
 		_free_ char *dst = NULL;
 		_free_ char *overlay = NULL;
@@ -105,7 +106,7 @@ void add_mount_from_spec(const char *spec) {
 		rc = asprintf(&aufs_opts, "br:%s=rw:%s=ro", overlay, dst);
 		if (rc < 0) fail_printf("OOM");
 
-		add_mount(NULL, dst, "aufs", 0, aufs_opts);
+		add_mount(&mounts, NULL, dst, "aufs", 0, aufs_opts);
 	} else if (strncmp(opts[0], "overlay", 8) == 0) {
 		_free_ char *dst = NULL;
 		_free_ char *overlay = NULL;
@@ -134,7 +135,7 @@ void add_mount_from_spec(const char *spec) {
 		              overlay, dst, workdir);
 		if (rc < 0) fail_printf("OOM");
 
-		add_mount(NULL, dst, "overlay", 0, overlayfs_opts);
+		add_mount(&mounts, NULL, dst, "overlay", 0, overlayfs_opts);
 #else
 		fail_printf("The 'overlay' mount type is not supported");
 #endif
@@ -146,7 +147,7 @@ void add_mount_from_spec(const char *spec) {
 		dst = realpath(opts[1], NULL);
 		if (dst == NULL) sysf_printf("realpath()");
 
-		add_mount("tmpfs", dst, "tmpfs", 0, NULL);
+		add_mount(&mounts, "tmpfs", dst, "tmpfs", 0, NULL);
 	} else {
 		fail_printf("Invalid mount type '%s'", opts[0]);
 	}
@@ -155,43 +156,46 @@ void add_mount_from_spec(const char *spec) {
 void do_mount(const char *dest) {
 	int rc;
 
+	struct mount *sys_mounts = NULL;
 	struct mount *i = NULL;
 
 	rc = mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL);
 	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
 
 	if (dest != NULL) {
-		/* add_mount(dest, dest, NULL, MS_BIND, "bind"); */
+		/* add_mount(&sys_mounts, dest, dest, NULL, MS_BIND, "bind"); */
 
-		add_mount("proc", "/proc", "proc",
-			MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
+		add_mount(&sys_mounts, "proc", "/proc", "proc",
+		          MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 
-		add_mount("/proc/sys", "/proc/sys", "proc/sys",
-			MS_BIND, NULL);
+		add_mount(&sys_mounts, "/proc/sys", "/proc/sys", "proc/sys",
+		          MS_BIND, NULL);
 
-		add_mount(NULL, "/proc/sys", "proc/sys-ro",
-			MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
+		add_mount(&sys_mounts, NULL, "/proc/sys", "proc/sys-ro",
+		          MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
 
-		add_mount("sysfs", "/sys", "sysfs",
-			MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
+		add_mount(&sys_mounts, "sysfs", "/sys", "sysfs",
+		          MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
 
-		add_mount("tmpfs", "/dev", "tmpfs",
+		add_mount(&sys_mounts, "tmpfs", "/dev", "tmpfs",
 			MS_NOSUID | MS_STRICTATIME, "mode=755");
 
-		add_mount("devpts", "/dev/pts", "devpts",
-			MS_NOSUID | MS_NOEXEC,
-			"newinstance,ptmxmode=000,mode=620,gid=5");
+		add_mount(&sys_mounts, "devpts", "/dev/pts", "devpts",
+		          MS_NOSUID | MS_NOEXEC,
+		          "newinstance,ptmxmode=000,mode=620,gid=5");
 
-		add_mount("tmpfs", "/dev/shm", "tmpfs",
-			MS_NOSUID | MS_STRICTATIME | MS_NODEV, "mode=1777");
+		add_mount(&sys_mounts, "tmpfs", "/dev/shm", "tmpfs",
+		          MS_NOSUID | MS_STRICTATIME | MS_NODEV, "mode=1777");
 
-		add_mount("tmpfs", "/run", "tmpfs",
-			MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
+		add_mount(&sys_mounts, "tmpfs", "/run", "tmpfs",
+		          MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
 
-		/* add_mount(dest, "/", NULL, MS_MOVE, "move"); */
+		/* add_mount(&sys_mounts, dest, "/", NULL, MS_MOVE, "move"); */
 	}
 
-	DL_FOREACH(mounts, i) {
+	DL_CONCAT(sys_mounts, mounts);
+
+	DL_FOREACH(sys_mounts, i) {
 		_free_ char *mnt_dest = prefix_root(dest, i->dst);
 
 		rc = mkdir(mnt_dest, 0755);
@@ -216,8 +220,8 @@ void do_mount(const char *dest) {
 	}
 }
 
-static void add_mount(const char *src, const char *dst, const char *type,
-                      unsigned long f, void *d) {
+static void add_mount(struct mount **list, const char *src, const char *dst,
+                      const char *type, unsigned long f, void *d) {
 	struct mount *mnt = malloc(sizeof(struct mount));
 	if (mnt == NULL) fail_printf("OOM");
 
@@ -227,5 +231,5 @@ static void add_mount(const char *src, const char *dst, const char *type,
 	mnt->flags = f;
 	mnt->data  = d    ? strdup(d)    : NULL;
 
-	DL_APPEND(mounts, mnt);
+	DL_APPEND(*list, mnt);
 }
