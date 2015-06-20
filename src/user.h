@@ -28,6 +28,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern void map_user_to_user(uid_t uid, gid_t gid, const char *user);
+void map_user_to_user(uid_t uid, gid_t gid, const char *user);
 
-extern void do_user(const char *user);
+void do_user(const char *user);

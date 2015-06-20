@@ -30,18 +30,14 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 #include <syslog.h>
 
 #include <sys/syscall.h>
 
-#include <sched.h>
 #include <linux/sched.h>
 
-#include <signal.h>
 #include <getopt.h>
 
 #include <sys/prctl.h>
@@ -87,6 +83,8 @@ static struct option long_opts[] = {
 	{ 0, 0, 0, 0 }
 };
 
+static size_t validate_optlist(const char *name, const char *opts);
+
 static void do_daemonize(void);
 static void do_chroot(const char *dest);
 static pid_t do_clone(void);
@@ -120,117 +118,117 @@ int main(int argc, char *argv[]) {
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
-			case 'm':
-				validate_optlist("--mount", optarg);
+		case 'm':
+			validate_optlist("--mount", optarg);
 
-				add_mount_from_spec(optarg);
-				break;
+			add_mount_from_spec(optarg);
+			break;
 
-			case 'n':
-				clone_flags |= CLONE_NEWNET;
+		case 'n':
+			clone_flags |= CLONE_NEWNET;
 
-				if (optarg != NULL) {
-					validate_optlist("--netif", optarg);
+			if (optarg != NULL) {
+				validate_optlist("--netif", optarg);
 
-					add_netif_from_spec(optarg);
-				}
-				break;
+				add_netif_from_spec(optarg);
+			}
+			break;
 
-			case 'u':
-				clone_flags |= CLONE_NEWUSER;
+		case 'u':
+			clone_flags |= CLONE_NEWUSER;
 
-				freep(&user);
+			freep(&user);
 
-				user = strdup(optarg);
-				break;
+			user = strdup(optarg);
+			break;
 
-			case 'r':
-				freep(&dest);
+		case 'r':
+			freep(&dest);
 
-				dest = realpath(optarg, NULL);
-				if (dest == NULL) sysf_printf("realpath()");
-				break;
+			dest = realpath(optarg, NULL);
+			if (dest == NULL) sysf_printf("realpath()");
+			break;
 
-			case 'c':
-				freep(&change);
+		case 'c':
+			freep(&change);
 
-				change = strdup(optarg);
-				break;
+			change = strdup(optarg);
+			break;
 
-			case 'w':
-				volatil = 1;
-				break;
+		case 'w':
+			volatil = 1;
+			break;
 
-			case 'g':
-				validate_optlist("--cgroup", optarg);
-				validate_cgroup_spec(optarg);
+		case 'g':
+			validate_optlist("--cgroup", optarg);
+			validate_cgroup_spec(optarg);
 
-				freep(&change);
+			freep(&change);
 
-				cgroup = strdup(optarg);
-				break;
+			cgroup = strdup(optarg);
+			break;
 
-			case 'd':
-				detach = true;
-				break;
+		case 'd':
+			detach = true;
+			break;
 
-			case 'a': {
-				char *end = NULL;
-				pid = strtol(optarg, &end, 10);
-				if (*end != '\0')
-					fail_printf("Invalid value '%s' for --attach", optarg);
-				break;
+		case 'a': {
+			char *end = NULL;
+			pid = strtol(optarg, &end, 10);
+			if (*end != '\0')
+				fail_printf("Invalid value '%s' for --attach", optarg);
+			break;
+		}
+
+		case 's': {
+			validate_optlist("--setenv", optarg);
+
+			if (env != NULL) {
+				char *tmp = env;
+
+			rc = asprintf(&env, "%s,%s", env, optarg);
+				if (rc < 0) fail_printf("OOM");
+
+				freep(&tmp);
+			} else {
+				env = strdup(optarg);
 			}
 
-			case 's': {
-				validate_optlist("--setenv", optarg);
+			break;
+		}
 
-				if (env != NULL) {
-					char *tmp = env;
+		case 'k':
+			keepenv = true;
+			break;
 
-					rc = asprintf(&env, "%s,%s", env, optarg);
-					if (rc < 0) fail_printf("OOM");
+		case 'U':
+			clone_flags &= ~(CLONE_NEWUSER);
+			break;
 
-					freep(&tmp);
-				} else {
-					env = strdup(optarg);
-				}
+		case 'M':
+			clone_flags &= ~(CLONE_NEWNS);
+			break;
 
-				break;
-			}
+		case 'N':
+			clone_flags &= ~(CLONE_NEWNET);
+			break;
 
-			case 'k':
-				keepenv = true;
-				break;
+		case 'I':
+			clone_flags &= ~(CLONE_NEWIPC);
+			break;
 
-			case 'U':
-				clone_flags &= ~(CLONE_NEWUSER);
-				break;
+		case 'H':
+			clone_flags &= ~(CLONE_NEWUTS);
+			break;
 
-			case 'M':
-				clone_flags &= ~(CLONE_NEWNS);
-				break;
+		case 'P':
+			clone_flags &= ~(CLONE_NEWPID);
+			break;
 
-			case 'N':
-				clone_flags &= ~(CLONE_NEWNET);
-				break;
-
-			case 'I':
-				clone_flags &= ~(CLONE_NEWIPC);
-				break;
-
-			case 'H':
-				clone_flags &= ~(CLONE_NEWUTS);
-				break;
-
-			case 'P':
-				clone_flags &= ~(CLONE_NEWPID);
-				break;
-
-			case '?':
-			case 'h':
-				help();
-				return 0;
+		case '?':
+		case 'h':
+			help();
+			return 0;
 		}
 	}
 
@@ -356,26 +354,44 @@ process_fd:
 	if (rc < 0) sysf_printf("waitid()");
 
 	switch (status.si_code) {
-		case CLD_EXITED:
-			if (status.si_status != 0)
-				err_printf("Child failed with code '%d'",
-				           status.si_status);
-			else
-				ok_printf("Child exited");
-			break;
+	case CLD_EXITED:
+		if (status.si_status != 0)
+			err_printf("Child failed with code '%d'",
+			           status.si_status);
+		else
+			ok_printf("Child exited");
+		break;
 
-		case CLD_KILLED:
-			err_printf("Child was terminated");
-			break;
+	case CLD_KILLED:
+		err_printf("Child was terminated");
+		break;
 
-		default:
-			err_printf("Child failed");
-			break;
+	default:
+		err_printf("Child failed");
+		break;
 	}
 
 	undo_cgroup(cgroup, ppid);
 
 	return status.si_status;
+}
+
+static size_t validate_optlist(const char *name, const char *opts) {
+	size_t i, c;
+	_free_ char **vars = NULL;
+
+	_free_ char *tmp = strdup(opts);
+	if (tmp == NULL) fail_printf("OOM");
+
+	c = split_str(tmp, &vars, ",");
+	if (c == 0) fail_printf("Invalid value '%s' for %s", opts, name);
+
+	for (i = 0; i < c; i++) {
+		if (vars[i] == '\0')
+			fail_printf("Invalid value '%s' for %s", opts, name);
+	}
+
+	return c;
 }
 
 static void do_daemonize(void) {

@@ -30,10 +30,8 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <sys/mount.h>
 #include <sys/stat.h>
@@ -190,7 +188,7 @@ void do_mount(const char *dest, bool is_volatile) {
 		          MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
 
 		add_mount(&sys_mounts, "tmpfs", "/dev", "tmpfs",
-			MS_NOSUID | MS_STRICTATIME, "mode=755");
+		          MS_NOSUID | MS_STRICTATIME, "mode=755");
 
 		add_mount(&sys_mounts, "devpts", "/dev/pts", "devpts",
 		          MS_NOSUID | MS_NOEXEC,

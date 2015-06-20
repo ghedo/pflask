@@ -32,7 +32,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
-#include <unistd.h>
 
 #include <pwd.h>
 #include <grp.h>

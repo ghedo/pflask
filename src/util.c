@@ -59,21 +59,3 @@ size_t split_str(char *orig, char ***dest, char *needle) {
 
 	return size;
 }
-
-size_t validate_optlist(const char *name, const char *opts) {
-	size_t i, c;
-	_free_ char **vars = NULL;
-
-	_free_ char *tmp = strdup(opts);
-	if (tmp == NULL) fail_printf("OOM");
-
-	c = split_str(tmp, &vars, ",");
-	if (c == 0) fail_printf("Invalid value '%s' for %s", opts, name);
-
-	for (i = 0; i < c; i++) {
-		if (vars[i] == '\0')
-			fail_printf("Invalid value '%s' for %s", opts, name);
-	}
-
-	return c;
-}

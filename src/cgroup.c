@@ -134,11 +134,11 @@ static void create_cgroup(const char *controller, const char *name) {
 	rc = mkdir(path, 0755);
 	if (rc < 0) {
 		switch (errno) {
-			case EEXIST:
-				return;
+		case EEXIST:
+			return;
 
-			default:
-				sysf_printf("Error creating cgroup");
+		default:
+			sysf_printf("Error creating cgroup");
 		}
 	}
 }

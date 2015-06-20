@@ -28,10 +28,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern void open_master_pty(int *master_fd, char **master_name);
-extern void open_slave_pty(const char *master_name);
+void open_master_pty(int *master_fd, char **master_name);
+void open_slave_pty(const char *master_name);
 
-extern void process_pty(int master_fd);
+void process_pty(int master_fd);
 
-extern void serve_pty(int fd);
-extern int recv_pty(pid_t pid);
+void serve_pty(int fd);
+int recv_pty(pid_t pid);

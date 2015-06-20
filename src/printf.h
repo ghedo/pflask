@@ -1,7 +1,7 @@
 /*
  * The process in the flask.
  *
- * Copyright (c) 2013, Alessandro Ghedini
+ * Copyright (c) 2015, Alessandro Ghedini
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,15 @@
 #define COLOR_BGRED	"[1;41m"
 #define COLOR_OFF	"[0m"
 
-extern int use_syslog;
+#define LINE_CLEAR	"[0K"
 
-extern void ok_printf(const char *fmt, ...);
-extern void debug_printf(const char *fmt, ...);
-extern void err_printf(const char *fmt, ...);
-extern void fail_printf(const char *fmt, ...);
-extern void sysf_printf(const char *fmt, ...);
+#define CURSOR_HIDE	"[?25l"
+#define CURSOR_SHOW	"[?25h"
+
+int use_syslog;
+
+void ok_printf(const char *fmt, ...);
+void debug_printf(const char *fmt, ...);
+void err_printf(const char *fmt, ...);
+void fail_printf(const char *fmt, ...);
+void sysf_printf(const char *fmt, ...);

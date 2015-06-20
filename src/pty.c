@@ -29,19 +29,15 @@
  */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <signal.h>
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <termios.h>
 
 #include <sys/ioctl.h>
 #include <sys/epoll.h>
 #include <sys/signalfd.h>
 
-#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 
@@ -77,6 +73,7 @@ void open_master_pty(int *master_fd, char **master_name) {
 
 void open_slave_pty(const char *master_name) {
 	int rc;
+
 	_close_ int slave_fd = -1;
 
 	slave_fd = open(master_name, O_RDWR, 0);
@@ -197,22 +194,22 @@ void process_pty(int master_fd) {
 			if (rc != sizeof(fdsi)) sysf_printf("read()");
 
 			switch (fdsi.ssi_signo) {
-				case SIGWINCH: {
-					struct winsize ws;
+			case SIGWINCH: {
+				struct winsize ws;
 
-					rc = ioctl(STDIN_FILENO,TIOCGWINSZ,&ws);
-					if (rc < 0) sysf_printf("ioctl()");
+				rc = ioctl(STDIN_FILENO,TIOCGWINSZ,&ws);
+				if (rc < 0) sysf_printf("ioctl()");
 
-					rc = ioctl(master_fd, TIOCSWINSZ, &ws);
-					if (rc < 0) sysf_printf("ioctl()");
+				rc = ioctl(master_fd, TIOCSWINSZ, &ws);
+				if (rc < 0) sysf_printf("ioctl()");
 
-					break;
-				}
+				break;
+			}
 
-				case SIGINT:
-				case SIGTERM:
-				case SIGCHLD:
-					goto done;
+			case SIGINT:
+			case SIGTERM:
+			case SIGCHLD:
+				goto done;
 			}
 		}
 	}
@@ -314,10 +311,10 @@ void serve_pty(int fd) {
 			if (rc != sizeof(fdsi)) sysf_printf("read()");
 
 			switch (fdsi.ssi_signo) {
-				case SIGINT:
-				case SIGTERM:
-				case SIGCHLD:
-					return;
+			case SIGINT:
+			case SIGTERM:
+			case SIGCHLD:
+				return;
 			}
 		}
 	}

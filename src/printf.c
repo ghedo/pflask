@@ -1,7 +1,7 @@
 /*
  * The process in the flask.
  *
- * Copyright (c) 2013, Alessandro Ghedini
+ * Copyright (c) 2015, Alessandro Ghedini
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,11 +29,11 @@
  */
 
 #include <stdio.h>
-#include <errno.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <string.h>
-#include <unistd.h>
 #include <syslog.h>
 #include <limits.h>
 
@@ -42,13 +42,13 @@
 
 int use_syslog = 0;
 
-static void do_log(const char *prefix, const char *fmt, va_list args);
+static void do_log(const char *prefix, const char *fmt, va_list args, bool c);
 
 void ok_printf(const char *fmt, ...) {
 	va_list args;
 
 	va_start(args, fmt);
-	do_log("[" COLOR_GREEN "✔" COLOR_OFF "] ", fmt, args);
+	do_log("[" COLOR_GREEN "✔" COLOR_OFF "] ", fmt, args, false);
 	va_end(args);
 }
 
@@ -56,7 +56,7 @@ void debug_printf(const char *fmt, ...) {
 	va_list args;
 
 	va_start(args, fmt);
-	do_log("[" COLOR_YELLOW "¡" COLOR_OFF "] ", fmt, args);
+	do_log("[" COLOR_YELLOW "¡" COLOR_OFF "] ", fmt, args, false);
 	va_end(args);
 }
 
@@ -64,7 +64,7 @@ void err_printf(const char *fmt, ...) {
 	va_list args;
 
 	va_start(args, fmt);
-	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args);
+	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args, false);
 	va_end(args);
 }
 
@@ -72,7 +72,7 @@ void fail_printf(const char *fmt, ...) {
 	va_list args;
 
 	va_start(args, fmt);
-	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args);
+	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args, true);
 	va_end(args);
 
 	_exit(EXIT_FAILURE);
@@ -88,17 +88,22 @@ void sysf_printf(const char *fmt, ...) {
 	if (rc < 0) fail_printf("OOM");
 
 	va_start(args, fmt);
-	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", format, args);
+	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", format, args, true);
 	va_end(args);
 
 	_exit(EXIT_FAILURE);
 }
 
-static void do_log(const char *pre, const char *fmt, va_list args) {
+static void do_log(const char *pre, const char *fmt, va_list args, bool cursor) {
 	int rc;
 	static char format[LINE_MAX];
 
-	rc = snprintf(format, LINE_MAX, "%s%s\n", use_syslog ? "" : pre, fmt);
+	if (use_syslog || !isatty(STDERR_FILENO))
+		rc = snprintf(format, LINE_MAX, "%s\n", fmt);
+	else
+		rc = snprintf(format, LINE_MAX, "\r" LINE_CLEAR "%s%s%s\n",
+			      cursor ? CURSOR_SHOW  : "", pre, fmt);
+
 	if (rc < 0) fail_printf("EIO");
 
 	if (use_syslog == 1)

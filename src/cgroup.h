@@ -28,7 +28,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-extern void validate_cgroup_spec(const char *spec);
+void validate_cgroup_spec(const char *spec);
 
-extern void do_cgroup(const char *spec, pid_t pid);
-extern void undo_cgroup(const char *spec, pid_t pid);
+void do_cgroup(const char *spec, pid_t pid);
+void undo_cgroup(const char *spec, pid_t pid);

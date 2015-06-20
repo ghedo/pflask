@@ -77,19 +77,43 @@ def configure(cfg):
 			cfg.env.LINKFLAGS += lflags
 
 def build(bld):
+	def filter_sources(ctx, sources):
+		def __source_file__(source):
+			if isinstance(source, tuple):
+				return source[0]
+			else:
+				return source
+
+		def __check_filter__(dependency):
+			if dependency.find('!') == 0:
+				dependency = dependency.lstrip('!')
+				return dependency not in ctx.env.deps
+			else:
+				return dependency in ctx.env.deps
+
+		def __unpack_and_check_filter__(source):
+			try:
+				_, dependency = source
+				return __check_filter__(dependency)
+			except ValueError:
+				return True
+
+		return [__source_file__(source) for source in sources \
+		         if __unpack_and_check_filter__(source)]
+
 	sources = [
 		# sources
-		'src/cgroup.c',
-		'src/dev.c',
-		'src/mount.c',
-		'src/netif.c',
-		'src/nl.c',
-		'src/path.c',
-		'src/pflask.c',
-		'src/printf.c',
-		'src/pty.c',
-		'src/user.c',
-		'src/util.c'
+		( 'src/cgroup.c' ),
+		( 'src/dev.c'    ),
+		( 'src/mount.c'  ),
+		( 'src/netif.c'  ),
+		( 'src/nl.c'     ),
+		( 'src/path.c'   ),
+		( 'src/pflask.c' ),
+		( 'src/printf.c' ),
+		( 'src/pty.c'    ),
+		( 'src/user.c'   ),
+		( 'src/util.c'   ),
 	]
 
 	bld.env.append_value('INCLUDES', ['deps', 'src'])
@@ -97,8 +121,9 @@ def build(bld):
 	bld(
 		name         = 'pflask',
 		features     = 'c cprogram',
-		source       = sources,
+		source       = filter_sources(bld, sources),
 		target       = 'pflask',
+		use          = bld.env.deps,
 		install_path = bld.env.BINDIR,
 	)
 
