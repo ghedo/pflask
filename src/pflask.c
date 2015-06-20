@@ -274,8 +274,10 @@ int main(int argc, char *argv[]) {
 		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
 		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
 
-		rc = sethostname(hname, strlen(hname));
-		if (rc < 0) sysf_printf("sethostname()");
+		if (hname != NULL) {
+			rc = sethostname(hname, strlen(hname));
+			if (rc < 0) sysf_printf("sethostname()");
+		}
 
 		if (clone_flags & CLONE_NEWUSER)
 			map_user_to_user(uid, gid, user);
