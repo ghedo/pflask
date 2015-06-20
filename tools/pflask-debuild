@@ -88,7 +88,7 @@ DEBIAN_FILE="${SRC}_${VER}.debian.tar"
 DIFF_FILE="${SRC}_${VER}.diff.tar.gz"
 LOG_FILE="${SRC}_${VER}.build"
 
-PFLASK_TOOL="$PFLASK_ROOTCMD $(which pflask) --no-userns"
+PFLASK_TOOL="$PFLASK_ROOTCMD $(which pflask)"
 APT_TOOL="apt-get --no-install-recommends -y --force-yes"
 TOOLS_TOOL="$APT_TOOL install devscripts equivs fakeroot lintian"
 BDEPS_TOOL="mk-build-deps -r -i debian/control -t '$APT_TOOL'"
