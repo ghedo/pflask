@@ -80,15 +80,16 @@ def build(bld):
 	sources = [
 		# sources
 		'src/cgroup.c',
-		'src/mount.c',
-		'src/pflask.c',
-		'src/path.c',
-		'src/pty.c',
-		'src/util.c',
 		'src/dev.c',
+		'src/mount.c',
 		'src/netif.c',
+		'src/nl.c',
+		'src/path.c',
+		'src/pflask.c',
 		'src/printf.c',
-		'src/user.c'
+		'src/pty.c',
+		'src/user.c',
+		'src/util.c'
 	]
 
 	bld.env.append_value('INCLUDES', ['deps', 'src'])

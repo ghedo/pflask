@@ -31,28 +31,17 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <sys/uio.h>
-#include <sys/socket.h>
-
 #include <net/if.h>
-#include <netinet/in.h>
 
-#include <asm/types.h>
-#include <linux/netlink.h>
 #include <linux/rtnetlink.h>
-
 #include <linux/veth.h>
 
 #include "ut/utlist.h"
 
 #include "netif.h"
+#include "nl.h"
 #include "printf.h"
 #include "util.h"
-
-#define NLMSG_TAIL(nmsg) \
- ((struct rtattr *) (((char *) (nmsg)) + NLMSG_ALIGN((nmsg)->nlmsg_len)))
-
-#define NLMSG_GOOD_SIZE (sizeof(struct nlmsg) * 256)
 
 enum type {
 	MOVE,
@@ -69,15 +58,6 @@ struct netif {
 	struct netif *next, *prev;
 } netif;
 
-struct nlmsg {
-	struct nlmsghdr hdr;
-
-	union {
-		struct ifinfomsg ifi;
-		struct nlmsgerr  err;
-	} msg;
-};
-
 static struct netif *netifs = NULL;
 
 static void add_netif(enum type type, char *dev, char *name);
@@ -86,14 +66,6 @@ static void if_up(int sock, int if_index);
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
 static void create_macvlan(int sock, int master, char *name);
 static void create_veth_pair(int sock, char *name_out, char *name_in);
-
-static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len);
-static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr);
-static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr);
-
-static int nl_open(void);
-static void nl_send(int sock, struct nlmsg *nlmsg);
-static void nl_recv(int sock, struct nlmsg *nlmsg);
 
 void add_netif_from_spec(const char *spec) {
 	_free_ char *tmp = NULL;
@@ -306,100 +278,4 @@ static void create_veth_pair(int sock, char *name_out, char *name_in) {
 			fail_printf("Error sending netlink request: %s",
 					strerror(-req->msg.err.error));
 	}
-}
-
-static void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
-	struct rtattr *rtattr;
-	size_t rtalen = RTA_LENGTH(len);
-
-	rtattr = NLMSG_TAIL(&nlmsg->hdr);
-	rtattr->rta_type = attr;
-	rtattr->rta_len  = rtalen;
-
-	memcpy(RTA_DATA(rtattr), d, len);
-
-	nlmsg->hdr.nlmsg_len = NLMSG_ALIGN(nlmsg->hdr.nlmsg_len) +
-	                         RTA_ALIGN(rtalen);
-}
-
-static struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
-	struct rtattr *rtattr = NLMSG_TAIL(&nlmsg->hdr);
-
-	rtattr_append(nlmsg, attr, NULL, 0);
-
-	return rtattr;
-}
-
-static void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr) {
-	rtattr->rta_len = (char *) NLMSG_TAIL(&nlmsg->hdr) - (char *) rtattr;
-}
-
-static int nl_open(void) {
-	int rc;
-	int sock = -1;
-
-	struct sockaddr_nl addr;
-
-	sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-	if (sock < 0) sysf_printf("socket()");
-
-	addr.nl_family = AF_NETLINK;
-	addr.nl_pad    = 0;
-	addr.nl_pid    = getpid();
-	addr.nl_groups = 0;
-
-	rc = bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_nl));
-	if (rc < 0) sysf_printf("bind()");
-
-	return sock;
-}
-
-static void nl_send(int sock, struct nlmsg *nlmsg) {
-	int rc;
-	struct sockaddr_nl addr;
-
-	struct iovec iov = {
-		.iov_base = (void *) nlmsg,
-		.iov_len  = nlmsg->hdr.nlmsg_len
-	};
-
-	struct msghdr msg = {
-		.msg_name    = &addr,
-		.msg_namelen = sizeof(struct sockaddr_nl),
-		.msg_iov     = &iov,
-		.msg_iovlen  = 1
-	};
-
-	memset(&addr, 0, sizeof(struct sockaddr_nl));
-	addr.nl_family = AF_NETLINK;
-	addr.nl_pid    = 0;
-	addr.nl_groups = 0;
-
-	rc = sendmsg(sock, &msg, 0);
-	if (rc < 0) sysf_printf("sendmsg()");
-}
-
-static void nl_recv(int sock, struct nlmsg *nlmsg) {
-	int rc;
-	struct sockaddr_nl addr;
-
-	struct iovec iov = {
-		.iov_base = (void *) nlmsg,
-		.iov_len  = nlmsg->hdr.nlmsg_len
-	};
-
-	struct msghdr msg = {
-		.msg_name    = &addr,
-		.msg_namelen = sizeof(struct sockaddr_nl),
-		.msg_iov     = &iov,
-		.msg_iovlen  = 1
-	};
-
-	memset(&addr, 0, sizeof(struct sockaddr_nl));
-	addr.nl_family = AF_NETLINK;
-	addr.nl_pid    = 0;
-	addr.nl_groups = 0;
-
-	rc = recvmsg(sock, &msg, 0);
-	if (rc < 0) sysf_printf("recvmsg()");
 }
