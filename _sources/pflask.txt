@@ -75,6 +75,10 @@ variables of the form `name=value`. This option may be used more than once.
 
 Do not clear environment (only relevant when used with `--chroot`).
 
+.. option:: -t, --hostname
+
+Set the container hostname.
+
 .. option:: -U, --no-userns
 
 Disable user namespace.
