@@ -39,20 +39,22 @@
 
 #include <linux/version.h>
 
+#include "ut/utlist.h"
+
 #include "printf.h"
 #include "util.h"
 
-typedef struct MOUNT_LIST {
+struct mount {
 	char *src;
 	char *dst;
 	char *type;
 	unsigned long flags;
 	void *data;
 
-	struct MOUNT_LIST *next;
-} mount_list;
+	struct mount *next, *prev;
+};
 
-static mount_list *mounts = NULL;
+static struct mount *mounts = NULL;
 
 static void add_mount(const char *src, const char *dst, const char *type,
                       unsigned long f, void *d);
@@ -85,10 +87,10 @@ void add_mount_from_spec(const char *spec) {
 		dst = realpath(opts[2], NULL);
 		if (dst == NULL) sysf_printf("realpath()");
 
-		add_mount(src, dst, NULL, MS_BIND, NULL);
+		add_mount(src, dst, "bind", MS_BIND, NULL);
 
 		if (strncmp(opts[0], "bind-ro", 8) == 0)
-			add_mount(src, dst, NULL, MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
+			add_mount(src, dst, "bind-ro", MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
 	} else if (strncmp(opts[0], "aufs", 5) == 0) {
 		_free_ char *dst = NULL;
 		_free_ char *overlay = NULL;
@@ -155,7 +157,7 @@ void add_mount_from_spec(const char *spec) {
 void do_mount(const char *dest) {
 	int rc;
 
-	mount_list *i = NULL;
+	struct mount *i = NULL;
 
 	rc = mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL);
 	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
@@ -191,14 +193,7 @@ void do_mount(const char *dest) {
 		/* add_mount(dest, "/", NULL, MS_MOVE, "move"); */
 	}
 
-	while (mounts) {
-		mount_list *next = mounts->next;
-		mounts->next = i;
-		i = mounts;
-		mounts = next;
-	}
-
-	while (i != NULL) {
+	DL_FOREACH(mounts, i) {
 		rc = mkdir(i->dst, 0755);
 		if (rc < 0) {
 			switch (errno) {
@@ -218,14 +213,12 @@ void do_mount(const char *dest) {
 
 		rc = mount(i->src, i->dst, i->type, i->flags, i->data);
 		if (rc < 0) sysf_printf("mount(%s)", i->type);
-
-		i = i->next;
 	}
 }
 
 static void add_mount(const char *src, const char *dst, const char *type,
                       unsigned long f, void *d) {
-	mount_list *mnt = malloc(sizeof(mount_list));
+	struct mount *mnt = malloc(sizeof(struct mount));
 	if (mnt == NULL) fail_printf("OOM");
 
 	mnt->src   = src  ? strdup(src)  : NULL;
@@ -234,12 +227,7 @@ static void add_mount(const char *src, const char *dst, const char *type,
 	mnt->flags = f;
 	mnt->data  = d    ? strdup(d)    : NULL;
 
-	mnt->next  = NULL;
-
-	if (mounts)
-		mnt->next = mounts;
-
-	mounts = mnt;
+	DL_APPEND(mounts, mnt);
 }
 
 static void add_mount_inside(const char *base, const char *src, const char *dst,

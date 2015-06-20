@@ -43,6 +43,8 @@
 
 #include <linux/veth.h>
 
+#include "ut/utlist.h"
+
 #include "netif.h"
 #include "printf.h"
 #include "util.h"
@@ -52,18 +54,20 @@
 
 #define NLMSG_GOOD_SIZE (sizeof(struct nlmsg) * 256)
 
-typedef enum NETIF_TYPE {
-	MOVE, MACVLAN, VETH
-} netif_type;
+enum type {
+	MOVE,
+	MACVLAN,
+	VETH,
+};
 
-typedef struct NETIF_LIST {
-	enum NETIF_TYPE type;
+struct netif {
+	enum type type;
 
 	char *dev;
 	char *name;
 
-	struct NETIF_LIST *next;
-} netif_list;
+	struct netif *next, *prev;
+} netif;
 
 struct nlmsg {
 	struct nlmsghdr hdr;
@@ -74,9 +78,9 @@ struct nlmsg {
 	} msg;
 };
 
-static netif_list *netifs = NULL;
+static struct netif *netifs = NULL;
 
-static void add_netif(netif_type type, char *dev, char *name);
+static void add_netif(enum type type, char *dev, char *name);
 
 static void if_up(int sock, int if_index);
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
@@ -121,16 +125,9 @@ void do_netif(pid_t pid) {
 	int rc;
 	_close_ int sock = nl_open();
 
-	netif_list *i = NULL;
+	struct netif *i = NULL;
 
-	while (netifs) {
-		netif_list *next = netifs->next;
-		netifs->next = i;
-		i = netifs;
-		netifs = next;
-	}
-
-	while (i != NULL) {
+	DL_FOREACH(netifs, i) {
 		unsigned int if_index = 0;
 
 		switch (i->type) {
@@ -170,8 +167,6 @@ void do_netif(pid_t pid) {
 		}
 
 		move_and_rename_if(sock, pid, if_index, i->name);
-
-		i = i->next;
 	}
 }
 
@@ -180,20 +175,15 @@ void setup_loopback(void) {
 	if_up(sock, 1);
 }
 
-static void add_netif(netif_type type, char *dev, char *name) {
-	netif_list *nif = malloc(sizeof(netif_list));
+static void add_netif(enum type type, char *dev, char *name) {
+	struct netif *nif = malloc(sizeof(struct netif));
 	if (nif == NULL) fail_printf("OOM");
 
 	nif->dev  = strdup(dev);
 	nif->name = strdup(name);
 	nif->type = type;
 
-	nif->next  = NULL;
-
-	if (netifs)
-		nif->next = netifs;
-
-	netifs = nif;
+	DL_APPEND(netifs, nif);
 }
 
 static void if_up(int sock, int if_index) {

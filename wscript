@@ -90,7 +90,7 @@ def build(bld):
 		'src/user.c'
 	]
 
-	bld.env.append_value('INCLUDES', ['src'])
+	bld.env.append_value('INCLUDES', ['deps', 'src'])
 
 	bld(
 		name         = 'pflask',
