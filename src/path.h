@@ -28,34 +28,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdlib.h>
-#include <unistd.h>
+int path_compare(const char *a, const char *b);
 
-#define MIN(a, b) ((a) > (b) ? (b) : (a))
-
-#define _free_ __attribute__((cleanup(freep)))
-#define _close_ __attribute__((cleanup(closep)))
-
-static inline void freep(void *p) {
-	if (p == NULL)
-		return;
-
-	free(*(void **) p);
-
-	*(void **)p = NULL;
-}
-
-static inline void closep(int *p) {
-	int rc;
-
-	if (*p == -1)
-		return;
-
-	rc = close(*p);
-	if (rc < 0) sysf_printf("close()");
-
-	*p = -1;
-}
-
-extern size_t split_str(char *orig, char ***dest, char *needle);
-extern size_t validate_optlist(const char *name, const char *opts);
+char *prefix_root(const char *root, const char *path);

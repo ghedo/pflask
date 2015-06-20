@@ -41,6 +41,7 @@
 
 #include "ut/utlist.h"
 
+#include "path.h"
 #include "printf.h"
 #include "util.h"
 
@@ -58,9 +59,6 @@ static struct mount *mounts = NULL;
 
 static void add_mount(const char *src, const char *dst, const char *type,
                       unsigned long f, void *d);
-
-static void add_mount_inside(const char *base, const char *src, const char *dst,
-                             const char *type, unsigned long f, void *d);
 
 void add_mount_from_spec(const char *spec) {
 	int rc;
@@ -165,53 +163,55 @@ void do_mount(const char *dest) {
 	if (dest != NULL) {
 		/* add_mount(dest, dest, NULL, MS_BIND, "bind"); */
 
-		add_mount_inside(dest, "proc", "/proc", "proc",
+		add_mount("proc", "/proc", "proc",
 			MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 
-		add_mount_inside(dest, "/proc/sys", "/proc/sys", "proc/sys",
+		add_mount("/proc/sys", "/proc/sys", "proc/sys",
 			MS_BIND, NULL);
 
-		add_mount_inside(dest, NULL, "/proc/sys", "proc/sys-ro",
+		add_mount(NULL, "/proc/sys", "proc/sys-ro",
 			MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
 
-		add_mount_inside(dest, "sysfs", "/sys", "sysfs",
+		add_mount("sysfs", "/sys", "sysfs",
 			MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
 
-		add_mount_inside(dest, "tmpfs", "/dev", "tmpfs",
+		add_mount("tmpfs", "/dev", "tmpfs",
 			MS_NOSUID | MS_STRICTATIME, "mode=755");
 
-		add_mount_inside(dest, "devpts", "/dev/pts", "devpts",
+		add_mount("devpts", "/dev/pts", "devpts",
 			MS_NOSUID | MS_NOEXEC,
 			"newinstance,ptmxmode=000,mode=620,gid=5");
 
-		add_mount_inside(dest, "tmpfs", "/dev/shm", "tmpfs",
+		add_mount("tmpfs", "/dev/shm", "tmpfs",
 			MS_NOSUID | MS_STRICTATIME | MS_NODEV, "mode=1777");
 
-		add_mount_inside(dest, "tmpfs", "/run", "tmpfs",
+		add_mount("tmpfs", "/run", "tmpfs",
 			MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
 
 		/* add_mount(dest, "/", NULL, MS_MOVE, "move"); */
 	}
 
 	DL_FOREACH(mounts, i) {
-		rc = mkdir(i->dst, 0755);
+		_free_ char *mnt_dest = prefix_root(dest, i->dst);
+
+		rc = mkdir(mnt_dest, 0755);
 		if (rc < 0) {
+			struct stat sb;
+
 			switch (errno) {
-				struct stat sb;
+			case EEXIST:
+				if (!stat(mnt_dest, &sb) &&
+				    !S_ISDIR(sb.st_mode))
+					fail_printf("Not a directory");
+				break;
 
-				case EEXIST:
-					if (!stat(i->dst, &sb) &&
-					    !S_ISDIR(sb.st_mode))
-						fail_printf("Not a directory");
-					break;
-
-				default:
-					sysf_printf("mkdir(%s)", i->dst);
-					break;
+			default:
+				sysf_printf("mkdir(%s)", mnt_dest);
+				break;
 			}
 		}
 
-		rc = mount(i->src, i->dst, i->type, i->flags, i->data);
+		rc = mount(i->src, mnt_dest, i->type, i->flags, i->data);
 		if (rc < 0) sysf_printf("mount(%s)", i->type);
 	}
 }
@@ -228,16 +228,4 @@ static void add_mount(const char *src, const char *dst, const char *type,
 	mnt->data  = d    ? strdup(d)    : NULL;
 
 	DL_APPEND(mounts, mnt);
-}
-
-static void add_mount_inside(const char *base, const char *src, const char *dst,
-                             const char *type, unsigned long f, void *d) {
-	int rc;
-
-	_free_ char *target = NULL;
-
-	rc = asprintf(&target, "%s%s", base, dst);
-	if (rc < 0) fail_printf("OOM");
-
-	add_mount(src, target, type, f, d);
 }

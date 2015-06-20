@@ -151,7 +151,7 @@ elif [ "$1" = "--update" ]; then
 else
 	$PFLASK_TOOL --keepenv --chroot $BASEDIR		\
 		--mount "overlay,$OVERDIR,$BASEDIR,$WORKDIR"	\
-		--mount "bind,$RESDIR,$BASEDIR${TMPDIR}"	\
+		--mount "bind,$RESDIR,$TMPDIR"			\
 		--chdir "/mnt/$PKGDIR"				\
 		--						\
 		sh -c "$BUILD_CMD" | tee "../$LOG_FILE"

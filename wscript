@@ -82,6 +82,7 @@ def build(bld):
 		'src/cgroup.c',
 		'src/mount.c',
 		'src/pflask.c',
+		'src/path.c',
 		'src/pty.c',
 		'src/util.c',
 		'src/dev.c',

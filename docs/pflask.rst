@@ -102,14 +102,16 @@ pflask support the following mount point types:
 bind
 ~~~~
 
-It bind mounts a directory/file to another directory/file
+It bind mounts a directory/file to another directory/file. If the `--chroot`
+option is used, the destination path will be relative to the chroot.
 
 Example: `--mount=bind,/source/path,/dest/path`
 
 bind-ro
 ~~~~~~~
 
-Same as `bind`, but make the mount point read-only.
+Same as `bind`, but make the mount point read-only. If the `--chroot` option
+is used, the destination path will be relative to the chroot.
 
 Example: `--mount=bind-ro,/source/path,/dest/path`
 
