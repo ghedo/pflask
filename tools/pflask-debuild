@@ -74,13 +74,6 @@ PKGDIR=$(basename $BUILDDIR)
 RESDIR=$(dirname $BUILDDIR)
 TMPDIR="/mnt"
 
-OVERPATH=$(mktemp -d)
-OVERDIR="$OVERPATH/root"
-WORKDIR="$OVERPATH/work"
-
-mkdir -p $OVERDIR
-mkdir -p $WORKDIR
-
 if [ -r "debian/changelog" ]; then
 	SRC=$(dpkg-parsechangelog | sed -rne 's,^Source: (.+).*,\1,p')
 	VER=$(dpkg-parsechangelog | sed -rne 's,^Version: ([0-9]:)*(.+).*,\2,p')
@@ -149,8 +142,7 @@ elif [ "$1" = "--update" ]; then
 		--						\
 		sh -c "$APT_TOOL update && $APT_TOOL dist-upgrade && $APT_TOOL autoremove --purge && $APT_TOOL autoclean"
 else
-	$PFLASK_TOOL --keepenv --chroot $BASEDIR		\
-		--mount "overlay,$OVERDIR,$BASEDIR,$WORKDIR"	\
+	$PFLASK_TOOL --keepenv --chroot $BASEDIR --volatile	\
 		--mount "bind,$RESDIR,$TMPDIR"			\
 		--chdir "/mnt/$PKGDIR"				\
 		--						\
@@ -158,5 +150,3 @@ else
 
 	$DSIGN_TOOL "$RESDIR/$CHANGES_FILE"
 fi
-
-$PFLASK_ROOTCMD rm -rf $OVERPATH

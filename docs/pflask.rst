@@ -48,6 +48,11 @@ Use *dir* as root directory inside the container.
 
 Change to *dir*  inside the container.
 
+.. option:: -w, --volatile
+
+Discard any change to / once the container exits. This can only be used along
+with ``--chroot`` and requires support for the overlay_ mount type.
+
 .. option:: -g, --cgroup=<controller>[,<controller> ...]
 
 Create new cgroups in the given controllers and move the container inside them.

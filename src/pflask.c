@@ -63,13 +63,14 @@ static int clone_flags = SIGCHLD      |
                          CLONE_NEWPID |
                          CLONE_NEWUTS;
 
-static const char *short_opts = "+m:n::u:r:c:g:da:s:kUMNIHPh?";
+static const char *short_opts = "+m:n::u:r:wc:g:da:s:kUMNIHPh?";
 
 static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
 	{ "netif",     optional_argument, NULL, 'n' },
 	{ "user",      required_argument, NULL, 'u' },
 	{ "chroot",    required_argument, NULL, 'r' },
+	{ "volatile",  no_argument,       NULL, 'w' },
 	{ "chdir",     required_argument, NULL, 'c' },
 	{ "cgroup",    required_argument, NULL, 'g' },
 	{ "detach",    no_argument,       NULL, 'd' },
@@ -113,6 +114,7 @@ int main(int argc, char *argv[]) {
 
 	bool detach  = false;
 	bool keepenv = false;
+	bool volatil = false;
 
 	siginfo_t status;
 
@@ -153,6 +155,10 @@ int main(int argc, char *argv[]) {
 				freep(&change);
 
 				change = strdup(optarg);
+				break;
+
+			case 'w':
+				volatil = 1;
 				break;
 
 			case 'g':
@@ -267,7 +273,7 @@ int main(int argc, char *argv[]) {
 
 		do_cgroup(cgroup, ppid);
 
-		do_mount(dest);
+		do_mount(dest, volatil);
 
 		if (dest != NULL) {
 			copy_nodes(dest);
@@ -432,6 +438,7 @@ static inline void help(void) {
 		"Use the specified directory as root inside the container");
 	CMD_HELP("--chdir", "-c",
 		"Change to the specified directory inside the container");
+	CMD_HELP("--volatile", "-w", "Discard changes to /");
 
 	CMD_HELP("--cgroup", "-g",
 		"Create new cgroups and move the container inside them");

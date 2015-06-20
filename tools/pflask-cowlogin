@@ -30,13 +30,6 @@
 
 BASEDIR=$1
 
-OVERPATH=$(mktemp -d)
-OVERDIR="$OVERPATH/root"
-WORKDIR="$OVERPATH/work"
-
-mkdir -p $OVERDIR
-mkdir -p $WORKDIR
-
 if [ -z "$PFLASK_ROOTCMD" ]; then
 	PFLASK_ROOTCMD="sudo -E"
 fi
@@ -50,8 +43,6 @@ PFLASK_TOOL="$PFLASK_ROOTCMD $(which pflask) --no-userns"
 
 shift
 
-$PFLASK_TOOL --chroot $BASEDIR				\
-	--mount "overlay,$OVERDIR,$BASEDIR,$WORKDIR"	\
-	"$@"
+$PFLASK_TOOL --chroot $BASEDIR --volatile "$@"
 
 $PFLASK_ROOTCMD rm -rf $OVERPATH

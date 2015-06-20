@@ -145,6 +145,24 @@ This will simply execute the init system (systemd) inside the container. Replace
 `/lib/systemd/systemd` with `/sbin/init` if you have a different init (but note
 that there's no guarantee that it'll work).
 
+Volatile root
+~~~~~~~~~~~~~
+
+By using the `--volatile` option it's possible to tell pflask to discard any
+change applied to the / directory once the container exits:
+
+.. code-block:: bash
+
+   $ sudo pflask --chroot=/path/to/container --volatile /lib/systemd/systemd
+
+The above will overlay a tmpfs on top of the chroot `/path/to/container`
+directory, so that the root filesystem will be writable from inside the
+container, but any change will be disacarded once the container terminates.
+
+This can be useful as a build environment, where dependencies can be installed
+at every build run on a clean chroot, without the need to recreate the chroot
+at every run.
+
 Disable network inside the container
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

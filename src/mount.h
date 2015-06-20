@@ -30,4 +30,4 @@
 
 extern void add_mount_from_spec(const char *spec);
 
-extern void do_mount(const char *dest);
+extern void do_mount(const char *dest, bool is_volatile);

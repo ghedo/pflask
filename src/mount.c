@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -59,6 +60,9 @@ static struct mount *mounts = NULL;
 
 static void add_mount(struct mount **list, const char *src, const char *dst,
                       const char *type, unsigned long f, void *d);
+
+static void add_overlay_mount(struct mount **list, const char *overlay,
+                              const char *dst, const char *work);
 
 void add_mount_from_spec(const char *spec) {
 	int rc;
@@ -111,7 +115,6 @@ void add_mount_from_spec(const char *spec) {
 		_free_ char *dst = NULL;
 		_free_ char *overlay = NULL;
 		_free_ char *workdir = NULL;
-		_free_ char *overlayfs_opts = NULL;
 
 		if (c < 4) fail_printf("Invalid mount spec '%s'", spec);
 
@@ -124,21 +127,7 @@ void add_mount_from_spec(const char *spec) {
 		workdir = realpath(opts[3], NULL);
 		if (workdir == NULL) sysf_printf("realpath()");
 
-#ifdef HAVE_AUFS
-		rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dst);
-		if (rc < 0) fail_printf("OOM");
-
-		add_mount(NULL, dst, "aufs", 0, overlayfs_opts);
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
-		rc = asprintf(&overlayfs_opts,
-		              "upperdir=%s,lowerdir=%s,workdir=%s",
-		              overlay, dst, workdir);
-		if (rc < 0) fail_printf("OOM");
-
-		add_mount(&mounts, NULL, dst, "overlay", 0, overlayfs_opts);
-#else
-		fail_printf("The 'overlay' mount type is not supported");
-#endif
+		add_overlay_mount(&mounts, overlay, dst, workdir);
 	} else if (strncmp(opts[0], "tmp", 4) == 0) {
 		_free_ char *dst = NULL;
 
@@ -153,17 +142,40 @@ void add_mount_from_spec(const char *spec) {
 	}
 }
 
-void do_mount(const char *dest) {
+void do_mount(const char *dest, bool is_volatile) {
 	int rc;
 
 	struct mount *sys_mounts = NULL;
 	struct mount *i = NULL;
+
+	_free_ char *mount_spec = NULL;
+
+	_free_ char *root_dir = NULL;
+	_free_ char *work_dir = NULL;
+
+	char template[] = "/tmp/pflask-volatile-XXXXXX";
 
 	rc = mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL);
 	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
 
 	if (dest != NULL) {
 		/* add_mount(&sys_mounts, dest, dest, NULL, MS_BIND, "bind"); */
+
+		if (is_volatile) {
+			if (!mkdtemp(template))
+				sysf_printf("mkdtemp()");
+
+			rc = mount("tmpfs", template, "tmpfs", 0, NULL);
+			if (rc < 0) sysf_printf("mount(tmpfs)");
+
+			root_dir = prefix_root(template, "root");
+			mkdir(root_dir, 0755);
+
+			work_dir = prefix_root(template, "work");
+			mkdir(work_dir, 0755);
+
+			add_overlay_mount(&sys_mounts, root_dir, dest, work_dir);
+		}
 
 		add_mount(&sys_mounts, "proc", "/proc", "proc",
 		          MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
@@ -232,4 +244,27 @@ static void add_mount(struct mount **list, const char *src, const char *dst,
 	mnt->data  = d    ? strdup(d)    : NULL;
 
 	DL_APPEND(*list, mnt);
+}
+
+static void add_overlay_mount(struct mount **list, const char *overlay,
+                              const char *dst, const char *workdir) {
+	int rc;
+
+	_free_ char *overlayfs_opts = NULL;
+
+#ifdef HAVE_AUFS
+	rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dst);
+	if (rc < 0) fail_printf("OOM");
+
+	add_mount(NULL, dst, "aufs", 0, overlayfs_opts);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
+	rc = asprintf(&overlayfs_opts,
+		      "upperdir=%s,lowerdir=%s,workdir=%s",
+		      overlay, dst, workdir);
+	if (rc < 0) fail_printf("OOM");
+
+	add_mount(list, NULL, dst, "overlay", 0, overlayfs_opts);
+#else
+	fail_printf("The 'overlay' mount type is not supported");
+#endif
 }
