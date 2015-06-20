@@ -90,6 +90,8 @@ def build(bld):
 		'src/user.c'
 	]
 
+	bld.env.append_value('INCLUDES', ['src'])
+
 	bld(
 		name         = 'pflask',
 		features     = 'c cprogram',
@@ -100,15 +102,6 @@ def build(bld):
 
 	bld.install_files('${BINDIR}', bld.path.ant_glob('tools/pflask-*'),
 	                  chmod=Utils.O755)
-
-	bld.declare_chain(
-		name         = 'ronn',
-		rule         = '${RONN} -r < ${SRC} > ${TGT}',
-		ext_in       = '.1.md',
-		ext_out      = '.1',
-		reentrant    = False,
-		install_path = bld.env.MANDIR + '/man1',
-	)
 
 	if bld.env['SPHINX_BUILD']:
 		bld(
