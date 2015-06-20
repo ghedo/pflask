@@ -59,7 +59,7 @@ static int clone_flags = SIGCHLD      |
                          CLONE_NEWPID |
                          CLONE_NEWUTS;
 
-static const char *short_opts = "+m:n::u:r:wc:g:da:s:kUMNIHPh?";
+static const char *short_opts = "+m:n::u:r:wc:g:da:s:kt:UMNIHPh?";
 
 static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
@@ -73,6 +73,7 @@ static struct option long_opts[] = {
 	{ "attach",    required_argument, NULL, 'a' },
 	{ "setenv",    required_argument, NULL, 's' },
 	{ "keepenv",   no_argument,       NULL, 'k' },
+	{ "hostname",  required_argument, NULL, 't' },
 	{ "no-userns", no_argument,       NULL, 'U' },
 	{ "no-mountns", no_argument,      NULL, 'M' },
 	{ "no-netns",  no_argument,       NULL, 'N' },
@@ -105,6 +106,7 @@ int main(int argc, char *argv[]) {
 	_free_ char *change = NULL;
 	_free_ char *env    = NULL;
 	_free_ char *cgroup = NULL;
+	_free_ char *hname  = NULL;
 
 	_close_ int master_fd = -1;
 
@@ -201,6 +203,12 @@ int main(int argc, char *argv[]) {
 			keepenv = true;
 			break;
 
+		case 't':
+			freep(&hname);
+
+			hname = strdup(optarg);
+			break;
+
 		case 'U':
 			clone_flags &= ~(CLONE_NEWUSER);
 			break;
@@ -265,6 +273,9 @@ int main(int argc, char *argv[]) {
 
 		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
 		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
+
+		rc = sethostname(hname, strlen(hname));
+		if (rc < 0) sysf_printf("sethostname()");
 
 		if (clone_flags & CLONE_NEWUSER)
 			map_user_to_user(uid, gid, user);
@@ -459,15 +470,13 @@ static inline void help(void) {
 	CMD_HELP("--cgroup", "-g",
 		"Create new cgroups and move the container inside them");
 
-	CMD_HELP("--detach", "-d",
-		"Detach from terminal");
-	CMD_HELP("--attach", "-a",
-		"Attach to the specified detached process");
+	CMD_HELP("--detach", "-d", "Detach from terminal");
+	CMD_HELP("--attach", "-a", "Attach to the specified detached process");
 
-	CMD_HELP("--setenv", "-s",
-		"Set additional environment variables");
-	CMD_HELP("--keepenv", "-k",
-		"Do not clear environment");
+	CMD_HELP("--setenv", "-s", "Set additional environment variables");
+	CMD_HELP("--keepenv", "-k", "Do not clear environment");
+
+	CMD_HELP("--hostname", "-t", "Set the container hostname");
 
 	puts("");
 
