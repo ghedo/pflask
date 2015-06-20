@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <unistd.h>
 #include <syslog.h>
@@ -110,8 +111,8 @@ int main(int argc, char *argv[]) {
 
 	char *master_name;
 
-	int detach  = 0;
-	int keepenv = 0;
+	bool detach  = false;
+	bool keepenv = false;
 
 	siginfo_t status;
 
@@ -164,7 +165,7 @@ int main(int argc, char *argv[]) {
 				break;
 
 			case 'd':
-				detach = 1;
+				detach = true;
 				break;
 
 			case 'a': {
@@ -193,7 +194,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			case 'k':
-				keepenv = 1;
+				keepenv = true;
 				break;
 
 			case 'U':
@@ -245,7 +246,7 @@ int main(int argc, char *argv[]) {
 	uid = getuid();
 	gid = getgid();
 
-	if (detach == 1)
+	if (detach)
 		do_daemonize();
 
 	pid = do_clone();
@@ -297,7 +298,7 @@ int main(int argc, char *argv[]) {
 		if (dest != NULL) {
 			char *term = getenv("TERM");
 
-			if (keepenv == 0)
+			if (!keepenv)
 				clearenv();
 
 			setenv("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
@@ -335,7 +336,7 @@ int main(int argc, char *argv[]) {
 	do_netif(pid);
 
 process_fd:
-	if (detach == 1)
+	if (detach)
 		serve_pty(master_fd);
 	else
 		process_pty(master_fd);
