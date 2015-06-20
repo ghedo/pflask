@@ -93,6 +93,13 @@ used, this will also create a new user namespace.</p>
 
 <p>Change to <em>dir</em>  inside the container.</p>
 <dl class="option">
+<dt id="cmdoption-pflask-w">
+<span id="cmdoption-pflask--volatile"></span><tt class="descname">-w</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--volatile</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-w" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Discard any change to / once the container exits. This can only be used along
+with <tt class="docutils literal"><span class="pre">--chroot</span></tt> and requires support for the <a class="reference internal" href="#overlay">overlay</a> mount type.</p>
+<dl class="option">
 <dt id="cmdoption-pflask-g">
 <span id="cmdoption-pflask--cgroup"></span><tt class="descname">-g</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--cgroup</tt><tt class="descclassname">=&lt;controller&gt;[,&lt;controller&gt; ...]</tt><a class="headerlink" href="#cmdoption-pflask-g" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -166,12 +173,14 @@ variables of the form <cite>name=value</cite>. This option may be used more than
 <p>pflask support the following mount point types:</p>
 <div class="section" id="bind">
 <h3>bind<a class="headerlink" href="#bind" title="Permalink to this headline">¶</a></h3>
-<p>It bind mounts a directory/file to another directory/file</p>
+<p>It bind mounts a directory/file to another directory/file. If the <cite>&#8211;chroot</cite>
+option is used, the destination path will be relative to the chroot.</p>
 <p>Example: <cite>&#8211;mount=bind,/source/path,/dest/path</cite></p>
 </div>
 <div class="section" id="bind-ro">
 <h3>bind-ro<a class="headerlink" href="#bind-ro" title="Permalink to this headline">¶</a></h3>
-<p>Same as <cite>bind</cite>, but make the mount point read-only.</p>
+<p>Same as <cite>bind</cite>, but make the mount point read-only. If the <cite>&#8211;chroot</cite> option
+is used, the destination path will be relative to the chroot.</p>
 <p>Example: <cite>&#8211;mount=bind-ro,/source/path,/dest/path</cite></p>
 </div>
 <div class="section" id="overlay">
