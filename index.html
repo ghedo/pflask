@@ -154,20 +154,6 @@ services accordingly.</p>
 <cite>/lib/systemd/systemd</cite> with <cite>/sbin/init</cite> if you have a different init (but note
 that there&#8217;s no guarantee that it&#8217;ll work).</p>
 </div>
-<div class="section" id="volatile-root">
-<h3>Volatile root<a class="headerlink" href="#volatile-root" title="Permalink to this headline">¶</a></h3>
-<p>By using the <cite>&#8211;volatile</cite> option it&#8217;s possible to tell pflask to discard any
-change applied to the / directory once the container exits:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --volatile /lib/systemd/systemd
-</pre></div>
-</div>
-<p>The above will overlay a tmpfs on top of the chroot <cite>/path/to/container</cite>
-directory, so that the root filesystem will be writable from inside the
-container, but any change will be disacarded once the container terminates.</p>
-<p>This can be useful as a build environment, where dependencies can be installed
-at every build run on a clean chroot, without the need to recreate the chroot
-at every run.</p>
-</div>
 <div class="section" id="disable-network-inside-the-container">
 <h3>Disable network inside the container<a class="headerlink" href="#disable-network-inside-the-container" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --netif /lib/systemd/systemd
@@ -215,6 +201,20 @@ a <cite>vxlan</cite> interface and connect the container to a VXLAN network, etc
 to files and directories will be saved in <cite>/tmp/overlay</cite> so that the container
 root directory (<cite>/path/to/container</cite>) will be unaffected.</p>
 <p>Note that this requires support for either AuFS or OverlayFS on the host system.</p>
+</div>
+<div class="section" id="volatile-root-filesystem">
+<h3>Volatile root filesystem<a class="headerlink" href="#volatile-root-filesystem" title="Permalink to this headline">¶</a></h3>
+<p>By using the <cite>&#8211;volatile</cite> option it&#8217;s possible to tell pflask to discard any
+change applied to the / directory once the container exits:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --volatile /lib/systemd/systemd
+</pre></div>
+</div>
+<p>The above will overlay a tmpfs on top of the chroot <cite>/path/to/container</cite>
+directory, so that the root filesystem will be writable from inside the
+container, but any change will be disacarded once the container terminates.</p>
+<p>This can be useful as a build environment, where dependencies can be installed
+at every build run on a clean chroot, without the need to recreate the chroot
+at every run.</p>
 </div>
 <div class="section" id="build-a-debian-package-inside-a-container">
 <h3>Build a Debian package inside a container<a class="headerlink" href="#build-a-debian-package-inside-a-container" title="Permalink to this headline">¶</a></h3>
@@ -278,10 +278,10 @@ all situations.</p>
 <li><a class="reference internal" href="#hide-directories-from-an-application">Hide directories from an application</a></li>
 <li><a class="reference internal" href="#detach-from-terminal">Detach from terminal</a></li>
 <li><a class="reference internal" href="#boot-the-os-inside-the-container">Boot the OS inside the container</a></li>
-<li><a class="reference internal" href="#volatile-root">Volatile root</a></li>
 <li><a class="reference internal" href="#disable-network-inside-the-container">Disable network inside the container</a></li>
 <li><a class="reference internal" href="#use-a-private-network-interface-inside-the-container">Use a private network interface inside the container</a></li>
 <li><a class="reference internal" href="#copy-on-write-filesystem">Copy-on-write filesystem</a></li>
+<li><a class="reference internal" href="#volatile-root-filesystem">Volatile root filesystem</a></li>
 <li><a class="reference internal" href="#build-a-debian-package-inside-a-container">Build a Debian package inside a container</a></li>
 </ul>
 </li>
