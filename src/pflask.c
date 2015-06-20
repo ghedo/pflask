@@ -432,6 +432,9 @@ static inline void help(void) {
 	CMD_HELP("--chdir", "-c",
 		"Change to the specified directory inside the container");
 
+	CMD_HELP("--cgroup", "-g",
+		"Create new cgroups and move the container inside them");
+
 	CMD_HELP("--detach", "-d",
 		"Detach from terminal");
 	CMD_HELP("--attach", "-a",
@@ -439,6 +442,8 @@ static inline void help(void) {
 
 	CMD_HELP("--setenv", "-s",
 		"Set additional environment variables");
+	CMD_HELP("--keepenv", "-k",
+		"Do not clear environment");
 
 	puts("");
 
