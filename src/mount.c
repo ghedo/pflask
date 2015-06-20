@@ -167,10 +167,14 @@ void do_mount(const char *dest, bool is_volatile) {
 			if (rc < 0) sysf_printf("mount(tmpfs)");
 
 			root_dir = prefix_root(template, "root");
-			mkdir(root_dir, 0755);
+			rc = mkdir(root_dir, 0755);
+			if (rc < 0)
+				sysf_printf("mkdir(%s)", work_dir);
 
 			work_dir = prefix_root(template, "work");
-			mkdir(work_dir, 0755);
+			rc = mkdir(work_dir, 0755);
+			if (rc < 0)
+				sysf_printf("mkdir(%s)", work_dir);
 
 			add_overlay_mount(&sys_mounts, root_dir, dest, work_dir);
 		}
