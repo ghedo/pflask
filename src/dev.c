@@ -69,7 +69,7 @@ void make_console(const char *dest, const char *console) {
 	if (rc < 0) fail_printf("OOM");
 
 	rc = mknod(target, sb.st_mode, sb.st_rdev);
-	if (rc < 0) sysf_printf("mknod()");
+	if (rc < 0) sysf_printf("mknod(%s)", target);
 
 	rc = mount(console, target, NULL, MS_BIND, NULL);
 	if (rc < 0) sysf_printf("mount()");
@@ -130,7 +130,7 @@ void copy_nodes(const char *dest) {
 		if (rc < 0) sysf_printf("stat()");
 
 		rc = mknod(target, sb.st_mode, sb.st_rdev);
-		if (rc < 0) sysf_printf("mknod()");
+		if (rc < 0) sysf_printf("mknod(%s)", target);
 	}
 
 	umask(u);
