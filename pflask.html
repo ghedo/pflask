@@ -227,6 +227,14 @@ will be created using <em>master</em> as master interface, moved inside the cont
 and renamed to <em>name</em>. No additional configuration will be applied to it.</p>
 <p>Example: <cite>&#8211;netif=macvlan,eth0,eth0</cite></p>
 </div>
+<div class="section" id="ipvlan">
+<h3>ipvlan<a class="headerlink" href="#ipvlan" title="Permalink to this headline">¶</a></h3>
+<p><cite>&#8211;netif=ipvlan,&lt;master&gt;,&lt;name&gt;</cite></p>
+<p>If the <em>ipvlan</em> option is used, a new network interface of type <cite>ipvlan</cite>
+will be created using <em>master</em> as master interface, moved inside the container
+and renamed to <em>name</em>. No additional configuration will be applied to it.</p>
+<p>Example: <cite>&#8211;netif=ipvlan,eth0,eth0</cite></p>
+</div>
 <div class="section" id="veth">
 <h3>veth<a class="headerlink" href="#veth" title="Permalink to this headline">¶</a></h3>
 <p><cite>&#8211;netif=veth,&lt;name_outside&gt;,&lt;name_inside&gt;</cite></p>
@@ -271,6 +279,7 @@ applied to them.</p>
 <li><a class="reference internal" href="#netif">NETIF</a><ul>
 <li><a class="reference internal" href="#move-and-rename">move and rename</a></li>
 <li><a class="reference internal" href="#macvlan">macvlan</a></li>
+<li><a class="reference internal" href="#ipvlan">ipvlan</a></li>
 <li><a class="reference internal" href="#veth">veth</a></li>
 </ul>
 </li>
