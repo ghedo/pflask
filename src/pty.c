@@ -263,6 +263,8 @@ void serve_pty(int fd) {
 	if (rc < 0) sysf_printf("listen()");
 
 	sigemptyset(&mask);
+	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGTERM);
 	sigaddset(&mask, SIGCHLD);
 
 	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
