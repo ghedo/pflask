@@ -352,7 +352,7 @@ int main(int argc, char *argv[]) {
 	}
 
 #ifdef HAVE_DBUS
-	register_machine(getpid(), dest != NULL ? dest : "");
+	register_machine(pid, dest != NULL ? dest : "");
 #endif
 
 	do_netif(pid);
