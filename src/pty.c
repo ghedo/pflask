@@ -119,6 +119,7 @@ void process_pty(int master_fd) {
 	sigaddset(&mask, SIGTERM);
 	sigaddset(&mask, SIGCHLD);
 	sigaddset(&mask, SIGWINCH);
+	sigaddset(&mask, SIGRTMIN + 4);
 
 	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
 	if (rc < 0) sysf_printf("sigprocmask()");
@@ -211,6 +212,9 @@ void process_pty(int master_fd) {
 			case SIGCHLD:
 				goto done;
 			}
+
+			if (fdsi.ssi_signo == (unsigned int) SIGRTMIN + 4)
+				goto done;
 		}
 	}
 
@@ -266,6 +270,7 @@ void serve_pty(int fd) {
 	sigaddset(&mask, SIGINT);
 	sigaddset(&mask, SIGTERM);
 	sigaddset(&mask, SIGCHLD);
+	sigaddset(&mask, SIGRTMIN + 4);
 
 	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
 	if (rc < 0) sysf_printf("sigprocmask()");
@@ -318,6 +323,9 @@ void serve_pty(int fd) {
 			case SIGCHLD:
 				return;
 			}
+
+			if (fdsi.ssi_signo == (unsigned int) SIGRTMIN + 4)
+				return;
 		}
 	}
 }
