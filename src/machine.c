@@ -66,8 +66,10 @@ void register_machine(pid_t pid, const char *dest) {
 	}
 
 	dbus_bus_request_name(conn, "org.freedesktop.machine1", 0, &err);
-	if (dbus_error_is_set(&err))
-		fail_printf("DBus name error: %s", err.message);
+	if (dbus_error_is_set(&err)) {
+		err_printf("DBus name error: %s", err.message);
+		return;
+	}
 
 
 	msg = dbus_message_new_method_call(
