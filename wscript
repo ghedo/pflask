@@ -35,6 +35,12 @@ def configure(cfg):
 		if ctx.check_cc(**kw_ext):
 			ctx.env.deps.append(dep)
 
+	def my_check_cfg(ctx, dep, **kw_ext):
+		kw_ext['args'] = '--cflags --libs'
+		kw_ext['uselib_store'] = dep
+		if ctx.check_cfg(**kw_ext):
+			ctx.env.deps.append(dep)
+
 	def my_check_os(ctx):
 		ctx.env.deps.append("os-{0}".format(ctx.env.DEST_OS))
 
@@ -60,6 +66,9 @@ def configure(cfg):
 	# AuFS
 	my_check_cc(cfg, 'aufs', header_name='linux/aufs_type.h',
 	            define_name='HAVE_AUFS', mandatory=False)
+
+	# libdbus
+	my_check_cfg(cfg, 'dbus', package='dbus-1', mandatory=False)
 
 	# sphinx
 	cfg.find_program('sphinx-build', mandatory=False)
@@ -103,17 +112,18 @@ def build(bld):
 
 	sources = [
 		# sources
-		( 'src/cgroup.c' ),
-		( 'src/dev.c'    ),
-		( 'src/mount.c'  ),
-		( 'src/netif.c'  ),
-		( 'src/nl.c'     ),
-		( 'src/path.c'   ),
-		( 'src/pflask.c' ),
-		( 'src/printf.c' ),
-		( 'src/pty.c'    ),
-		( 'src/user.c'   ),
-		( 'src/util.c'   ),
+		( 'src/cgroup.c'          ),
+		( 'src/dev.c'             ),
+		( 'src/machine.c', 'dbus' ),
+		( 'src/mount.c'           ),
+		( 'src/netif.c'           ),
+		( 'src/nl.c'              ),
+		( 'src/path.c'            ),
+		( 'src/pflask.c'          ),
+		( 'src/printf.c'          ),
+		( 'src/pty.c'             ),
+		( 'src/user.c'            ),
+		( 'src/util.c'            ),
 	]
 
 	bld.env.append_value('INCLUDES', ['deps', 'src'])

@@ -47,6 +47,7 @@
 #include "dev.h"
 #include "pty.h"
 #include "user.h"
+#include "machine.h"
 #include "mount.h"
 #include "cgroup.h"
 #include "netif.h"
@@ -349,6 +350,10 @@ int main(int argc, char *argv[]) {
 
 		if (rc < 0) sysf_printf("exec()");
 	}
+
+#ifdef HAVE_DBUS
+	register_machine(getpid(), "");
+#endif
 
 	do_netif(pid);
 
