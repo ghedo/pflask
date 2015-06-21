@@ -175,6 +175,17 @@ and renamed to *name*. No additional configuration will be applied to it.
 
 Example: `--netif=macvlan,eth0,eth0`
 
+ipvlan
+~~~~~~~
+
+`--netif=ipvlan,<master>,<name>`
+
+If the *ipvlan* option is used, a new network interface of type `ipvlan`
+will be created using *master* as master interface, moved inside the container
+and renamed to *name*. No additional configuration will be applied to it.
+
+Example: `--netif=ipvlan,eth0,eth0`
+
 veth
 ~~~~
 

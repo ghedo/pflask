@@ -46,6 +46,7 @@
 enum type {
 	MOVE,
 	MACVLAN,
+	IPVLAN,
 	VETH,
 };
 
@@ -65,6 +66,7 @@ static void add_netif(enum type type, char *dev, char *name);
 static void if_up(int sock, int if_index);
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
 static void create_macvlan(int sock, int master, char *name);
+static void create_ipvlan(int sock, int master, char *name);
 static void create_veth_pair(int sock, char *name_out, char *name_in);
 
 void add_netif_from_spec(const char *spec) {
@@ -86,6 +88,9 @@ void add_netif_from_spec(const char *spec) {
 	} else if (strncmp(opts[0], "macvlan", 8) == 0) {
 		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
 		add_netif(MACVLAN, opts[1], opts[2]);
+	} else if (strncmp(opts[0], "ipvlan", 8) == 0) {
+		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
+		add_netif(IPVLAN, opts[1], opts[2]);
 	} else if (strncmp(opts[0], "veth", 5) == 0) {
 		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
 		add_netif(VETH, opts[1], opts[2]);
@@ -114,6 +119,22 @@ void do_netif(pid_t pid) {
 				sysf_printf("Error searching for '%s'", i->dev);
 
 			create_macvlan(sock, if_index, name);
+
+			if_index = if_nametoindex(name);
+			break;
+		}
+
+		case IPVLAN: {
+			_free_ char *name = NULL;
+
+			rc = asprintf(&name, "pflask-%d", pid);
+			if (rc < 0) fail_printf("OOM");
+
+			if_index = if_nametoindex(i->dev);
+			if (if_index == 0)
+				sysf_printf("Error searching for '%s'", i->dev);
+
+			create_ipvlan(sock, if_index, name);
 
 			if_index = if_nametoindex(name);
 			break;
@@ -222,6 +243,40 @@ static void create_macvlan(int sock, int master, char *name) {
 
 	nested = rtattr_start_nested(req, IFLA_LINKINFO);
 	rtattr_append(req, IFLA_INFO_KIND, "macvlan", 8);
+	rtattr_end_nested(req, nested);
+
+	rtattr_append(req, IFLA_LINK, &master, sizeof(master));
+	rtattr_append(req, IFLA_IFNAME, name, strlen(name) + 1);
+
+	nl_send(sock, req);
+	nl_recv(sock, req);
+
+	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
+		if (req->msg.err.error < 0)
+			fail_printf("Error sending netlink request: %s",
+			            strerror(-req->msg.err.error));
+	}
+}
+
+static void create_ipvlan(int sock, int master, char *name) {
+	struct rtattr *nested = NULL;
+
+	int mode = IPVLAN_MODE_L2;
+
+	_free_ struct nlmsg *req = malloc(NLMSG_GOOD_SIZE);
+
+	req->hdr.nlmsg_seq   = 1;
+	req->hdr.nlmsg_type  = RTM_NEWLINK;
+	req->hdr.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+	req->hdr.nlmsg_flags = NLM_F_REQUEST |
+	                         NLM_F_CREATE  |
+	                         NLM_F_EXCL    |
+	                         NLM_F_ACK;
+
+	req->msg.ifi.ifi_family  = AF_UNSPEC;
+
+	nested = rtattr_start_nested(req, IFLA_LINKINFO);
+	rtattr_append(req, IFLA_INFO_KIND, "ipvlan", 7);
 	rtattr_end_nested(req, nested);
 
 	rtattr_append(req, IFLA_LINK, &master, sizeof(master));
