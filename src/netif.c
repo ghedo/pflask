@@ -261,8 +261,6 @@ static void create_macvlan(int sock, int master, char *name) {
 static void create_ipvlan(int sock, int master, char *name) {
 	struct rtattr *nested = NULL;
 
-	int mode = IPVLAN_MODE_L2;
-
 	_free_ struct nlmsg *req = malloc(NLMSG_GOOD_SIZE);
 
 	req->hdr.nlmsg_seq   = 1;
