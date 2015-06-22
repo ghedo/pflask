@@ -1,0 +1,28 @@
+#compdef pflask
+
+# pflask zsh completion
+
+local curcontext="$curcontext" state state_descr line
+typeset -A opt_args
+
+_arguments -C -S \
+	{--mount=,-m}'[Create a new mount point inside the container]:mount spec' \
+	{--netif=,-n+}'[Create a new network namespace and optionally move a network interface inside it]' \
+	{--user=,-u}'[Run the command as the specified user inside the container]:user' \
+	{--chroot=,-r}'[Use the specified directory as root inside the container]:directory:_directories' \
+	{--chdir=,-c}'[Change to the specified directory inside the container]:directory' \
+	{--volatile,-w}'[Discard changes to /]' \
+	{--cgroup=,-g}'[Create new cgroups and move the container inside them]:cgroup spec' \
+	{--detach,-d}'[Detach from terminal]' \
+	{--attach=,-a}'[Attach to the specified detached process]:PID' \
+	{--setenv=,-s}'[Set additional environment variables]:env variable' \
+	{--keepenv,-k}'[Do not clear environment]' \
+	{--hostname=,-t}'[Set the container hostname]:hostname' \
+	{--no-userns,-U}'[Disable user namespace support]' \
+	{--no-mountns,-M}'[Disable mount namespace support]' \
+	{--no-netns,-N}'[Disable net namespace support]' \
+	{--no-ipcns,-I}'[Disable IPC namespace support]' \
+	{--no-utsns,-H}'[Disable UTS namespace support]' \
+	{--no-pidns,-P}'[Disable PID namespace support]' && rc=0
+
+return rc

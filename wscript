@@ -12,6 +12,7 @@ _INSTALL_DIRS_LIST = [
 	('datadir', '${DESTDIR}${PREFIX}/share',    'data files'),
 	('docdir',  '${DATADIR}/doc/pflask',        'documentation files'),
 	('mandir',  '${DATADIR}/man',               'man pages '),
+	('zshdir',  '${DATADIR}/zsh/site-functions','zsh completion functions'),
 ]
 
 def options(opt):
@@ -139,6 +140,8 @@ def build(bld):
 
 	bld.install_files('${BINDIR}', bld.path.ant_glob('tools/pflask-*'),
 	                  chmod=Utils.O755)
+
+	bld.install_as('${ZSHDIR}/_pflask', 'etc/pflask.zsh-completion')
 
 	if bld.env['SPHINX_BUILD']:
 		bld(
