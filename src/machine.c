@@ -42,9 +42,8 @@ void register_machine(pid_t pid, const char *dest) {
 	DBusError err;
 	DBusConnection *conn;
 
-	DBusMessage *msg;
 	DBusMessageIter args;
-	DBusPendingCall *pending;
+	DBusMessage *req, *rep;
 
 	DBusMessageIter uuid_iter, scope_iter;
 
@@ -61,26 +60,24 @@ void register_machine(pid_t pid, const char *dest) {
 
 	conn = dbus_bus_get_private(DBUS_BUS_SYSTEM, &err);
 	if (dbus_error_is_set(&err)) {
-		err_printf("DBus connection error: %s", err.message);
+		err_printf("Error getting system bus: %s", err.message);
 		return;
 	}
 
 	dbus_bus_request_name(conn, "org.freedesktop.machine1", 0, &err);
 	if (dbus_error_is_set(&err)) {
-		err_printf("DBus name error: %s", err.message);
+		err_printf("Error requesting name: %s", err.message);
 		return;
 	}
 
-
-	msg = dbus_message_new_method_call(
+	req = dbus_message_new_method_call(
 		"org.freedesktop.machine1",
 		"/org/freedesktop/machine1",
 		"org.freedesktop.machine1.Manager",
 		"CreateMachine"
 	);
 
-	dbus_message_iter_init_append(msg, &args);
-
+	dbus_message_iter_init_append(req, &args);
 
 	/* name */
 	if (!dbus_message_iter_append_basic(&args, DBUS_TYPE_STRING, &name))
@@ -122,19 +119,12 @@ void register_machine(pid_t pid, const char *dest) {
 	if (!dbus_message_iter_close_container(&args, &scope_iter))
 		fail_printf("OOM");
 
-	if (!dbus_connection_send_with_reply(conn, msg, &pending, -1))
-		fail_printf("Could not send DBus message");
+	rep = dbus_connection_send_with_reply_and_block(conn, req, -1, &err);
+	if (dbus_error_is_set(&err))
+		err_printf("Error sending request: %s", err.message);
 
-	dbus_pending_call_block(pending);
-
-	msg = dbus_pending_call_steal_reply(pending);
-	if (!msg)
-		fail_printf("OOM");
-
-	dbus_pending_call_unref(pending);
-
-	if (dbus_message_get_type(msg) == DBUS_MESSAGE_TYPE_ERROR)
-		err_printf("%s", dbus_message_get_error_name(msg));
+	dbus_message_unref(req);
+	dbus_message_unref(rep);
 
 	dbus_connection_close(conn);
 	dbus_error_free(&err);
