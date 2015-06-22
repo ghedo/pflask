@@ -64,12 +64,6 @@ void register_machine(pid_t pid, const char *dest) {
 		return;
 	}
 
-	dbus_bus_request_name(conn, "org.freedesktop.machine1", 0, &err);
-	if (dbus_error_is_set(&err)) {
-		err_printf("Error requesting name: %s", err.message);
-		return;
-	}
-
 	req = dbus_message_new_method_call(
 		"org.freedesktop.machine1",
 		"/org/freedesktop/machine1",
