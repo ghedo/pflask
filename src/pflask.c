@@ -91,7 +91,6 @@ int main(int argc, char *argv[]) {
 	int rc, i;
 
 	pid_t pid  = -1;
-	pid_t ppid = getpid();
 
 	uid_t uid = -1;
 	gid_t gid = -1;
@@ -282,8 +281,6 @@ int main(int argc, char *argv[]) {
 		if (clone_flags & CLONE_NEWUSER)
 			map_user_to_user(uid, gid, user);
 
-		do_cgroup(cgroup, ppid);
-
 		do_mount(dest, volatil);
 
 		if (dest != NULL) {
@@ -350,11 +347,13 @@ int main(int argc, char *argv[]) {
 		if (rc < 0) sysf_printf("exec()");
 	}
 
+	do_cgroup(cgroup, pid);
+
+	do_netif(pid);
+
 #ifdef HAVE_DBUS
 	register_machine(pid, dest != NULL ? dest : "");
 #endif
-
-	do_netif(pid);
 
 process_fd:
 	if (detach)
@@ -388,7 +387,7 @@ process_fd:
 		break;
 	}
 
-	undo_cgroup(cgroup, ppid);
+	undo_cgroup(cgroup, pid);
 
 	return status.si_status;
 }

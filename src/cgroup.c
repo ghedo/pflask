@@ -94,7 +94,7 @@ void do_cgroup(const char *spec, pid_t pid) {
 		if (rc < 0) fail_printf("OOM");
 
 		create_cgroup(controllers[i], name);
-		attach_cgroup(controllers[i], name, 1);
+		attach_cgroup(controllers[i], name, pid);
 	}
 }
 
