@@ -114,11 +114,15 @@ void register_machine(pid_t pid, const char *dest) {
 		fail_printf("OOM");
 
 	rep = dbus_connection_send_with_reply_and_block(conn, req, -1, &err);
-	if (dbus_error_is_set(&err))
-		err_printf("Error sending request: %s", err.message);
+	if (dbus_error_is_set(&err)) {
+		err_printf("Error registering machine");
+		goto done;
+	}
 
-	dbus_message_unref(req);
 	dbus_message_unref(rep);
+
+done:
+	dbus_message_unref(req);
 
 	dbus_connection_close(conn);
 	dbus_error_free(&err);
