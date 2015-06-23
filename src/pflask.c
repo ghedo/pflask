@@ -55,12 +55,13 @@
 #include "printf.h"
 #include "util.h"
 
-static const char *short_opts = "+m:n::u:r:wc:g:da:s:kt:UMNIHPh?";
+static const char *short_opts = "+m:n::u:e:r:wc:g:da:s:kt:UMNIHPh?";
 
 static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
 	{ "netif",     optional_argument, NULL, 'n' },
 	{ "user",      required_argument, NULL, 'u' },
+	{ "map-users", required_argument, NULL, 'e' },
 	{ "chroot",    required_argument, NULL, 'r' },
 	{ "volatile",  no_argument,       NULL, 'w' },
 	{ "chdir",     required_argument, NULL, 'c' },
@@ -96,9 +97,13 @@ int main(int argc, char *argv[]) {
 	pid_t pid  = -1;
 
 	uid_t uid = -1;
-	gid_t gid = -1;
+
+	uid_t cont_id = -1;
+	uid_t host_id = -1;
+	size_t id_count = 0;
 
 	_free_ char *user   = strdup("root");
+	_free_ char *map    = NULL;
 	_free_ char *dest   = NULL;
 	_free_ char *change = NULL;
 	_free_ char *env    = NULL;
@@ -144,6 +149,32 @@ int main(int argc, char *argv[]) {
 
 			user = strdup(optarg);
 			break;
+
+		case 'e': {
+			char *start = optarg, *end = NULL;
+
+			validate_optlist("--map-users", optarg);
+
+			clone_flags |= CLONE_NEWUSER;
+
+			cont_id = strtoul(start, &end, 10);
+			if (*end != ':')
+				fail_printf("a Invalid value '%s' for --map-users", optarg);
+
+			start = end + 1;
+
+			host_id = strtoul(start, &end, 10);
+			if (*end != ':')
+				fail_printf("b Invalid value '%s' for --map-users", optarg);
+
+			start = end + 1;
+
+			id_count = strtoul(start, &end, 10);
+			if (*end != '\0')
+				fail_printf("c Invalid value '%s' for --map-users", optarg);
+
+			break;
+		}
 
 		case 'r':
 			freep(&dest);
@@ -255,7 +286,6 @@ int main(int argc, char *argv[]) {
 		do_daemonize();
 
 	uid = getuid();
-	gid = getgid();
 
 	sync_init(sync);
 
@@ -357,8 +387,22 @@ int main(int argc, char *argv[]) {
 	register_machine(pid, dest != NULL ? dest : "");
 #endif
 
-	if (clone_flags & CLONE_NEWUSER)
-		map_user_to_user(uid, gid, user, pid);
+	if (clone_flags & CLONE_NEWUSER) {
+		if (id_count == 0) {
+			uid_t pw_uid, pw_gid;
+
+			enable_setgroups(false, pid);
+
+			get_uid_gid(user, &pw_uid, &pw_gid);
+
+			cont_id = pw_uid;
+			host_id = uid;
+			id_count = 1;
+		}
+
+		map_users('u', cont_id, host_id, id_count, pid);
+		map_users('g', cont_id, host_id, id_count, pid);
+	}
 
 	sync_wake_child(sync, SYNC_DONE);
 
@@ -474,6 +518,8 @@ static inline void help(void) {
 
 	CMD_HELP("--user",  "-u",
 		"Run the command as the specified user inside the container");
+	CMD_HELP("--map-users", "-e",
+		"Map container users to host users");
 
 	CMD_HELP("--chroot",  "-r",
 		"Use the specified directory as root inside the container");
