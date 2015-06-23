@@ -98,7 +98,7 @@ void add_netif_from_spec(const char *spec) {
 		fail_printf("Invalid netif spec '%s'", spec);
 }
 
-void do_netif(pid_t pid) {
+void create_netif(pid_t pid) {
 	int rc;
 	_close_ int sock = nl_open();
 
@@ -163,7 +163,7 @@ void do_netif(pid_t pid) {
 	}
 }
 
-void setup_loopback(void) {
+void setup_netif(void) {
 	_close_ int sock = nl_open();
 	if_up(sock, 1);
 }

@@ -72,7 +72,7 @@ void validate_cgroup_spec(const char *spec) {
 	}
 }
 
-void do_cgroup(const char *spec, pid_t pid) {
+void setup_cgroup(const char *spec, pid_t pid) {
 	int rc;
 
 	_free_ char *tmp = NULL;

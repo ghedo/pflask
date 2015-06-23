@@ -30,4 +30,4 @@
 
 void map_user_to_user(uid_t uid, gid_t gid, const char *user);
 
-void do_user(const char *user);
+void setup_user(const char *user);

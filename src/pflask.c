@@ -91,27 +91,26 @@ static inline void help(void);
 int main(int argc, char *argv[]) {
 	int rc, i;
 
+	int sync[2];
+
 	pid_t pid  = -1;
 
 	uid_t uid = -1;
 	gid_t gid = -1;
 
-	_free_ char *user   = NULL;
+	_free_ char *user   = strdup("root");
 	_free_ char *dest   = NULL;
 	_free_ char *change = NULL;
 	_free_ char *env    = NULL;
 	_free_ char *cgroup = NULL;
 	_free_ char *hname  = NULL;
 
+	char *master;
 	_close_ int master_fd = -1;
-
-	int sync[2];
-
-	char *master_name;
 
 	bool detach  = false;
 	bool keepenv = false;
-	bool volatil = false;
+	bool is_volatile = false;
 
 	siginfo_t status;
 
@@ -160,7 +159,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		case 'w':
-			volatil = 1;
+			is_volatile = 1;
 			break;
 
 		case 'g':
@@ -246,22 +245,17 @@ int main(int argc, char *argv[]) {
 		master_fd = recv_pty(pid);
 		if (master_fd < 0) fail_printf("Invalid PID '%u'", pid);
 
-		pid = -1;
-		goto process_fd;
+		process_pty(master_fd);
+		return 0;
 	}
 
-	if (user == NULL) {
-		user = strdup("root");
-		if (user == NULL) fail_printf("OOM");
-	}
-
-	open_master_pty(&master_fd, &master_name);
-
-	uid = getuid();
-	gid = getgid();
+	open_master_pty(&master_fd, &master);
 
 	if (detach)
 		do_daemonize();
+
+	uid = getuid();
+	gid = getgid();
 
 	sync_init(sync);
 
@@ -273,7 +267,7 @@ int main(int argc, char *argv[]) {
 		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
 		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
 
-		open_slave_pty(master_name);
+		open_slave_pty(master);
 
 		rc = setsid();
 		if (rc < 0) sysf_printf("setsid()");
@@ -290,7 +284,7 @@ int main(int argc, char *argv[]) {
 		if (clone_flags & CLONE_NEWUSER)
 			map_user_to_user(uid, gid, user);
 
-		do_mount(dest, volatil);
+		setup_mount(dest, is_volatile);
 
 		if (dest != NULL) {
 			copy_nodes(dest);
@@ -299,19 +293,19 @@ int main(int argc, char *argv[]) {
 
 			make_symlinks(dest);
 
-			make_console(dest, master_name);
+			make_console(dest, master);
 
 			do_chroot(dest);
 		}
 
 		if (clone_flags & CLONE_NEWNET)
-			setup_loopback();
+			setup_netif();
 
 		umask(0022);
 
 		/* TODO: drop capabilities */
 
-		do_user(user);
+		setup_user(user);
 
 		if (change != NULL) {
 			rc = chdir(change);
@@ -358,9 +352,9 @@ int main(int argc, char *argv[]) {
 
 	sync_wait_child(sync, SYNC_START);
 
-	do_cgroup(cgroup, pid);
+	setup_cgroup(cgroup, pid);
 
-	do_netif(pid);
+	create_netif(pid);
 
 #ifdef HAVE_DBUS
 	register_machine(pid, dest != NULL ? dest : "");
@@ -370,14 +364,10 @@ int main(int argc, char *argv[]) {
 
 	sync_close(sync);
 
-process_fd:
 	if (detach)
 		serve_pty(master_fd);
 	else
 		process_pty(master_fd);
-
-	if (pid == -1)
-		return 0;
 
 	kill(pid, SIGKILL);
 

@@ -30,5 +30,5 @@
 
 void add_netif_from_spec(const char *spec);
 
-void setup_loopback(void);
-void do_netif(pid_t pid);
+void create_netif(pid_t pid);
+void setup_netif(void);
