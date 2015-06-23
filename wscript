@@ -123,6 +123,7 @@ def build(bld):
 		( 'src/pflask.c'          ),
 		( 'src/printf.c'          ),
 		( 'src/pty.c'             ),
+		( 'src/sync.c'            ),
 		( 'src/user.c'            ),
 		( 'src/util.c'            ),
 	]

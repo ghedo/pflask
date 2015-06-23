@@ -51,6 +51,7 @@
 #include "mount.h"
 #include "cgroup.h"
 #include "netif.h"
+#include "sync.h"
 #include "printf.h"
 #include "util.h"
 
@@ -103,6 +104,8 @@ int main(int argc, char *argv[]) {
 	_free_ char *hname  = NULL;
 
 	_close_ int master_fd = -1;
+
+	int sync[2];
 
 	char *master_name;
 
@@ -260,18 +263,24 @@ int main(int argc, char *argv[]) {
 	if (detach)
 		do_daemonize();
 
+	sync_init(sync);
+
 	pid = do_clone(&clone_flags);
 
 	if (pid == 0) {
 		closep(&master_fd);
+
+		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
+		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
 
 		open_slave_pty(master_name);
 
 		rc = setsid();
 		if (rc < 0) sysf_printf("setsid()");
 
-		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
-		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
+		sync_barrier_parent(sync, SYNC_START);
+
+		sync_close(sync);
 
 		if (hname != NULL) {
 			rc = sethostname(hname, strlen(hname));
@@ -347,6 +356,8 @@ int main(int argc, char *argv[]) {
 		if (rc < 0) sysf_printf("exec()");
 	}
 
+	sync_wait_child(sync, SYNC_START);
+
 	do_cgroup(cgroup, pid);
 
 	do_netif(pid);
@@ -354,6 +365,10 @@ int main(int argc, char *argv[]) {
 #ifdef HAVE_DBUS
 	register_machine(pid, dest != NULL ? dest : "");
 #endif
+
+	sync_wake_child(sync, SYNC_DONE);
+
+	sync_close(sync);
 
 process_fd:
 	if (detach)
@@ -386,6 +401,8 @@ process_fd:
 		err_printf("Child failed");
 		break;
 	}
+
+	sync_close(sync);
 
 	undo_cgroup(cgroup, pid);
 
