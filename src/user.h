@@ -28,6 +28,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+void enable_setgroups(bool enable, pid_t pid);
+void map_users(char type, uid_t id, uid_t host_id, size_t count, pid_t pid);
+void get_uid_gid(const char *user, uid_t *uid, gid_t *gid);
+
 void map_user_to_user(uid_t uid, gid_t gid, const char *user, pid_t pid);
 
 void setup_user(const char *user);

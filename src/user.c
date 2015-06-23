@@ -29,6 +29,7 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
@@ -39,75 +40,75 @@
 #include "printf.h"
 #include "util.h"
 
-void map_user_to_user(uid_t uid, gid_t gid, const char *user, pid_t pid) {
+void enable_setgroups(bool enable, pid_t pid) {
 	int rc;
 
-	_free_ char *setgroups_file = NULL;
-	_free_ char *uid_map_file = NULL;
-	_free_ char *gid_map_file = NULL;
-
 	_close_ int setgroups_fd = -1;
-	_close_ int uid_map_fd = -1;
-	_close_ int gid_map_fd = -1;
 
-	_free_ char *uid_map = NULL;
-	_free_ char *gid_map = NULL;
+	_free_ char *setgroups_file = NULL;
 
-	uid_t pw_uid;
-	uid_t pw_gid;
+	rc = asprintf(&setgroups_file, "/proc/%d/setgroups", pid);
+	if (rc < 0) fail_printf("OOM");
 
+	setgroups_fd = open(setgroups_file, O_RDWR);
+	if (setgroups_fd >= 0) {
+		char *cmd = (enable) ? "allow" : "deny";
+		rc = write(setgroups_fd, cmd, strlen(cmd));
+		if (rc < 0) sysf_printf("write(setgroups)");
+	}
+}
+
+void map_users(char type, uid_t id, uid_t host_id, size_t count, pid_t pid) {
+	int rc;
+
+	_free_ char *map = NULL;
+	_free_ char *map_file = NULL;
+
+	_close_ int map_fd = -1;
+
+	rc = asprintf(&map_file, "/proc/%d/%cid_map", pid, type);
+	if (rc < 0) fail_printf("OOM");
+
+	map_fd = open(map_file, O_RDWR);
+	if (map_fd < 0) sysf_printf("open(%s)", map_file);
+
+	rc = asprintf(&map, "%u %u %lu", id, host_id, count);
+	if (rc < 0) fail_printf("OOM");
+
+	rc = write(map_fd, map, strlen(map));
+	if (rc < 0) sysf_printf("write()");
+}
+
+void get_uid_gid(const char *user, uid_t *uid, gid_t *gid) {
 	struct passwd *pwd;
 
-	if (strncmp(user, "root", 5) == 0) {
-		pw_uid = 0;
-		pw_gid = 0;
-	} else {
+	*uid = 0;
+	*gid = 0;
+
+	if (strncmp(user, "root", 5)) {
 		errno = 0;
+
 		pwd = getpwnam(user);
 		if (pwd == NULL) {
 			if (errno) sysf_printf("getpwnam()");
 			else       fail_printf("Invalid user '%s'", user);
 		}
 
-		pw_uid = pwd->pw_uid;
-		pw_gid = pwd->pw_gid;
+		*uid = pwd->pw_uid;
+		*gid = pwd->pw_gid;
 	}
+}
 
-	/* setgroups */
-	rc = asprintf(&setgroups_file, "/proc/%d/setgroups", pid);
-	if (rc < 0) fail_printf("OOM");
+void map_user_to_user(uid_t uid, gid_t gid, const char *user, pid_t pid) {
+	uid_t pw_uid;
+	uid_t pw_gid;
 
-	setgroups_fd = open(setgroups_file, O_RDWR);
-	if (setgroups_fd >= 0) {
-		rc = write(setgroups_fd, "deny", 4);
-		if (rc < 0) sysf_printf("write(setgroups)");
-	}
+	get_uid_gid(user, &pw_uid, &pw_gid);
 
-	/* uid map */
-	rc = asprintf(&uid_map_file, "/proc/%d/uid_map", pid);
-	if (rc < 0) fail_printf("OOM");
+	enable_setgroups(false, pid);
 
-	rc = asprintf(&uid_map, "%d %d 1", pw_uid, uid);
-	if (rc < 0) fail_printf("OOM");
-
-	uid_map_fd = open(uid_map_file, O_RDWR);
-	if (uid_map_fd < 0) sysf_printf("open(uid_map)");
-
-	rc = write(uid_map_fd, uid_map, strlen(uid_map));
-	if (rc < 0) sysf_printf("write(uid_map)");
-
-	/* gid map */
-	rc = asprintf(&gid_map_file, "/proc/%d/gid_map", pid);
-	if (rc < 0) fail_printf("OOM");
-
-	rc = asprintf(&gid_map, "%d %d 1", pw_gid, gid);
-	if (rc < 0) fail_printf("OOM");
-
-	gid_map_fd = open(gid_map_file, O_RDWR);
-	if (gid_map_fd < 0) sysf_printf("open(gid_map)");
-
-	rc = write(gid_map_fd, gid_map, strlen(gid_map));
-	if (rc < 0) sysf_printf("write(gid_map)");
+	map_users('u', pw_uid, uid, 1, pid);
+	map_users('g', pw_gid, gid, 1, pid);
 }
 
 void setup_user(const char *user) {
@@ -116,22 +117,7 @@ void setup_user(const char *user) {
 	uid_t pw_uid;
 	uid_t pw_gid;
 
-	struct passwd *pwd;
-
-	if (strncmp(user, "root", 5) == 0) {
-		pw_uid = 0;
-		pw_gid = 0;
-	} else {
-		errno = 0;
-		pwd = getpwnam(user);
-		if (pwd == NULL) {
-			if (errno) sysf_printf("getpwnam()");
-			else       fail_printf("Invalid user '%s'", user);
-		}
-
-		pw_uid = pwd->pw_uid;
-		pw_gid = pwd->pw_gid;
-	}
+	get_uid_gid(user, &pw_uid, &pw_gid);
 
 	rc = setresgid(pw_gid, pw_gid, pw_gid);
 	if (rc < 0) sysf_printf("setresgid()");
