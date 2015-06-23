@@ -39,8 +39,12 @@
 #include "printf.h"
 #include "util.h"
 
-void map_user_to_user(uid_t uid, gid_t gid, const char *user) {
+void map_user_to_user(uid_t uid, gid_t gid, const char *user, pid_t pid) {
 	int rc;
+
+	_free_ char *setgroups_file = NULL;
+	_free_ char *uid_map_file = NULL;
+	_free_ char *gid_map_file = NULL;
 
 	_close_ int setgroups_fd = -1;
 	_close_ int uid_map_fd = -1;
@@ -69,25 +73,37 @@ void map_user_to_user(uid_t uid, gid_t gid, const char *user) {
 		pw_gid = pwd->pw_gid;
 	}
 
-	setgroups_fd = open("/proc/self/setgroups", O_RDWR);
+	/* setgroups */
+	rc = asprintf(&setgroups_file, "/proc/%d/setgroups", pid);
+	if (rc < 0) fail_printf("OOM");
+
+	setgroups_fd = open(setgroups_file, O_RDWR);
 	if (setgroups_fd >= 0) {
 		rc = write(setgroups_fd, "deny", 4);
 		if (rc < 0) sysf_printf("write(setgroups)");
 	}
 
+	/* uid map */
+	rc = asprintf(&uid_map_file, "/proc/%d/uid_map", pid);
+	if (rc < 0) fail_printf("OOM");
+
 	rc = asprintf(&uid_map, "%d %d 1", pw_uid, uid);
 	if (rc < 0) fail_printf("OOM");
 
-	uid_map_fd = open("/proc/self/uid_map", O_RDWR);
+	uid_map_fd = open(uid_map_file, O_RDWR);
 	if (uid_map_fd < 0) sysf_printf("open(uid_map)");
 
 	rc = write(uid_map_fd, uid_map, strlen(uid_map));
 	if (rc < 0) sysf_printf("write(uid_map)");
 
+	/* gid map */
+	rc = asprintf(&gid_map_file, "/proc/%d/gid_map", pid);
+	if (rc < 0) fail_printf("OOM");
+
 	rc = asprintf(&gid_map, "%d %d 1", pw_gid, gid);
 	if (rc < 0) fail_printf("OOM");
 
-	gid_map_fd = open("/proc/self/gid_map", O_RDWR);
+	gid_map_fd = open(gid_map_file, O_RDWR);
 	if (gid_map_fd < 0) sysf_printf("open(gid_map)");
 
 	rc = write(gid_map_fd, gid_map, strlen(gid_map));

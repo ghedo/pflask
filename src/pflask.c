@@ -281,9 +281,6 @@ int main(int argc, char *argv[]) {
 			if (rc < 0) sysf_printf("sethostname()");
 		}
 
-		if (clone_flags & CLONE_NEWUSER)
-			map_user_to_user(uid, gid, user);
-
 		setup_mount(dest, is_volatile);
 
 		if (dest != NULL) {
@@ -359,6 +356,9 @@ int main(int argc, char *argv[]) {
 #ifdef HAVE_DBUS
 	register_machine(pid, dest != NULL ? dest : "");
 #endif
+
+	if (clone_flags & CLONE_NEWUSER)
+		map_user_to_user(uid, gid, user, pid);
 
 	sync_wake_child(sync, SYNC_DONE);
 
