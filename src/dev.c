@@ -116,21 +116,24 @@ void copy_nodes(const char *dest) {
 		"/dev/null",
 		"/dev/zero",
 		"/dev/random",
-		"/dev/urandom"
+		"/dev/urandom",
 	};
 
 	for (size_t i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
-		struct stat sb;
+		FILE *file = NULL;
+
 		_free_ char *target = NULL;
 
 		rc = asprintf(&target, "%s%s", dest, nodes[i]);
 		if (rc < 0) fail_printf("OOM");
 
-		rc = stat(nodes[i], &sb);
-		if (rc < 0) sysf_printf("stat()");
+		file = fopen(target, "wb");
+		if (!file)
+			sysf_printf("fopen()");
+		fclose(file);
 
-		rc = mknod(target, sb.st_mode, sb.st_rdev);
-		if (rc < 0) sysf_printf("mknod(%s)", target);
+		rc = mount(nodes[i], target, NULL, MS_BIND, NULL);
+		if (rc < 0) sysf_printf("mount()");
 	}
 
 	umask(u);
