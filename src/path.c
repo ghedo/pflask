@@ -28,6 +28,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -109,4 +110,39 @@ char *prefix_root(const char *root, const char *path) {
 
 	strcpy(p, path);
 	return n;
+}
+
+char *on_path(char *cmd, const char *rootfs) {
+	int rc;
+
+	_free_ char *path = NULL;
+
+	char *iter = NULL;
+	char *entry = NULL;
+	char *saveptr = NULL;
+	char *cmd_path = NULL;
+
+	path = getenv("PATH");
+	if (!path)
+		return NULL;
+
+	path = strdup(path);
+	if (!path)
+		return NULL;
+
+	iter = path;
+
+	while ((entry = strtok_r(iter, ":", &saveptr))) {
+		iter = NULL;
+
+		if (rootfs)
+			rc = asprintf(&cmd_path, "%s/%s/%s", rootfs, entry, cmd);
+		else
+			rc = asprintf(&cmd_path, "%s/%s", entry, cmd);
+
+		if (rc >= 0 && !access(cmd_path, X_OK))
+			return cmd_path;
+	}
+
+	return NULL;
 }

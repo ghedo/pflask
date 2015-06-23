@@ -37,6 +37,7 @@
 #include <pwd.h>
 #include <grp.h>
 
+#include "path.h"
 #include "printf.h"
 #include "util.h"
 
@@ -62,21 +63,34 @@ void map_users(char type, uid_t id, uid_t host_id, size_t count, pid_t pid) {
 	int rc;
 
 	_free_ char *map = NULL;
-	_free_ char *map_file = NULL;
+	_free_ char *cmd = on_path("newuidmap", NULL);
 
-	_close_ int map_fd = -1;
+	if (cmd != NULL) {
+		rc = asprintf(&map, "new%cidmap %u %u %u %lu",
+		              type, pid, id, host_id, count);
+		if (rc < 0) fail_printf("OOM");
 
-	rc = asprintf(&map_file, "/proc/%d/%cid_map", pid, type);
-	if (rc < 0) fail_printf("OOM");
+		rc = system(map);
+		if (rc != 0) fail_printf("system(map): returned %d", rc);
+	} else {
+		_free_ char *map_file = NULL;
 
-	map_fd = open(map_file, O_RDWR);
-	if (map_fd < 0) sysf_printf("open(%s)", map_file);
+		_close_ int map_fd = -1;
 
-	rc = asprintf(&map, "%u %u %lu", id, host_id, count);
-	if (rc < 0) fail_printf("OOM");
+		err_printf("newuidmap not found, falling back to direct /proc access");
 
-	rc = write(map_fd, map, strlen(map));
-	if (rc < 0) sysf_printf("write()");
+		rc = asprintf(&map, "%u %u %lu", id, host_id, count);
+		if (rc < 0) fail_printf("OOM");
+
+		rc = asprintf(&map_file, "/proc/%d/%cid_map", pid, type);
+		if (rc < 0) fail_printf("OOM");
+
+		map_fd = open(map_file, O_RDWR);
+		if (map_fd < 0) sysf_printf("open(%s)", map_file);
+
+		rc = write(map_fd, map, strlen(map));
+		if (rc < 0) sysf_printf("write()");
+	}
 }
 
 void get_uid_gid(const char *user, uid_t *uid, gid_t *gid) {
