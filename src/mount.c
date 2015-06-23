@@ -157,8 +157,6 @@ void setup_mount(const char *dest, bool is_volatile) {
 	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
 
 	if (dest != NULL) {
-		/* add_mount(&sys_mounts, dest, dest, NULL, MS_BIND, "bind"); */
-
 		if (is_volatile) {
 			if (!mkdtemp(template))
 				sysf_printf("mkdtemp()");
@@ -203,8 +201,6 @@ void setup_mount(const char *dest, bool is_volatile) {
 
 		add_mount(&sys_mounts, "tmpfs", "/run", "tmpfs",
 		          MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
-
-		/* add_mount(&sys_mounts, dest, "/", NULL, MS_MOVE, "move"); */
 	}
 
 	DL_CONCAT(sys_mounts, mounts);
