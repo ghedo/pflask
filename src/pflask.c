@@ -54,12 +54,6 @@
 #include "printf.h"
 #include "util.h"
 
-static int clone_flags = SIGCHLD      |
-                         CLONE_NEWNS  |
-                         CLONE_NEWIPC |
-                         CLONE_NEWPID |
-                         CLONE_NEWUTS;
-
 static const char *short_opts = "+m:n::u:r:wc:g:da:s:kt:UMNIHPh?";
 
 static struct option long_opts[] = {
@@ -89,7 +83,7 @@ static size_t validate_optlist(const char *name, const char *opts);
 
 static void do_daemonize(void);
 static void do_chroot(const char *dest);
-static pid_t do_clone(void);
+static pid_t do_clone(int *flags);
 
 static inline void help(void);
 
@@ -118,6 +112,11 @@ int main(int argc, char *argv[]) {
 	bool volatil = false;
 
 	siginfo_t status;
+
+	int clone_flags = CLONE_NEWNS  |
+                          CLONE_NEWIPC |
+                          CLONE_NEWPID |
+                          CLONE_NEWUTS;
 
 	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
 		switch (rc) {
@@ -262,7 +261,7 @@ int main(int argc, char *argv[]) {
 	if (detach)
 		do_daemonize();
 
-	pid = do_clone();
+	pid = do_clone(&clone_flags);
 
 	if (pid == 0) {
 		closep(&master_fd);
@@ -435,14 +434,16 @@ static void do_chroot(const char *dest) {
 	if (rc < 0) sysf_printf("chdir(/)");
 }
 
-static pid_t do_clone(void) {
+static pid_t do_clone(int *flags) {
 	pid_t pid;
 
-	pid = syscall(__NR_clone, clone_flags, NULL);
+	*flags |= SIGCHLD;
+
+	pid = syscall(__NR_clone, *flags, NULL);
 	if (pid < 0) {
 		if (errno == EINVAL) {
-			clone_flags &= ~(CLONE_NEWUSER);
-			pid = syscall(__NR_clone, clone_flags, NULL);
+			*flags &= ~(CLONE_NEWUSER);
+			pid = syscall(__NR_clone, *flags, NULL);
 		}
 	}
 
