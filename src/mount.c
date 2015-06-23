@@ -196,7 +196,7 @@ void do_mount(const char *dest, bool is_volatile) {
 
 		add_mount(&sys_mounts, "devpts", "/dev/pts", "devpts",
 		          MS_NOSUID | MS_NOEXEC,
-		          "newinstance,ptmxmode=000,mode=620,gid=5");
+		          "newinstance,ptmxmode=0666,mode=0620,gid=5");
 
 		add_mount(&sys_mounts, "tmpfs", "/dev/shm", "tmpfs",
 		          MS_NOSUID | MS_STRICTATIME | MS_NODEV, "mode=1777");
