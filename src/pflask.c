@@ -276,6 +276,8 @@ int main(int argc, char *argv[]) {
 
 		sync_close(sync);
 
+		setup_user(user);
+
 		if (hname != NULL) {
 			rc = sethostname(hname, strlen(hname));
 			if (rc < 0) sysf_printf("sethostname()");
@@ -301,8 +303,6 @@ int main(int argc, char *argv[]) {
 		umask(0022);
 
 		/* TODO: drop capabilities */
-
-		setup_user(user);
 
 		if (change != NULL) {
 			rc = chdir(change);
