@@ -504,22 +504,25 @@ static inline void help(void) {
 
 	printf(COLOR_RED "Usage: " COLOR_OFF);
 	printf(COLOR_GREEN "pflask " COLOR_OFF);
-	puts("[OPTIONS] [COMMAND [ARGS...]]\n");
+	puts("[options] [--] [command ...]\n");
 
 	puts(COLOR_RED " Options:" COLOR_OFF);
-
-	CMD_HELP("--mount", "-m",
-		"Create a new mount point inside the container");
-	CMD_HELP("--netif", "-n",
-		"Create a new network namespace and optionally move a network interface inside it");
-
-	CMD_HELP("--user",  "-u", "Run the command under the specified user");
-	CMD_HELP("--user-map", "-e", "Map container users to host users");
 
 	CMD_HELP("--chroot",  "-r",
 		"Change the root directory inside the container");
 	CMD_HELP("--chdir", "-c",
 		"Change the current directory inside the container");
+
+	CMD_HELP("--hostname", "-t", "Set the container hostname");
+
+	CMD_HELP("--mount", "-m",
+		"Create a new mount point inside the container");
+	CMD_HELP("--netif", "-n",
+	         "Disconnect the container networking from the host");
+
+	CMD_HELP("--user",  "-u", "Run the command under the specified user");
+	CMD_HELP("--user-map", "-e", "Map container users to host users");
+
 	CMD_HELP("--volatile", "-w", "Discard changes to /");
 
 	CMD_HELP("--cgroup", "-g",
@@ -530,8 +533,6 @@ static inline void help(void) {
 
 	CMD_HELP("--setenv", "-s", "Set additional environment variables");
 	CMD_HELP("--keepenv", "-k", "Do not clear environment");
-
-	CMD_HELP("--hostname", "-t", "Set the container hostname");
 
 	puts("");
 
