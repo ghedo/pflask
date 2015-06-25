@@ -110,6 +110,8 @@ int main(int argc, char *argv[]) {
 	_free_ char *cgroup = NULL;
 	_free_ char *hname  = NULL;
 
+	struct mount *mounts = NULL;
+
 	char *master;
 	_close_ int master_fd = -1;
 
@@ -129,7 +131,7 @@ int main(int argc, char *argv[]) {
 		case 'm':
 			validate_optlist("--mount", optarg);
 
-			add_mount_from_spec(optarg);
+			mount_add_from_spec(&mounts, optarg);
 			break;
 
 		case 'n':
@@ -313,7 +315,7 @@ int main(int argc, char *argv[]) {
 			if (rc < 0) sysf_printf("sethostname()");
 		}
 
-		setup_mount(dest, is_volatile);
+		setup_mount(mounts, dest, is_volatile);
 
 		if (dest != NULL) {
 			copy_nodes(dest);

@@ -28,6 +28,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void add_mount_from_spec(const char *spec);
+struct mount;
 
-void setup_mount(const char *dest, bool is_volatile);
+void mount_add(struct mount **mounts, const char *src, const char *dst,
+               const char *type, unsigned long f, void *d);
+
+void mount_add_from_spec(struct mount **mounts, const char *spec);
+
+void setup_mount(struct mount *mounts, const char *dest, bool is_volatile);
