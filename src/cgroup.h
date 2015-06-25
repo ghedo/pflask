@@ -28,7 +28,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void validate_cgroup_spec(const char *spec);
+struct cgroup;
 
-void setup_cgroup(const char *spec, pid_t pid);
-void undo_cgroup(const char *spec, pid_t pid);
+void cgroup_add(struct cgroup **groups, char *controller);
+
+void setup_cgroup(struct cgroup *groups, pid_t pid);
+void clean_cgroup(struct cgroup *groups);

@@ -34,92 +34,54 @@
 
 #include <sys/stat.h>
 
+#include "ut/utlist.h"
+
 #include "printf.h"
 #include "util.h"
 
 #define CGROUP_BASE "/sys/fs/cgroup"
 
+struct cgroup {
+	char *controller;
+	char *name;
+
+	struct cgroup *next, *prev;
+};
+
 static void create_cgroup(const char *controller, const char *name);
 static void attach_cgroup(const char *controller, const char *name, pid_t pid);
 static void destroy_cgroup(const char *controller, const char *name);
 
-void validate_cgroup_spec(const char *spec) {
+void cgroup_add(struct cgroup **groups, char *controller) {
 	int rc;
 
-	_free_ char *tmp = NULL;
-	_free_ char **controllers = NULL;
+	pid_t pid = getpid();
 
-	if (spec == NULL)
-		return;
+	struct cgroup *cg = malloc(sizeof(struct cgroup));
+	if (cg == NULL) fail_printf("OOM");
 
-	tmp = strdup(spec);
-	if (tmp == NULL) fail_printf("OOM");
+	cg->controller = strdup(controller);
 
-	size_t c = split_str(tmp, &controllers, ",");
-	if (c == 0) fail_printf("Invalid cgroup spec '%s'", spec);
+	rc = asprintf(&cg->name, "pflask.%d", pid);
+	if (rc < 0) fail_printf("OOM");
 
-	for (size_t i = 0; i < c; i++) {
-		struct stat sb;
-		_free_ char *path = NULL;
+	DL_APPEND(*groups, cg);
+}
 
-		rc = asprintf(&path, CGROUP_BASE "/%s", controllers[i]);
-		if (rc < 0) fail_printf("OOM");
+void setup_cgroup(struct cgroup *groups, pid_t pid) {
+	struct cgroup *i = NULL;
 
-		rc = stat(path, &sb);
-		if ((rc < 0) || !S_ISDIR(sb.st_mode))
-			fail_printf("Invalid cgroup controller '%s'",
-			            controllers[i]);
+	DL_FOREACH(groups, i) {
+		create_cgroup(i->controller, i->name);
+		attach_cgroup(i->controller, i->name, pid);
 	}
 }
 
-void setup_cgroup(const char *spec, pid_t pid) {
-	int rc;
+void clean_cgroup(struct cgroup *groups) {
+	struct cgroup *i = NULL;
 
-	_free_ char *tmp = NULL;
-	_free_ char **controllers = NULL;
-
-	if (spec == NULL)
-		return;
-
-	tmp = strdup(spec);
-	if (tmp == NULL) fail_printf("OOM");
-
-	size_t c = split_str(tmp, &controllers, ",");
-	if (c == 0) fail_printf("Invalid cgroup spec '%s'", spec);
-
-	for (size_t i = 0; i < c; i++) {
-		_free_ char *name = NULL;
-
-		rc = asprintf(&name, "pflask.%d", pid);
-		if (rc < 0) fail_printf("OOM");
-
-		create_cgroup(controllers[i], name);
-		attach_cgroup(controllers[i], name, pid);
-	}
-}
-
-void undo_cgroup(const char *spec, pid_t pid) {
-	int rc;
-
-	_free_ char *tmp = NULL;
-	_free_ char **controllers = NULL;
-
-	if (spec == NULL)
-		return;
-
-	tmp = strdup(spec);
-	if (tmp == NULL) fail_printf("OOM");
-
-	size_t c = split_str(tmp, &controllers, ",");
-	if (c == 0) fail_printf("Invalid cgroup spec '%s'", spec);
-
-	for (size_t i = 0; i < c; i++) {
-		_free_ char *name = NULL;
-
-		rc = asprintf(&name, "pflask.%d", pid);
-		if (rc < 0) fail_printf("OOM");
-
-		destroy_cgroup(controllers[i], name);
+	DL_FOREACH(groups, i) {
+		destroy_cgroup(i->controller, i->name);
 	}
 }
 

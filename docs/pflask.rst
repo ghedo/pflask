@@ -63,9 +63,9 @@ Change to *dir*  inside the container.
 Discard any change to / once the container exits. This can only be used along
 with ``--chroot`` and requires support for the overlay_ mount type.
 
-.. option:: -g, --cgroup=<controller>[,<controller> ...]
+.. option:: -g, --cgroup=<controller>
 
-Create new cgroups in the given controllers and move the container inside them.
+Create a new cgroup in the given controller and move the container inside it.
 
 .. option:: -d, --detach
 

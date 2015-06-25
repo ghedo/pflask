@@ -112,6 +112,7 @@ int main(int argc, char *argv[]) {
 
 	struct mount *mounts = NULL;
 	struct netif *netifs = NULL;
+	struct cgroup *cgroups = NULL;
 
 	char *master;
 	_close_ int master_fd = -1;
@@ -197,12 +198,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		case 'g':
-			validate_optlist("--cgroup", optarg);
-			validate_cgroup_spec(optarg);
-
-			freep(&change);
-
-			cgroup = strdup(optarg);
+			cgroup_add(&cgroups, optarg);
 			break;
 
 		case 'd':
@@ -382,7 +378,7 @@ int main(int argc, char *argv[]) {
 
 	sync_wait_child(sync, SYNC_START);
 
-	setup_cgroup(cgroup, pid);
+	setup_cgroup(cgroups, pid);
 
 	setup_netif(netifs, pid);
 
@@ -441,7 +437,7 @@ int main(int argc, char *argv[]) {
 
 	sync_close(sync);
 
-	undo_cgroup(cgroup, pid);
+	clean_cgroup(cgroups);
 
 	return status.si_status;
 }
@@ -531,7 +527,7 @@ static inline void help(void) {
 	CMD_HELP("--volatile", "-w", "Discard changes to /");
 
 	CMD_HELP("--cgroup", "-g",
-		"Create new cgroups and move the container inside them");
+		"Create a new cgroup and move the container inside it");
 
 	CMD_HELP("--detach", "-d", "Detach from terminal");
 	CMD_HELP("--attach", "-a", "Attach to the specified detached process");
