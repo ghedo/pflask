@@ -513,15 +513,13 @@ static inline void help(void) {
 	CMD_HELP("--netif", "-n",
 		"Create a new network namespace and optionally move a network interface inside it");
 
-	CMD_HELP("--user",  "-u",
-		"After entering the container, switch to the specified user");
-	CMD_HELP("--user-map", "-e",
-		"Map container users to host users");
+	CMD_HELP("--user",  "-u", "Run the command under the specified user");
+	CMD_HELP("--user-map", "-e", "Map container users to host users");
 
 	CMD_HELP("--chroot",  "-r",
-		"Use the specified directory as root inside the container");
+		"Change the root directory inside the container");
 	CMD_HELP("--chdir", "-c",
-		"Change to the specified directory inside the container");
+		"Change the current directory inside the container");
 	CMD_HELP("--volatile", "-w", "Discard changes to /");
 
 	CMD_HELP("--cgroup", "-g",

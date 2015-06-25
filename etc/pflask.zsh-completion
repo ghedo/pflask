@@ -8,9 +8,10 @@ typeset -A opt_args
 _arguments -C -S \
 	{--mount=,-m}'[Create a new mount point inside the container]:mount spec' \
 	{--netif=,-n+}'[Create a new network namespace and optionally move a network interface inside it]' \
-	{--user=,-u}'[Run the command as the specified user inside the container]:user' \
-	{--chroot=,-r}'[Use the specified directory as root inside the container]:directory:_directories' \
-	{--chdir=,-c}'[Change to the specified directory inside the container]:directory' \
+	{--user=,-u}'[Run the command under the specified user]:user' \
+	{--user-map=,-e}'[Map container users to host users]:map' \
+	{--chroot=,-r}'[Change the root directory inside the container]:directory:_directories' \
+	{--chdir=,-c}'[Change the current directory inside the container]:directory' \
 	{--volatile,-w}'[Discard changes to /]' \
 	{--cgroup=,-g}'[Create new cgroups and move the container inside them]:cgroup spec' \
 	{--detach,-d}'[Detach from terminal]' \
