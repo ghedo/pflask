@@ -37,7 +37,7 @@ inside the container. See NETIF_.
 
 .. option:: -u, --user=<user>
 
-After entering the container, switch to the *user* user.
+Run the command under the specified user.
 
 .. option:: -e, --user-map=<map>
 
@@ -51,11 +51,11 @@ Example: `--user-map=0:100000,65536`
 
 .. option:: -r, --chroot=<dir>
 
-Use *dir* as root directory inside the container.
+Change the root directory inside the container.
 
 .. option:: -c, --chdir=<dir>
 
-Change to *dir*  inside the container.
+Change the current directory inside the container.
 
 .. option:: -w, --volatile
 
