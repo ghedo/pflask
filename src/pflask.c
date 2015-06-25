@@ -305,14 +305,14 @@ int main(int argc, char *argv[]) {
 		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
 		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
 
-		open_slave_pty(master);
-
 		rc = setsid();
 		if (rc < 0) sysf_printf("setsid()");
 
 		sync_barrier_parent(sync, SYNC_START);
 
 		sync_close(sync);
+
+		open_slave_pty(master);
 
 		setup_user(user);
 
