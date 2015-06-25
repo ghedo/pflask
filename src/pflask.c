@@ -111,6 +111,7 @@ int main(int argc, char *argv[]) {
 	_free_ char *hname  = NULL;
 
 	struct mount *mounts = NULL;
+	struct netif *netifs = NULL;
 
 	char *master;
 	_close_ int master_fd = -1;
@@ -140,7 +141,7 @@ int main(int argc, char *argv[]) {
 			if (optarg != NULL) {
 				validate_optlist("--netif", optarg);
 
-				add_netif_from_spec(optarg);
+				netif_add_from_spec(&netifs, optarg);
 			}
 			break;
 
@@ -330,7 +331,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (clone_flags & CLONE_NEWNET)
-			setup_netif();
+			config_netif();
 
 		umask(0022);
 
@@ -383,7 +384,7 @@ int main(int argc, char *argv[]) {
 
 	setup_cgroup(cgroup, pid);
 
-	create_netif(pid);
+	setup_netif(netifs, pid);
 
 #ifdef HAVE_DBUS
 	register_machine(pid, dest != NULL ? dest : "");

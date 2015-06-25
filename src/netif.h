@@ -28,7 +28,19 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void add_netif_from_spec(const char *spec);
+enum netif_type {
+	MOVE,
+	MACVLAN,
+	IPVLAN,
+	VETH,
+};
 
-void create_netif(pid_t pid);
-void setup_netif(void);
+struct netif;
+
+void netif_add(struct netif **ifs, enum netif_type type, char *dev, char *name);
+
+void netif_add_from_spec(struct netif **ifs, const char *spec);
+
+void setup_netif(struct netif *ifs, pid_t pid);
+
+void config_netif(void);

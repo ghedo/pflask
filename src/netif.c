@@ -43,15 +43,8 @@
 #include "printf.h"
 #include "util.h"
 
-enum type {
-	MOVE,
-	MACVLAN,
-	IPVLAN,
-	VETH,
-};
-
 struct netif {
-	enum type type;
+	enum netif_type type;
 
 	char *dev;
 	char *name;
@@ -59,17 +52,24 @@ struct netif {
 	struct netif *next, *prev;
 } netif;
 
-static struct netif *netifs = NULL;
-
-static void add_netif(enum type type, char *dev, char *name);
-
 static void if_up(int sock, int if_index);
 static void move_and_rename_if(int sock, pid_t pid, int i, char *new_name);
 static void create_macvlan(int sock, int master, char *name);
 static void create_ipvlan(int sock, int master, char *name);
 static void create_veth_pair(int sock, char *name_out, char *name_in);
 
-void add_netif_from_spec(const char *spec) {
+void netif_add(struct netif **ifs, enum netif_type type, char *dev, char *name) {
+	struct netif *nif = malloc(sizeof(struct netif));
+	if (nif == NULL) fail_printf("OOM");
+
+	nif->dev  = strdup(dev);
+	nif->name = strdup(name);
+	nif->type = type;
+
+	DL_APPEND(*ifs, nif);
+}
+
+void netif_add_from_spec(struct netif **ifs, const char *spec) {
 	_free_ char *tmp = NULL;
 	_free_ char **opts = NULL;
 
@@ -84,27 +84,27 @@ void add_netif_from_spec(const char *spec) {
 
 	if (if_nametoindex(opts[0])) {
 		if (c < 2) fail_printf("Invalid netif spec '%s'", spec);
-		add_netif(MOVE, opts[0], opts[1]);
+		netif_add(ifs, MOVE, opts[0], opts[1]);
 	} else if (strncmp(opts[0], "macvlan", 8) == 0) {
 		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
-		add_netif(MACVLAN, opts[1], opts[2]);
+		netif_add(ifs, MACVLAN, opts[1], opts[2]);
 	} else if (strncmp(opts[0], "ipvlan", 8) == 0) {
 		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
-		add_netif(IPVLAN, opts[1], opts[2]);
+		netif_add(ifs, IPVLAN, opts[1], opts[2]);
 	} else if (strncmp(opts[0], "veth", 5) == 0) {
 		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
-		add_netif(VETH, opts[1], opts[2]);
+		netif_add(ifs, VETH, opts[1], opts[2]);
 	} else
 		fail_printf("Invalid netif spec '%s'", spec);
 }
 
-void create_netif(pid_t pid) {
+void setup_netif(struct netif *ifs, pid_t pid) {
 	int rc;
 	_close_ int sock = nl_open();
 
 	struct netif *i = NULL;
 
-	DL_FOREACH(netifs, i) {
+	DL_FOREACH(ifs, i) {
 		unsigned int if_index = 0;
 
 		switch (i->type) {
@@ -163,20 +163,9 @@ void create_netif(pid_t pid) {
 	}
 }
 
-void setup_netif(void) {
+void config_netif(void) {
 	_close_ int sock = nl_open();
 	if_up(sock, 1);
-}
-
-static void add_netif(enum type type, char *dev, char *name) {
-	struct netif *nif = malloc(sizeof(struct netif));
-	if (nif == NULL) fail_printf("OOM");
-
-	nif->dev  = strdup(dev);
-	nif->name = strdup(name);
-	nif->type = type;
-
-	DL_APPEND(netifs, nif);
 }
 
 static void if_up(int sock, int if_index) {
