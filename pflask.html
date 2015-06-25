@@ -78,8 +78,18 @@ inside the container. See <a class="reference internal" href="#netif">NETIF</a>.
 <span id="cmdoption-pflask--user"></span><tt class="descname">-u</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user</tt><tt class="descclassname">=&lt;user&gt;</tt><a class="headerlink" href="#cmdoption-pflask-u" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>Run the command as <em>user</em> inside the container. If <tt class="docutils literal"><span class="pre">--no-userns</span></tt> is not
-used, this will also create a new user namespace.</p>
+<p>After entering the container, switch to the <em>user</em> user.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-e">
+<span id="cmdoption-pflask--user-map"></span><tt class="descname">-e</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user-map</tt><tt class="descclassname">=&lt;map&gt;</tt><a class="headerlink" href="#cmdoption-pflask-e" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Map container users to host users. This is a generalization of the <tt class="docutils literal"><span class="pre">--user</span></tt>
+command, and can create maps over arbitrary UIDs ranges. The <em>map</em> argument
+is composed of three values separated by <tt class="docutils literal"><span class="pre">:</span></tt>: the first userid as seen in
+the user namespace of the container, the first userid as seen on the host, and
+a range indicating the number of consecutive ids to map.</p>
+<p>Example: <cite>&#8211;user-map=0:100000,65536</cite></p>
 <dl class="option">
 <dt id="cmdoption-pflask-r">
 <span id="cmdoption-pflask--chroot"></span><tt class="descname">-r</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--chroot</tt><tt class="descclassname">=&lt;dir&gt;</tt><a class="headerlink" href="#cmdoption-pflask-r" title="Permalink to this definition">¶</a></dt>
@@ -101,10 +111,10 @@ used, this will also create a new user namespace.</p>
 with <tt class="docutils literal"><span class="pre">--chroot</span></tt> and requires support for the <a class="reference internal" href="#overlay">overlay</a> mount type.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-g">
-<span id="cmdoption-pflask--cgroup"></span><tt class="descname">-g</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--cgroup</tt><tt class="descclassname">=&lt;controller&gt;[,&lt;controller&gt; ...]</tt><a class="headerlink" href="#cmdoption-pflask-g" title="Permalink to this definition">¶</a></dt>
+<span id="cmdoption-pflask--cgroup"></span><tt class="descname">-g</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--cgroup</tt><tt class="descclassname">=&lt;controller&gt;</tt><a class="headerlink" href="#cmdoption-pflask-g" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>Create new cgroups in the given controllers and move the container inside them.</p>
+<p>Create a new cgroup in the given controller and move the container inside it.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-d">
 <span id="cmdoption-pflask--detach"></span><tt class="descname">-d</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--detach</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-d" title="Permalink to this definition">¶</a></dt>

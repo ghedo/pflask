@@ -37,8 +37,17 @@ inside the container. See NETIF_.
 
 .. option:: -u, --user=<user>
 
-Run the command as *user* inside the container. If ``--no-userns`` is not
-used, this will also create a new user namespace.
+After entering the container, switch to the *user* user.
+
+.. option:: -e, --user-map=<map>
+
+Map container users to host users. This is a generalization of the ``--user``
+command, and can create maps over arbitrary UIDs ranges. The *map* argument
+is composed of three values separated by ``:``: the first userid as seen in
+the user namespace of the container, the first userid as seen on the host, and
+a range indicating the number of consecutive ids to map.
+
+Example: `--user-map=0:100000,65536`
 
 .. option:: -r, --chroot=<dir>
 
@@ -53,9 +62,9 @@ Change to *dir*  inside the container.
 Discard any change to / once the container exits. This can only be used along
 with ``--chroot`` and requires support for the overlay_ mount type.
 
-.. option:: -g, --cgroup=<controller>[,<controller> ...]
+.. option:: -g, --cgroup=<controller>
 
-Create new cgroups in the given controllers and move the container inside them.
+Create a new cgroup in the given controller and move the container inside it.
 
 .. option:: -d, --detach
 
