@@ -28,7 +28,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void make_ptmx(const char *dest);
-void make_console(const char *dest, const char *console);
-void make_symlinks(const char *dest);
-void copy_nodes(const char *dest);
+void setup_ptmx(const char *dest);
+void setup_console(const char *dest, const char *console);
+void setup_symlinks(const char *dest);
+void setup_nodes(const char *dest);

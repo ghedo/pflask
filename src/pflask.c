@@ -315,13 +315,13 @@ int main(int argc, char *argv[]) {
 		setup_mount(mounts, dest, is_volatile);
 
 		if (dest != NULL) {
-			copy_nodes(dest);
+			setup_nodes(dest);
 
-			make_ptmx(dest);
+			setup_ptmx(dest);
 
-			make_symlinks(dest);
+			setup_symlinks(dest);
 
-			make_console(dest, master);
+			setup_console(dest, master);
 
 			do_chroot(dest);
 		}
