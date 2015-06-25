@@ -37,10 +37,9 @@ inside the container. See NETIF_.
 
 .. option:: -u, --user=<user>
 
-Run the command as *user* inside the container. If ``--no-userns`` is not
-used, this will also create a new user namespace.
+After entering the container, switch to the *user* user.
 
-.. option:: -e, --map-users=<map>
+.. option:: -e, --user-map=<map>
 
 Map container users to host users. This is a generalization of the ``--user``
 command, and can create maps over arbitrary UIDs ranges. The *map* argument
@@ -48,7 +47,7 @@ is composed of three values separated by ``:``: the first userid as seen in
 the user namespace of the container, the first userid as seen on the host, and
 a range indicating the number of consecutive ids to map.
 
-Example: `--map-users=0:100000,65536`
+Example: `--user-map=0:100000,65536`
 
 .. option:: -r, --chroot=<dir>
 

@@ -61,7 +61,7 @@ static struct option long_opts[] = {
 	{ "mount",     required_argument, NULL, 'm' },
 	{ "netif",     optional_argument, NULL, 'n' },
 	{ "user",      required_argument, NULL, 'u' },
-	{ "map-users", required_argument, NULL, 'e' },
+	{ "user-map",  required_argument, NULL, 'e' },
 	{ "chroot",    required_argument, NULL, 'r' },
 	{ "volatile",  no_argument,       NULL, 'w' },
 	{ "chdir",     required_argument, NULL, 'c' },
@@ -96,12 +96,6 @@ int main(int argc, char *argv[]) {
 
 	pid_t pid  = -1;
 
-	uid_t uid = -1;
-
-	uid_t cont_id = -1;
-	uid_t host_id = -1;
-	size_t id_count = 0;
-
 	_free_ char *user   = strdup("root");
 	_free_ char *map    = NULL;
 	_free_ char *dest   = NULL;
@@ -113,6 +107,7 @@ int main(int argc, char *argv[]) {
 	struct mount *mounts = NULL;
 	struct netif *netifs = NULL;
 	struct cgroup *cgroups = NULL;
+	struct user *users = NULL;
 
 	char *master;
 	_close_ int master_fd = -1;
@@ -147,35 +142,41 @@ int main(int argc, char *argv[]) {
 			break;
 
 		case 'u':
-			clone_flags |= CLONE_NEWUSER;
-
 			freep(&user);
+
+			clone_flags |= CLONE_NEWUSER;
 
 			user = strdup(optarg);
 			break;
 
 		case 'e': {
+			uid_t id, host_id;
+			size_t count;
+
 			char *start = optarg, *end = NULL;
 
-			validate_optlist("--map-users", optarg);
+			validate_optlist("--user-map", optarg);
 
 			clone_flags |= CLONE_NEWUSER;
 
-			cont_id = strtoul(start, &end, 10);
+			id = strtoul(start, &end, 10);
 			if (*end != ':')
-				fail_printf("a Invalid value '%s' for --map-users", optarg);
+				fail_printf("a Invalid value '%s' for --user-map", optarg);
 
 			start = end + 1;
 
 			host_id = strtoul(start, &end, 10);
 			if (*end != ':')
-				fail_printf("b Invalid value '%s' for --map-users", optarg);
+				fail_printf("b Invalid value '%s' for --user-map", optarg);
 
 			start = end + 1;
 
-			id_count = strtoul(start, &end, 10);
+			count = strtoul(start, &end, 10);
 			if (*end != '\0')
-				fail_printf("c Invalid value '%s' for --map-users", optarg);
+				fail_printf("c Invalid value '%s' for --user-map", optarg);
+
+			user_add_map(&users, 'u', id, host_id, count);
+			user_add_map(&users, 'g', id, host_id, count);
 
 			break;
 		}
@@ -279,12 +280,20 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	if ((clone_flags & CLONE_NEWUSER) && (users == NULL)) {
+		uid_t uid;
+		gid_t gid;
+
+		if (user_get_uid_gid(user, &uid, &gid)) {
+			user_add_map(&users, 'u', uid, uid, 1);
+			user_add_map(&users, 'g', gid, gid, 1);
+		}
+	}
+
 	open_master_pty(&master_fd, &master);
 
 	if (detach)
 		do_daemonize();
-
-	uid = getuid();
 
 	sync_init(sync);
 
@@ -386,22 +395,8 @@ int main(int argc, char *argv[]) {
 	register_machine(pid, dest != NULL ? dest : "");
 #endif
 
-	if (clone_flags & CLONE_NEWUSER) {
-		if (id_count == 0) {
-			uid_t pw_uid, pw_gid;
-
-			enable_setgroups(false, pid);
-
-			get_uid_gid(user, &pw_uid, &pw_gid);
-
-			cont_id = pw_uid;
-			host_id = uid;
-			id_count = 1;
-		}
-
-		map_users('u', cont_id, host_id, id_count, pid);
-		map_users('g', cont_id, host_id, id_count, pid);
-	}
+	if (clone_flags & CLONE_NEWUSER)
+		setup_user_map(users, pid);
 
 	sync_wake_child(sync, SYNC_DONE);
 
@@ -516,8 +511,8 @@ static inline void help(void) {
 		"Create a new network namespace and optionally move a network interface inside it");
 
 	CMD_HELP("--user",  "-u",
-		"Run the command as the specified user inside the container");
-	CMD_HELP("--map-users", "-e",
+		"After entering the container, switch to the specified user");
+	CMD_HELP("--user-map", "-e",
 		"Map container users to host users");
 
 	CMD_HELP("--chroot",  "-r",
