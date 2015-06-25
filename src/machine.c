@@ -59,10 +59,8 @@ void register_machine(pid_t pid, const char *dest) {
 	if (rc < 0) fail_printf("OOM");
 
 	conn = dbus_bus_get_private(DBUS_BUS_SYSTEM, &err);
-	if (dbus_error_is_set(&err)) {
-		err_printf("Error getting system bus: %s", err.message);
+	if (dbus_error_is_set(&err))
 		return;
-	}
 
 	req = dbus_message_new_method_call(
 		"org.freedesktop.machine1",
@@ -114,10 +112,8 @@ void register_machine(pid_t pid, const char *dest) {
 		fail_printf("OOM");
 
 	rep = dbus_connection_send_with_reply_and_block(conn, req, -1, &err);
-	if (dbus_error_is_set(&err)) {
-		err_printf("Error registering machine");
+	if (dbus_error_is_set(&err))
 		goto done;
-	}
 
 	dbus_message_unref(rep);
 
