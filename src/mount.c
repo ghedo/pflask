@@ -190,8 +190,8 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 		mount_add(&sys_mounts, "proc", "/proc", "proc",
 		          MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 
-		mount_add(&sys_mounts, "/proc/sys", "/proc/sys", "proc/sys",
-		          MS_BIND, NULL);
+		mount_add(&sys_mounts, prefix_root(dest, "/proc/sys"),
+		          "/proc/sys", "proc/sys", MS_BIND, NULL);
 
 		mount_add(&sys_mounts, NULL, "/proc/sys", "proc/sys-ro",
 		          MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
