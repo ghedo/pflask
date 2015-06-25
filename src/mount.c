@@ -236,7 +236,7 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 		}
 
 		rc = mount(i->src, mnt_dest, i->type, i->flags, i->data);
-		if (rc < 0) err_printf("mount(%s)", i->type);
+		if (rc < 0) err_printf("mount(%s): %s", i->type, strerror(errno));
 	}
 }
 
