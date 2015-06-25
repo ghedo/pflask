@@ -29,12 +29,18 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <sched.h>
+
 #include <sys/mount.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
+#include "user.h"
+#include "sync.h"
 #include "printf.h"
 #include "util.h"
 
@@ -50,26 +56,101 @@ void setup_ptmx(const char *dest) {
 	if (rc < 0) sysf_printf("symlink()");
 }
 
+void setup_console_owner(char *path, struct user *u) {
+	int rc;
+
+	pid_t pid;
+
+	int sync[2];
+
+	struct stat sb;
+
+	uid_t hostuid = geteuid();
+	gid_t hostgid = getegid();
+
+	uid_t rootuid;
+	gid_t rootgid;
+
+	struct user *users = NULL;
+
+	unsigned int tmp;
+
+	if (!user_get_mapped_root(u, 'u', &tmp))
+		fail_printf("No mapping for container root user");
+
+	rootuid = (uid_t) tmp;
+
+	if (!user_get_mapped_root(u, 'g', &tmp))
+		fail_printf("No mapping for container root group");
+
+	rootgid = (uid_t) tmp;
+
+	if (geteuid() == 0) {
+		if (chown(path, rootuid, rootgid) < 0)
+			sysf_printf("chown(%s)", path);
+
+		return;
+	}
+
+	if (rootuid == geteuid())
+		return;
+
+	if (stat(path, &sb) < 0)
+		sysf_printf("stat(%s)", path);
+
+	if (sb.st_uid == geteuid()  && chown(path, -1, hostgid) < 0)
+		sysf_printf("Failed chgrping %s", path);
+
+	user_add_map(&users, 'u', 0, rootuid, 1);
+	user_add_map(&users, 'u', hostuid, hostuid, 1);
+	user_add_map(&users, 'g', 0, rootgid, 1);
+	user_add_map(&users, 'g', (gid_t) sb.st_gid,
+	             rootgid + (gid_t) sb.st_gid, 1);
+	user_add_map(&users, 'g', hostgid, hostgid, 1);
+
+	sync_init(sync);
+
+	pid = fork();
+	if (pid == 0) {
+		_free_ char *chown_cmd = NULL;
+
+		unshare(CLONE_NEWNS | CLONE_NEWUSER);
+
+		sync_barrier_parent(sync, SYNC_START);
+
+		sync_close(sync);
+
+		setup_user("root");
+
+		rc = chown(path, 0, sb.st_gid);
+		if (rc < 0) sysf_printf("chown()");
+
+		exit(0);
+	}
+
+	sync_wait_child(sync, SYNC_START);
+
+	setup_user_map(users, pid);
+
+	sync_wake_child(sync, SYNC_DONE);
+
+	sync_close(sync);
+
+	waitpid(pid, &rc, 0);
+
+	return;
+}
+
 void setup_console(const char *dest, const char *console) {
 	int rc;
 
-	struct stat sb;
 	_free_ char *target = NULL;
-
-	rc = chmod(console, 0600);
-	if (rc < 0) sysf_printf("chmod()");
-
-	rc = chown(console, 0, 0);
-	if (rc < 0) sysf_printf("chown()");
-
-	rc = stat(console, &sb);
-	if (rc < 0) sysf_printf("stat()");
 
 	rc = asprintf(&target, "%s/dev/console", dest);
 	if (rc < 0) fail_printf("OOM");
 
-	rc = mknod(target, sb.st_mode, sb.st_rdev);
-	if (rc < 0) sysf_printf("mknod(%s)", target);
+	rc = chmod(console, 0600);
+	if (rc < 0) sysf_printf("chmod()");
 
 	rc = mount(console, target, NULL, MS_BIND, NULL);
 	if (rc < 0) sysf_printf("mount()");
@@ -111,6 +192,7 @@ void setup_nodes(const char *dest) {
 	mode_t u = umask(0000);
 
 	const char *nodes[] = {
+		"/dev/console",
 		"/dev/tty",
 		"/dev/full",
 		"/dev/null",

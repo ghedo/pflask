@@ -142,6 +142,23 @@ void setup_user(const char *user) {
 	if (rc < 0) sysf_printf("setgroups()");
 }
 
+bool user_get_mapped_root(struct user *users, char type, unsigned *id) {
+	struct user *i;
+
+	DL_FOREACH(users, i) {
+		if (i->type != type)
+			continue;
+
+		if (i->id != 0)
+			continue;
+
+		*id = i->host_id;
+		return true;
+	}
+
+	return false;
+}
+
 bool user_get_uid_gid(const char *user, uid_t *uid, gid_t *gid) {
 	struct passwd *pwd;
 

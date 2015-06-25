@@ -29,6 +29,7 @@
  */
 
 void setup_ptmx(const char *dest);
+void setup_console_owner(char *path, struct user *users);
 void setup_console(const char *dest, const char *console);
 void setup_symlinks(const char *dest);
 void setup_nodes(const char *dest);

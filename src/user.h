@@ -36,4 +36,5 @@ void user_add_map(struct user **users, char type, uid_t id, uid_t host_id,
 void setup_user_map(struct user *users, pid_t pid);
 void setup_user(const char *user);
 
+bool user_get_mapped_root(struct user *users, char type, unsigned *id);
 bool user_get_uid_gid(const char *user, uid_t *uid, gid_t *gid);

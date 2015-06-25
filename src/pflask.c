@@ -44,9 +44,9 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
-#include "dev.h"
 #include "pty.h"
 #include "user.h"
+#include "dev.h"
 #include "machine.h"
 #include "mount.h"
 #include "cgroup.h"
@@ -386,6 +386,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	sync_wait_child(sync, SYNC_START);
+
+	if ((dest != NULL) && (clone_flags & CLONE_NEWUSER))
+		setup_console_owner(master, users);
 
 	setup_cgroup(cgroups, pid);
 
