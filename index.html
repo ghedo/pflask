@@ -44,202 +44,222 @@
   <div class="section" id="pflask">
 <h1>pflask<a class="headerlink" href="#pflask" title="Permalink to this headline">¶</a></h1>
 <a class="reference external image-reference" href="https://travis-ci.org/ghedo/pflask"><img alt="https://travis-ci.org/ghedo/pflask.png" src="https://travis-ci.org/ghedo/pflask.png" /></a>
-<p><a class="reference external" href="https://ghedo.github.io/pflask">pflask</a> is a simple tool for creating Linux namespace containers. It can be
-used for running a command or even booting an OS inside an isolated container,
-created with the help of Linux namespaces. It is similar in functionality to
-<cite>chroot(8)</cite>, although pflask provides better isolation thanks to the use of
-namespaces.</p>
-<p>Compared to <a class="reference external" href="http://linuxcontainers.org">LXC</a>, pflask is easier to use since it doesn&#8217;t require any
-pre-configuration (all the options can be passed via the command-line). pflask
-is mostly intended for testing, building and experimenting, whereas LXC is a
-more complete solution, better suited for production environments.</p>
-<p>Compared to <a class="reference external" href="http://www.freedesktop.org/software/systemd/man/systemd-nspawn.html">systemd-nspawn</a>, pflask doesn&#8217;t require the use of systemd on the
-host system and provides additional options for manipulating mount points and
-network interfaces inside the container. On the other hand, systemd-nspawn is
-better integrated in the systemd ecosystem.</p>
-<p>Additionally, while most other containerization solutions (LXC, systemd-nspawn,
-...) are mostly targeted at containing whole systems, pflask can also be used to
-contain single programs, without the need to create ad-hoc chroots.</p>
-<div class="section" id="features">
-<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="user-namespace">
-<h3>User namespace<a class="headerlink" href="#user-namespace" title="Permalink to this headline">¶</a></h3>
-<p>When the host system allows it, pflask creates a new user namespace inside the
-container, and automatically maps the user running pflask to the root user
-inside the container. This means that a user could create and have full root
-privileges inside a container, while having none on the host system.</p>
-<p>Note that this has been the cause of security vulnerabilities in the past, so
-that most OS vendors (reasonably) decided to either disable user namespace
-support altogether, or restrict the functionality to root.</p>
-<p>pflask can disable the relevant functionality when it detects that support for
-user namespaces is not available.</p>
-</div>
-<div class="section" id="mount-namespace">
-<h3>Mount namespace<a class="headerlink" href="#mount-namespace" title="Permalink to this headline">¶</a></h3>
-<p>By default, pflask creates a new mount namespace inside the container, so that
-filesystems mounted inside it won&#8217;t affect the host system. pflask can also be
-told to create new mount points before the execution of the supplied command,
-by using the <cite>&#8211;mount</cite> option. Supported mount point types are:</p>
-<ul class="simple">
-<li><cite>bind</cite>    &#8211; bind mount a directory/file to another directory/file</li>
-<li><cite>bind-ro</cite> &#8211; like <cite>bind</cite>, but read-only</li>
-<li><cite>overlay</cite> &#8211; stack a directory on top of another directory using AuFS or OVL</li>
-<li><cite>tmp</cite>     &#8211; mount a tmpfs on a directory</li>
-</ul>
-</div>
-<div class="section" id="network-namespace">
-<h3>Network namespace<a class="headerlink" href="#network-namespace" title="Permalink to this headline">¶</a></h3>
-<p>When supplied the <cite>&#8211;netif</cite> option, pflask will create a new network namespace
-and move/rename the supplied network interface inside the container.</p>
-</div>
-<div class="section" id="pid-ipc-and-uts-namespaces">
-<h3>PID, IPC and UTS namespaces<a class="headerlink" href="#pid-ipc-and-uts-namespaces" title="Permalink to this headline">¶</a></h3>
-<p>By default, pflask creates new PID, IPC and UTS namespaces inside the container,
-in order to isolate processes, IPC resources and the node/domain name of the
-container from the host system.</p>
-</div>
-</div>
-<div class="section" id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="hide-directories-from-an-application">
-<h3>Hide directories from an application<a class="headerlink" href="#hide-directories-from-an-application" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --mount<span class="o">=</span>tmp,<span class="nv">$HOME</span> chromium --disable-setuid-sandbox
+<p><a class="reference external" href="https://ghedo.github.io/pflask">pflask</a> is a simple tool for creating process containers on LInux. It can be
+used for running single commands or even booting a whole operating system
+inside an isolated environment, where the filesystem hierarchy, networking,
+process tree, IPC subsystems and host/domain name can be insulated from the
+host system and other containers.</p>
+<div class="section" id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>pflask doesn&#8217;t need any configuration and can be run without any arguments
+as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask
 </pre></div>
 </div>
-<p>This command does not require a pre-generated chroot (it will use the current
-root) and will mount a tmpfs on <cite>$HOME</cite> so that the application (chromium in the
-example) won&#8217;t be able to access your precious files. Any change will be also
-discarded once the process terminates. A bind mount can be used to retain the
-modifications:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --mount<span class="o">=</span><span class="nb">bind</span>,/tmp/trash,<span class="nv">$HOME</span>  chromium --disable-setuid-sandbox
+<p>By default a new container will be created and a bash shell will be started,
+but a custom command can also be specified:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask -- id
+<span class="nv">uid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gruppi</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span>
 </pre></div>
 </div>
-<p>All filesystem changes applied by the command will be available in /tmp/trash.</p>
-<p>Both commands can be run without root privileges as long as user namespaces are
-supported by the host system, and available to non-privileged users.</p>
-<p>For example, on Debian, user namespaces are enabled, but are restricted to root
-only. To enable them for unprivileged users run:</p>
+<p>The container can also be run inside a private root directory by using the
+<tt class="docutils literal"><span class="pre">--chroot</span></tt> option:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs -- id
+<span class="nv">uid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span> <span class="nv">gruppi</span><span class="o">=</span>0<span class="o">(</span>root<span class="o">)</span>
+</pre></div>
+</div>
+<p>This can be used, for example, as a replacement for the <tt class="docutils literal"><span class="pre">chroot(8)</span></tt> command.
+It&#8217;s even possible to invoke the init binary and boot the whole operating
+system inside the container:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs -- /lib/systemd/systemd
+</pre></div>
+</div>
+<p>Note that pflask doesn&#8217;t provide any support for creating the rootfs, but can
+piggyback on existing tools. For example the <tt class="docutils literal"><span class="pre">debootstrap(8)</span></tt> command can be
+used for creating a Debian rootfs as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo debootstrap sid /path/to/rootfs http://httpredir.debian.org/debian
+</pre></div>
+</div>
+<p>For more information on pflask usage, have a look at the <a class="reference external" href="https://ghedo.github.io/pflask/pflask.html">man page</a>.</p>
+<div class="section" id="networking">
+<h3>Networking<a class="headerlink" href="#networking" title="Permalink to this headline">¶</a></h3>
+<p>Using the <tt class="docutils literal"><span class="pre">--netif</span></tt> option the networking of the container will be
+disconnected from the host system and all network interfaces will be made
+unavailable to the container:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --netif -- ip link
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span class="m">65536</span> qdisc noqueue state UNKNOWN mode DEFAULT group default
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+</pre></div>
+</div>
+<p>The <tt class="docutils literal"><span class="pre">--netif</span></tt> option can also be used to create private network interfaces:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --netif<span class="o">=</span>macvlan,eth0,net0 -- ip link
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span class="m">65536</span> qdisc noqueue state UNKNOWN mode DEFAULT group default
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+5: net0@if2: &lt;BROADCAST,MULTICAST&gt; mtu <span class="m">1500</span> qdisc noop state DOWN mode DEFAULT group default
+    link/ether 92:e4:c2:9b:a4:75 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+</pre></div>
+</div>
+<p>Interfaces created inside the container will be automatically destroyed once
+the container terminates.</p>
+<p>The command above will create a new <tt class="docutils literal"><span class="pre">macvlan</span></tt> interface called <tt class="docutils literal"><span class="pre">net0</span></tt>, from
+the <tt class="docutils literal"><span class="pre">eth0</span></tt> host interface. <tt class="docutils literal"><span class="pre">macvlan</span></tt> interfaces can be used to give an
+additional MAC address to a network adapter and make it look like a completely
+different device.</p>
+<p>pflask can also create other <a class="reference external" href="https://ghedo.github.io/pflask/pflask.html#netif">types of network interfaces</a>, have a look at the
+manpage for more information.</p>
+</div>
+<div class="section" id="filesystem">
+<h3>Filesystem<a class="headerlink" href="#filesystem" title="Permalink to this headline">¶</a></h3>
+<p>By default a new mount namespace is created for the container, so that
+filesystems mounted inside it won&#8217;t affect the host system. The <tt class="docutils literal"><span class="pre">--mount</span></tt>
+option can then be used to create new mount points before the execution of the
+supplied command.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --mount<span class="o">=</span><span class="nb">bind</span>,/tmp,/tmp
+</pre></div>
+</div>
+<p>The command above will bind mount the host&#8217;s <tt class="docutils literal"><span class="pre">/tmp</span></tt> directory into the
+container&#8217;s <tt class="docutils literal"><span class="pre">/tmp</span></tt>, so that files can be exchanged between them.</p>
+<p>pflask can also create other <a class="reference external" href="https://ghedo.github.io/pflask/pflask.html#mount">types of mount points</a>, have a look at the
+manpage for more information.</p>
+</div>
+<div class="section" id="volatile-root-filesystem">
+<h3>Volatile root filesystem<a class="headerlink" href="#volatile-root-filesystem" title="Permalink to this headline">¶</a></h3>
+<p>Using the <tt class="docutils literal"><span class="pre">--volatile</span></tt> option it&#8217;s possible to tell pflask to discard any
+change applied to the root filesystem once the container terminates:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --volatile -- /lib/systemd/systemd
+</pre></div>
+</div>
+<p>This can be used for example for a build environment, where dependencies can
+be installed at every run on a clean rootfs, without the need to recreate the
+rootfs every time.</p>
+</div>
+<div class="section" id="unprivileged-containers">
+<h3>Unprivileged containers<a class="headerlink" href="#unprivileged-containers" title="Permalink to this headline">¶</a></h3>
+<p>All the commands above have been executed with root privileges, but pflask can
+be invoked, with some limitations, by unprivileged users as well, as long as
+user namespaces are supported by the host system.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> -- id
+<span class="nv">uid</span><span class="o">=</span>1000<span class="o">(</span>ghedo<span class="o">)</span> <span class="nv">gid</span><span class="o">=</span>1000<span class="o">(</span>ghedo<span class="o">)</span> <span class="nv">gruppi</span><span class="o">=</span>1000<span class="o">(</span>ghedo<span class="o">)</span>
+</pre></div>
+</div>
+<p>For example, on recent Debian versions user namespaces are enabled, but are
+restricted to the root user only. To enable them for unprivileged users run:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo sysctl kernel.unprivileged_userns_clone<span class="o">=</span>1
 </pre></div>
 </div>
-</div>
-<div class="section" id="detach-from-terminal">
-<h3>Detach from terminal<a class="headerlink" href="#detach-from-terminal" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --detach /bin/bash
+<p>This functionality can be used to run every-day user applications such as a
+web browser inside a container:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --mount<span class="o">=</span>tmp,<span class="nv">$HOME</span> -- chromium --disable-setuid-sandbox
 </pre></div>
 </div>
-<p>To reattach run pflask with the <cite>&#8211;attach</cite> option:</p>
+<p>The command above uses the <tt class="docutils literal"><span class="pre">--mount</span></tt> option to create a <tt class="docutils literal"><span class="pre">tmpfs</span></tt> mount point
+on the <tt class="docutils literal"><span class="pre">$HOME</span></tt> directory, so that the application (chromium in the example)
+won&#8217;t be able to access the user&#8217;s private files, and any modification to the
+home directory will be discarded once the container terminates.</p>
+<p>The <tt class="docutils literal"><span class="pre">--chroot</span></tt> option can be used with unprivileged containers as well, but
+requires some additional configuration.</p>
+<p>The first step is assigning a set of additional UIDs and GIDs to the current
+user (<tt class="docutils literal"><span class="pre">$USER</span></tt>). These will be used by pflask inside the container:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo usermod --add-subuids 100000-165535 <span class="nv">$USER</span>
+<span class="nv">$ </span>sudo usermod --add-subgids 100000-165535 <span class="nv">$USER</span>
+</pre></div>
+</div>
+<p>Note that the commands above require root privileges, but have to be run only
+once.</p>
+<p>Then any time an unprivileged <tt class="docutils literal"><span class="pre">chroot(8)</span></tt> is needed, the following command
+can be run:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user-map<span class="o">=</span>0:100000:65536 --chroot<span class="o">=</span>/path/to/rootfs
+</pre></div>
+</div>
+<p>Note that the <tt class="docutils literal"><span class="pre">newuidmap(1)</span></tt> and <tt class="docutils literal"><span class="pre">newgidmap(1)</span></tt> commands need to be
+installed for any of this to work: on Debian/Ubuntu systems they are provided
+by the <tt class="docutils literal"><span class="pre">uidmap</span></tt> package.</p>
+</div>
+<div class="section" id="background-containers">
+<h3>Background containers<a class="headerlink" href="#background-containers" title="Permalink to this headline">¶</a></h3>
+<p>Containers can be detached from the current terminal as soon as they are
+created by using the <tt class="docutils literal"><span class="pre">--detach</span></tt> option:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --detach
+</pre></div>
+</div>
+<p>and then later reattached (even to a different terminal) with the <tt class="docutils literal"><span class="pre">--attach</span></tt>
+option:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pidof pflask
 29076
 <span class="nv">$ </span>pflask --attach<span class="o">=</span>29076
 </pre></div>
 </div>
-<p>Where <cite>29076</cite> is the PID of the detached pflask process. Once reattached, one
-can detach again by pressing <cite>^&#64;</cite> (Ctrl + &#64;).</p>
+<p>Where <tt class="docutils literal"><span class="pre">29076</span></tt> is the PID of the detached pflask process. Once reattached, it
+can be detached again by pressing <tt class="docutils literal"><span class="pre">^&#64;</span></tt> (Ctrl + &#64;).</p>
 </div>
-<div class="section" id="boot-the-os-inside-the-container">
-<h3>Boot the OS inside the container<a class="headerlink" href="#boot-the-os-inside-the-container" title="Permalink to this headline">¶</a></h3>
-<p>First create a base Debian system using <cite>debootstrap(8)</cite>:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo debootstrap --include<span class="o">=</span>systemd unstable /path/to/container
+<div class="section" id="systemd-s-machined-integration">
+<h3>systemd&#8217;s machined integration<a class="headerlink" href="#systemd-s-machined-integration" title="Permalink to this headline">¶</a></h3>
+<p>Containers created with pflask are automatically registered with the <a class="reference external" href="http://www.freedesktop.org/wiki/Software/systemd/machined/">machined</a>
+daemon, if installed and running. The <tt class="docutils literal"><span class="pre">machinectl(1)</span></tt> command can then be
+used to list and manipulate running containers.</p>
+<p>Let&#8217;s create one container as follows:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs -- /lib/systemd/systemd
 </pre></div>
 </div>
-<p>It is recommended to use systemd as init system inside the guest, since it can
-detect whether it is run inside a container or not, and disable not needed
-services accordingly.</p>
-<p>Then create the container:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container /lib/systemd/systemd
+<p>Running containers can be listed using the <tt class="docutils literal"><span class="pre">list</span></tt> command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>machinectl --no-pager list
+MACHINE      CLASS     SERVICE
+pflask-19170 container pflask
+
+<span class="m">1</span> machines listed.
 </pre></div>
 </div>
-<p>This will simply execute the init system (systemd) inside the container. Replace
-<cite>/lib/systemd/systemd</cite> with <cite>/sbin/init</cite> if you have a different init (but note
-that there&#8217;s no guarantee that it&#8217;ll work).</p>
-</div>
-<div class="section" id="disable-network-inside-the-container">
-<h3>Disable network inside the container<a class="headerlink" href="#disable-network-inside-the-container" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --netif /lib/systemd/systemd
+<p>and information regarding a single container can be retrieved with the <tt class="docutils literal"><span class="pre">show</span></tt>
+command:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>machinectl --no-pager show pflask-19170
+<span class="nv">Name</span><span class="o">=</span>pflask-19170
+<span class="nv">Id</span><span class="o">=</span>00000000000000000000000000000000
+<span class="nv">Timestamp</span><span class="o">=</span>gio 2015-06-25 20:28:34 CEST
+<span class="nv">TimestampMonotonic</span><span class="o">=</span>8860409172
+<span class="nv">Service</span><span class="o">=</span>pflask
+<span class="nv">Unit</span><span class="o">=</span>machine-pflask<span class="se">\x</span>5cx2d19170.scope
+<span class="nv">Leader</span><span class="o">=</span>19170
+<span class="nv">Class</span><span class="o">=</span>container
+<span class="nv">RootDirectory</span><span class="o">=</span>/home/ghedo/local/debian
+<span class="nv">State</span><span class="o">=</span>running
 </pre></div>
 </div>
-<p>Using the <cite>&#8211;netif</cite> option without any argument creates a new network namespace
-inside the container without adding any new interface, therefore leaving the
-_lo_ interface as the only one inside the container and disabling network access
-to the outside world while at the same time leaving the network on the host
-system working.</p>
-</div>
-<div class="section" id="use-a-private-network-interface-inside-the-container">
-<h3>Use a private network interface inside the container<a class="headerlink" href="#use-a-private-network-interface-inside-the-container" title="Permalink to this headline">¶</a></h3>
-<p>First, let&#8217;s create the new network interface thet will be used inside the
-container:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo ip link add name pflask-vlan0 link eth0 <span class="nb">type </span>macvlan
+<p>Additionally, the <tt class="docutils literal"><span class="pre">status</span></tt> command will show more information regarding the
+status of the container:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>machinectl --no-pager status pflask-19170
+pflask-19170
+        Since: gio 2015-06-25 20:28:34 CEST<span class="p">;</span> 1min 21s ago
+       Leader: <span class="m">19170</span> <span class="o">(</span>systemd<span class="o">)</span>
+      Service: pflask<span class="p">;</span> class container
+         Root: /home/ghedo/local/debian
+           OS: Debian GNU/Linux stretch/sid
+         Unit: machine-pflask<span class="se">\x</span>2d19170.scope
+               ├─19170 /lib/systemd/systemd
+               └─system.slice
+                 ├─systemd-journald.service
+                 │ └─19184 /lib/systemd/systemd-journald
+                 └─console-getty.service
+                   └─19216 /sbin/agetty --noclear --keep-baud console <span class="m">115200</span> 3...
+
+giu <span class="m">25</span> 20:28:34 kronk systemd<span class="o">[</span>1<span class="o">]</span>: Started Container pflask-19170.
+giu <span class="m">25</span> 20:28:34 kronk systemd<span class="o">[</span>1<span class="o">]</span>: Starting Container pflask-19170.
 </pre></div>
 </div>
-<p>This will create a new interface, <cite>pflask-vlan0</cite>, of type <cite>macvlan</cite> using the
-<cite>eth0</cite> interface on the host as master. <cite>macvlan</cite> interfaces can be used to
-give a second MAC address to a network adapter (in this case <cite>eth0</cite>) and make
-it look like a completely different device.</p>
-<p>Finally, create the container:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --netif<span class="o">=</span>pflask-vlan0,eth0 /lib/systemd/systemd
+<p>One can even log into the container using the <tt class="docutils literal"><span class="pre">login</span></tt> command (note that
+the dbus daemon needs to be running inside the container for this to work):</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo machinectl login pflask-19170
+Connected to machine pflask-19170. Press ^<span class="o">]</span> three <span class="nb">times </span>within 1s to <span class="nb">exit </span>session.
+
+Debian GNU/Linux stretch/sid kronk pts/0
+
+kronk login:
 </pre></div>
 </div>
-<p>This will take the <cite>pflask-vlan0</cite> interface previously created, move it inside
-the container and rename it to <cite>eth0</cite>. The container will thus have what it
-looks like a private <cite>eth0</cite> network interface that can be configured
-independently from the host <cite>eth0</cite>. Once the container terminates, its network
-interface will be destroyed as well.</p>
-<p>Note that <cite>macvlan</cite> is just one of the possibilities. One could create a pair
-of <cite>veth</cite> interfaces, move one of them inside the container and connect the
-other to a bridge (e.g. an Open VSwitch bridge). Alternatively one could create
-a <cite>vxlan</cite> interface and connect the container to a VXLAN network, etc...</p>
-</div>
-<div class="section" id="copy-on-write-filesystem">
-<h3>Copy-on-write filesystem<a class="headerlink" href="#copy-on-write-filesystem" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container <span class="se">\</span>
-  --mount<span class="o">=</span>overlay,/tmp/overlay/root,/path/to/container,/tmp/overlay/work <span class="se">\</span>
-  /lib/systemd/systemd
+<p>And finally the container can be terminated using either the <tt class="docutils literal"><span class="pre">poweroff</span></tt> or
+<tt class="docutils literal"><span class="pre">terminate</span></tt> commands:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo machinectl poweroff pflask-19170
 </pre></div>
 </div>
-<p>This will mount a copy-on-write filesystem on the / of the container. Any change
-to files and directories will be saved in <cite>/tmp/overlay</cite> so that the container
-root directory (<cite>/path/to/container</cite>) will be unaffected.</p>
-<p>Note that this requires support for either AuFS or OverlayFS on the host system.</p>
-</div>
-<div class="section" id="volatile-root-filesystem">
-<h3>Volatile root filesystem<a class="headerlink" href="#volatile-root-filesystem" title="Permalink to this headline">¶</a></h3>
-<p>By using the <cite>&#8211;volatile</cite> option it&#8217;s possible to tell pflask to discard any
-change applied to the / directory once the container exits:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/container --volatile /lib/systemd/systemd
-</pre></div>
-</div>
-<p>The above will overlay a tmpfs on top of the chroot <cite>/path/to/container</cite>
-directory, so that the root filesystem will be writable from inside the
-container, but any change will be disacarded once the container terminates.</p>
-<p>This can be useful as a build environment, where dependencies can be installed
-at every build run on a clean chroot, without the need to recreate the chroot
-at every run.</p>
-</div>
-<div class="section" id="build-a-debian-package-inside-a-container">
-<h3>Build a Debian package inside a container<a class="headerlink" href="#build-a-debian-package-inside-a-container" title="Permalink to this headline">¶</a></h3>
-<p>First, create the base Debian system:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo mkdir -p /var/cache/pflask
-<span class="nv">$ DIST</span><span class="o">=</span>sid pflask-debuild --create
-</pre></div>
-</div>
-<p>Then retrieve the source package we want to build:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>apt-get <span class="nb">source </span>somepackage
-<span class="nv">$ </span><span class="nb">cd </span>somepackage-XYX
-</pre></div>
-</div>
-<p>Where _somepackage_ is the desired package, and _XYZ_ is the package version.</p>
-<p>Finally build the package:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ DIST</span><span class="o">=</span>sid pflask-debuild
-</pre></div>
-</div>
-<p>The script will take care of creating a new container, installing all the
-required dependncies (inside the container), building and signing the package.</p>
-<p>A copy-on-write filesystem is also mounted on the / of the container, so that
-the same clean chroot can be re-used to build other packages.</p>
-<p>Note that the <a class="reference external" href="https://ghedo.github.io/pflask/pflask-debuild.html">pflask-debuild</a> tool is far from perfect, and may not work in
-all situations.</p>
-<p>See the <a class="reference external" href="https://ghedo.github.io/pflask/pflask.html">man page</a> for more information.</p>
 </div>
 </div>
 <div class="section" id="building">
@@ -267,22 +287,13 @@ all situations.</p>
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">pflask</a><ul>
-<li><a class="reference internal" href="#features">Features</a><ul>
-<li><a class="reference internal" href="#user-namespace">User namespace</a></li>
-<li><a class="reference internal" href="#mount-namespace">Mount namespace</a></li>
-<li><a class="reference internal" href="#network-namespace">Network namespace</a></li>
-<li><a class="reference internal" href="#pid-ipc-and-uts-namespaces">PID, IPC and UTS namespaces</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#examples">Examples</a><ul>
-<li><a class="reference internal" href="#hide-directories-from-an-application">Hide directories from an application</a></li>
-<li><a class="reference internal" href="#detach-from-terminal">Detach from terminal</a></li>
-<li><a class="reference internal" href="#boot-the-os-inside-the-container">Boot the OS inside the container</a></li>
-<li><a class="reference internal" href="#disable-network-inside-the-container">Disable network inside the container</a></li>
-<li><a class="reference internal" href="#use-a-private-network-interface-inside-the-container">Use a private network interface inside the container</a></li>
-<li><a class="reference internal" href="#copy-on-write-filesystem">Copy-on-write filesystem</a></li>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#networking">Networking</a></li>
+<li><a class="reference internal" href="#filesystem">Filesystem</a></li>
 <li><a class="reference internal" href="#volatile-root-filesystem">Volatile root filesystem</a></li>
-<li><a class="reference internal" href="#build-a-debian-package-inside-a-container">Build a Debian package inside a container</a></li>
+<li><a class="reference internal" href="#unprivileged-containers">Unprivileged containers</a></li>
+<li><a class="reference internal" href="#background-containers">Background containers</a></li>
+<li><a class="reference internal" href="#systemd-s-machined-integration">systemd&#8217;s machined integration</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#building">Building</a></li>

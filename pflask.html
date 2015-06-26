@@ -45,215 +45,214 @@
 <span id="pflask-1"></span><h1>pflask<a class="headerlink" href="#pflask" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="synopsis">
 <h2>SYNOPSIS<a class="headerlink" href="#synopsis" title="Permalink to this headline">¶</a></h2>
-<p><strong>pflask [options] [&#8211;] [command [args...]]</strong></p>
+<p><strong>pflask [options] [&#8211;] [command ...]</strong></p>
 </div>
 <div class="section" id="description">
 <h2>DESCRIPTION<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
-<p><strong>pflask</strong> is a simple tool for creating Linux namespace containers. It can be
-used for running a command or even booting an OS inside an isolated container,
-created with the help of Linux namespaces. It is similar in functionality to
-<cite>chroot(8)</cite>, although pflask provides better isolation thanks to the use of
-namespaces.</p>
-<p>Additionally, while most other containerization solutions (LXC, systemd-nspawn,
-...) are mostly targeted at containing whole systems, pflask can also be used to
-contain single programs, without the need to create ad-hoc chroots.</p>
+<p><strong>pflask</strong> is a simple tool for creating process containers on LInux. It can be
+used for running single commands or even booting a whole operating system
+inside an isolated environment, where the filesystem hierarchy, networking,
+process tree, IPC subsystems and host/domain name can be insulated from the
+host system and other containers.</p>
 </div>
 <div class="section" id="options">
 <h2>OPTIONS<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h2>
 <dl class="option">
-<dt id="cmdoption-pflask-m">
-<span id="cmdoption-pflask--mount"></span><tt class="descname">-m</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--mount</tt><tt class="descclassname">=&lt;type&gt;,&lt;opts&gt;</tt><a class="headerlink" href="#cmdoption-pflask-m" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Create a new <em>type</em> mount point inside the container. See <a class="reference internal" href="#mount">MOUNT</a>.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-n">
-<span id="cmdoption-pflask--netif"></span><tt class="descname">-n</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--netif</tt><tt class="descclassname">[=&lt;opts&gt;]</tt><a class="headerlink" href="#cmdoption-pflask-n" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Create a new network namespace and, optionally create/move a network interface
-inside the container. See <a class="reference internal" href="#netif">NETIF</a>.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-u">
-<span id="cmdoption-pflask--user"></span><tt class="descname">-u</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user</tt><tt class="descclassname">=&lt;user&gt;</tt><a class="headerlink" href="#cmdoption-pflask-u" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Run the command under the specified user.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-e">
-<span id="cmdoption-pflask--user-map"></span><tt class="descname">-e</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user-map</tt><tt class="descclassname">=&lt;map&gt;</tt><a class="headerlink" href="#cmdoption-pflask-e" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Map container users to host users. This is a generalization of the <tt class="docutils literal"><span class="pre">--user</span></tt>
-command, and can create maps over arbitrary UIDs ranges. The <em>map</em> argument
-is composed of three values separated by <tt class="docutils literal"><span class="pre">:</span></tt>: the first userid as seen in
-the user namespace of the container, the first userid as seen on the host, and
-a range indicating the number of consecutive ids to map.</p>
-<p>Example: <cite>&#8211;user-map=0:100000,65536</cite></p>
-<dl class="option">
 <dt id="cmdoption-pflask-r">
 <span id="cmdoption-pflask--chroot"></span><tt class="descname">-r</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--chroot</tt><tt class="descclassname">=&lt;dir&gt;</tt><a class="headerlink" href="#cmdoption-pflask-r" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Change the root directory inside the container.</p>
+</dd></dl>
 
-<p>Change the root directory inside the container.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-c">
 <span id="cmdoption-pflask--chdir"></span><tt class="descname">-c</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--chdir</tt><tt class="descclassname">=&lt;dir&gt;</tt><a class="headerlink" href="#cmdoption-pflask-c" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Change the current directory inside the container.</p>
+</dd></dl>
 
-<p>Change the current directory inside the container.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-w">
-<span id="cmdoption-pflask--volatile"></span><tt class="descname">-w</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--volatile</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-w" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Discard any change to / once the container exits. This can only be used along
-with <tt class="docutils literal"><span class="pre">--chroot</span></tt> and requires support for the <a class="reference internal" href="#overlay">overlay</a> mount type.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-g">
-<span id="cmdoption-pflask--cgroup"></span><tt class="descname">-g</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--cgroup</tt><tt class="descclassname">=&lt;controller&gt;</tt><a class="headerlink" href="#cmdoption-pflask-g" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Create a new cgroup in the given controller and move the container inside it.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-d">
-<span id="cmdoption-pflask--detach"></span><tt class="descname">-d</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--detach</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-d" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Detach from terminal.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-a">
-<span id="cmdoption-pflask--attach"></span><tt class="descname">-a</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--attach</tt><tt class="descclassname">=&lt;pid&gt;</tt><a class="headerlink" href="#cmdoption-pflask-a" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Attach to the <em>pid</em> detached process. Only a process with the same UID of the
-detached process can attach to it. To detach again press <cite>^&#64;</cite> (Ctrl + &#64;).</p>
-<dl class="option">
-<dt id="cmdoption-pflask-s">
-<span id="cmdoption-pflask--setenv"></span><tt class="descname">-s</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--setenv</tt><tt class="descclassname">=&lt;name&gt;=&lt;value&gt;[,&lt;name&gt;=&lt;value&gt; ...]</tt><a class="headerlink" href="#cmdoption-pflask-s" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Set additional environment variables. It takes a comma-separated list of
-variables of the form <cite>name=value</cite>. This option may be used more than once.</p>
-<dl class="option">
-<dt id="cmdoption-pflask-k">
-<span id="cmdoption-pflask--keepenv"></span><tt class="descname">-k</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--keepenv</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-k" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p>Do not clear environment (only relevant when used with <cite>&#8211;chroot</cite>).</p>
 <dl class="option">
 <dt id="cmdoption-pflask-t">
 <span id="cmdoption-pflask--hostname"></span><tt class="descname">-t</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--hostname</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-t" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Set the container hostname.</p>
+</dd></dl>
 
-<p>Set the container hostname.</p>
+<dl class="option">
+<dt id="cmdoption-pflask-m">
+<span id="cmdoption-pflask--mount"></span><tt class="descname">-m</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--mount</tt><tt class="descclassname">=&lt;type&gt;,&lt;opts&gt;</tt><a class="headerlink" href="#cmdoption-pflask-m" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new <em>type</em> mount point inside the container. See <a class="reference internal" href="#mount">MOUNT</a> for more
+information.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-n">
+<span id="cmdoption-pflask--netif"></span><tt class="descname">-n</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--netif</tt><tt class="descclassname">[=&lt;opts&gt;]</tt><a class="headerlink" href="#cmdoption-pflask-n" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect the container networking from the host. See <a class="reference internal" href="#netif">NETIF</a> for more
+information.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-u">
+<span id="cmdoption-pflask--user"></span><tt class="descname">-u</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user</tt><tt class="descclassname">=&lt;user&gt;</tt><a class="headerlink" href="#cmdoption-pflask-u" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the command under the specified user.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-e">
+<span id="cmdoption-pflask--user-map"></span><tt class="descname">-e</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--user-map</tt><tt class="descclassname">=&lt;map&gt;</tt><a class="headerlink" href="#cmdoption-pflask-e" title="Permalink to this definition">¶</a></dt>
+<dd><p>Map container users to host users. The <em>map</em> argument is composed of three
+values separated by <tt class="docutils literal"><span class="pre">:</span></tt>: the first userid as seen in the user namespace of
+the container, the first userid as seen on the host, and a range indicating
+the number of consecutive ids to map.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--user-map=0:100000,65536</span></tt></p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-w">
+<span id="cmdoption-pflask--volatile"></span><tt class="descname">-w</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--volatile</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-w" title="Permalink to this definition">¶</a></dt>
+<dd><p>Discard any change to / once the container exits. This can only be used
+along with <tt class="docutils literal"><span class="pre">--chroot</span></tt> and requires support for the <a class="reference internal" href="#overlay">overlay</a> mount type.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-g">
+<span id="cmdoption-pflask--cgroup"></span><tt class="descname">-g</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--cgroup</tt><tt class="descclassname">=&lt;controller&gt;</tt><a class="headerlink" href="#cmdoption-pflask-g" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new cgroup in the given controller and move the container inside
+it.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-d">
+<span id="cmdoption-pflask--detach"></span><tt class="descname">-d</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--detach</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detach from terminal.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-a">
+<span id="cmdoption-pflask--attach"></span><tt class="descname">-a</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--attach</tt><tt class="descclassname">=&lt;pid&gt;</tt><a class="headerlink" href="#cmdoption-pflask-a" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attach to the <em>pid</em> detached process. Only a process with the same UID of
+the detached process can attach to it. To detach again press <cite>^&#64;</cite> (Ctrl + &#64;).</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-s">
+<span id="cmdoption-pflask--setenv"></span><tt class="descname">-s</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--setenv</tt><tt class="descclassname">=&lt;name&gt;=&lt;value&gt;[,&lt;name&gt;=&lt;value&gt; ...]</tt><a class="headerlink" href="#cmdoption-pflask-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set additional environment variables. It takes a comma-separated list of
+variables of the form <cite>name=value</cite>. This option may be used more than once.</p>
+</dd></dl>
+
+<dl class="option">
+<dt id="cmdoption-pflask-k">
+<span id="cmdoption-pflask--keepenv"></span><tt class="descname">-k</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--keepenv</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do not clear environment (only relevant when used with <tt class="docutils literal"><span class="pre">--chroot</span></tt>).</p>
+</dd></dl>
+
 <dl class="option">
 <dt id="cmdoption-pflask-U">
 <span id="cmdoption-pflask--no-userns"></span><tt class="descname">-U</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-userns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-U" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Disable user namespace.</p>
+</dd></dl>
 
-<p>Disable user namespace.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-M">
 <span id="cmdoption-pflask--no-mountns"></span><tt class="descname">-M</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-mountns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-M" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Disable mount namespace.</p>
+</dd></dl>
 
-<p>Disable mount namespace.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-N">
 <span id="cmdoption-pflask--no-netns"></span><tt class="descname">-N</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-netns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-N" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Disable net namespace.</p>
+</dd></dl>
 
-<p>Disable net namespace.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-I">
 <span id="cmdoption-pflask--no-ipcns"></span><tt class="descname">-I</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-ipcns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-I" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Disable IPC namespace.</p>
+</dd></dl>
 
-<p>Disable IPC namespace.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-H">
 <span id="cmdoption-pflask--no-utsns"></span><tt class="descname">-H</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-utsns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-H" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Disable UTS namespace.</p>
+</dd></dl>
 
-<p>Disable UTS namespace.</p>
 <dl class="option">
 <dt id="cmdoption-pflask-P">
 <span id="cmdoption-pflask--no-pidns"></span><tt class="descname">-P</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--no-pidns</tt><tt class="descclassname"></tt><a class="headerlink" href="#cmdoption-pflask-P" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Disable PID namespace.</p>
+</dd></dl>
 
-<p>Disable PID namespace.</p>
 </div>
 <div class="section" id="mount">
 <h2>MOUNT<a class="headerlink" href="#mount" title="Permalink to this headline">¶</a></h2>
-<p>pflask support the following mount point types:</p>
+<p>pflask can create the following mount point types using the <tt class="docutils literal"><span class="pre">--mount</span></tt> option:</p>
 <div class="section" id="bind">
 <h3>bind<a class="headerlink" href="#bind" title="Permalink to this headline">¶</a></h3>
-<p>It bind mounts a directory/file to another directory/file. If the <cite>&#8211;chroot</cite>
-option is used, the destination path will be relative to the chroot.</p>
-<p>Example: <cite>&#8211;mount=bind,/source/path,/dest/path</cite></p>
+<p><tt class="docutils literal"><span class="pre">--mount=bind,&lt;host_path&gt;,&lt;container_path&gt;</span></tt></p>
+<p>Bind mounts the <em>host_path</em> directory/file on the host filesystem to the
+<em>container_path</em> directory/file in the container. If the <tt class="docutils literal"><span class="pre">--chroot</span></tt> option is
+used, the destination path will be relative to the chroot directory.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=bind,/source/path,/dest/path</span></tt></p>
 </div>
 <div class="section" id="bind-ro">
 <h3>bind-ro<a class="headerlink" href="#bind-ro" title="Permalink to this headline">¶</a></h3>
-<p>Same as <cite>bind</cite>, but make the mount point read-only. If the <cite>&#8211;chroot</cite> option
-is used, the destination path will be relative to the chroot.</p>
-<p>Example: <cite>&#8211;mount=bind-ro,/source/path,/dest/path</cite></p>
+<p><tt class="docutils literal"><span class="pre">--mount=bind-ro,&lt;host_path&gt;,&lt;container_path&gt;</span></tt></p>
+<p>Same as <tt class="docutils literal"><span class="pre">bind</span></tt>, but makes the mount point read-only. If the <tt class="docutils literal"><span class="pre">--chroot</span></tt>
+option is used, the destination path will be relative to the chroot directory.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=bind-ro,/source/path,/dest/path</span></tt></p>
 </div>
 <div class="section" id="overlay">
 <h3>overlay<a class="headerlink" href="#overlay" title="Permalink to this headline">¶</a></h3>
-<p>It stacks a directory on top of another directory using either AuFS or OverlayFS
-depending on what is found at compile-time.</p>
-<p>Note that AuFS and OverlayFS don&#8217;t support user namespaces, so the <cite>&#8211;user</cite>
-option is incompatible with this mount type unless <cite>&#8211;no-userns</cite> is also used.</p>
-<p>In the following example, &#8220;/overlay/path&#8221; is stacked on top of &#8220;/dest/path&#8221;. The
-&#8220;/overlay/work&#8221; directory needs to be an empty directory on the same filesystem
-as &#8220;/overlay/path&#8221;.</p>
-<p>Example: <cite>&#8211;mount=overlay,/overlay/path,/dest/path,/overlay/work</cite></p>
+<p><tt class="docutils literal"><span class="pre">--mount=overla,&lt;root_dir&gt;,&lt;dest&gt;,&lt;work_dir&gt;</span></tt></p>
+<p>Stacks the host <em>root_dir</em> directory on top of the container&#8217;s <em>dest</em>
+directory using either AuFS or OverlayFS depending on what is found at
+compile-time. The <em>work_dir</em> directory needs to be an empty directory on the
+same filesystem as <em>root_dir</em>.</p>
+<p>Note that AuFS and OverlayFS don&#8217;t support user namespaces, so the <tt class="docutils literal"><span class="pre">--user</span></tt>
+option is incompatible with this mount type unless <tt class="docutils literal"><span class="pre">--no-userns</span></tt> is also used.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=overlay,/overlay/path,/dest/path,/overlay/work</span></tt></p>
 </div>
 <div class="section" id="tmp">
 <h3>tmp<a class="headerlink" href="#tmp" title="Permalink to this headline">¶</a></h3>
-<p>It mounts a tmpfs on a directory.</p>
-<p>Example: <cite>&#8211;mount=tmp,/dest/path</cite></p>
+<p><tt class="docutils literal"><span class="pre">--mount=tmp,&lt;dest&gt;</span></tt></p>
+<p>Mounts a temporary in-memory filesystem on the <em>dest</em> directory inside the
+container.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=tmp,/dest/path</span></tt></p>
 </div>
 </div>
 <div class="section" id="netif">
 <h2>NETIF<a class="headerlink" href="#netif" title="Permalink to this headline">¶</a></h2>
-<p>When the <cite>&#8211;netif</cite> option is used, pflask will create a new network namespace
-inside the container. If the argument is set, the following actions will be
-taken:</p>
+<p>pflask will create a new network namespace when the <tt class="docutils literal"><span class="pre">--netif</span></tt> option is used.
+If one of the following arguments is provided, a network interface will also be
+created inside the container:</p>
 <div class="section" id="move-and-rename">
 <h3>move and rename<a class="headerlink" href="#move-and-rename" title="Permalink to this headline">¶</a></h3>
-<p><cite>&#8211;netif=&lt;dev&gt;,&lt;name&gt;</cite></p>
-<p>If the <em>dev</em> option is an existing network interface, it will be moved inside
-the container &#8220;as is&#8221; and renamed to <em>name</em>. No additional configuration will
-be applied to it.</p>
-<p>Example: <cite>&#8211;netif=vxlan0,eth0</cite></p>
+<p><tt class="docutils literal"><span class="pre">--netif=&lt;dev&gt;,&lt;name&gt;</span></tt></p>
+<p>Moves the <em>dev</em> network interface from the host to the container, and renames
+it to <em>name</em>. No additional configuration will be applied to it.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=vxlan0,eth0</span></tt></p>
 </div>
 <div class="section" id="macvlan">
 <h3>macvlan<a class="headerlink" href="#macvlan" title="Permalink to this headline">¶</a></h3>
-<p><cite>&#8211;netif=macvlan,&lt;master&gt;,&lt;name&gt;</cite></p>
-<p>If the <em>macvlan</em> option is used, a new network interface of type <cite>macvlan</cite>
-will be created using <em>master</em> as master interface, moved inside the container
-and renamed to <em>name</em>. No additional configuration will be applied to it.</p>
-<p>Example: <cite>&#8211;netif=macvlan,eth0,eth0</cite></p>
+<p><tt class="docutils literal"><span class="pre">--netif=macvlan,&lt;master&gt;,&lt;name&gt;</span></tt></p>
+<p>Creates a <tt class="docutils literal"><span class="pre">macvlan</span></tt> network interface using <em>master</em> as master interface,
+moves it inside the container and renames it to <em>name</em>. No additional
+configuration will be applied to it.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=macvlan,eth0,eth0</span></tt></p>
 </div>
 <div class="section" id="ipvlan">
 <h3>ipvlan<a class="headerlink" href="#ipvlan" title="Permalink to this headline">¶</a></h3>
-<p><cite>&#8211;netif=ipvlan,&lt;master&gt;,&lt;name&gt;</cite></p>
-<p>If the <em>ipvlan</em> option is used, a new network interface of type <cite>ipvlan</cite>
-will be created using <em>master</em> as master interface, moved inside the container
-and renamed to <em>name</em>. No additional configuration will be applied to it.</p>
-<p>Example: <cite>&#8211;netif=ipvlan,eth0,eth0</cite></p>
+<p><tt class="docutils literal"><span class="pre">--netif=ipvlan,&lt;master&gt;,&lt;name&gt;</span></tt></p>
+<p>Same as <tt class="docutils literal"><span class="pre">macvlan</span></tt> but an <tt class="docutils literal"><span class="pre">ipvlan</span></tt> interface will be created instead. No
+additional configuration will be applied to it.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=ipvlan,eth0,eth0</span></tt></p>
 </div>
 <div class="section" id="veth">
 <h3>veth<a class="headerlink" href="#veth" title="Permalink to this headline">¶</a></h3>
-<p><cite>&#8211;netif=veth,&lt;name_outside&gt;,&lt;name_inside&gt;</cite></p>
-<p>If the <em>veth</em> option is used, a new pair of network interfaces of type <cite>veth</cite>
-will be created and one of the two moved inside the container. The twin outside
-the container will be named <em>name_outside</em>, while the twin inside the
-container will be named <em>name_inside</em>. No additional configuration will be
-applied to them.</p>
-<p>Example: <cite>&#8211;netif=veth,veth0,eth0</cite></p>
+<p><tt class="docutils literal"><span class="pre">--netif=veth,&lt;name_outside&gt;,&lt;name_inside&gt;</span></tt></p>
+<p>Creates a pair of <tt class="docutils literal"><span class="pre">veth</span></tt> network interfaces called <em>name_outside</em> and
+<em>name_inside</em>. The <em>name_inside</em> twin will then be moved inside the container.
+No additional configuration will be applied to them.</p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=veth,veth0,eth0</span></tt></p>
 </div>
 </div>
 <div class="section" id="author">
