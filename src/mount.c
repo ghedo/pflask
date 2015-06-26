@@ -161,6 +161,8 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 	_free_ char *root_dir = NULL;
 	_free_ char *work_dir = NULL;
 
+	_free_ char *procsys_dir = NULL;
+
 	char template[] = "/tmp/pflask-volatile-XXXXXX";
 
 	rc = mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL);
@@ -190,8 +192,9 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 		mount_add(&sys_mounts, "proc", "/proc", "proc",
 		          MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 
-		mount_add(&sys_mounts, prefix_root(dest, "/proc/sys"),
-		          "/proc/sys", "proc/sys", MS_BIND, NULL);
+		procsys_dir = prefix_root(dest, "/proc/sys");
+		mount_add(&sys_mounts, procsys_dir, "/proc/sys", "proc/sys",
+		          MS_BIND, NULL);
 
 		mount_add(&sys_mounts, NULL, "/proc/sys", "proc/sys-ro",
 		          MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
