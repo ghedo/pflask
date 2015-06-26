@@ -41,10 +41,10 @@ int sync_init(int fd[2]) {
 	int rc;
 
 	rc = socketpair(AF_LOCAL, SOCK_STREAM, 0, fd);
-	if (rc < 0)
-		sysf_printf("socketpair()");
+	if (rc < 0) sysf_printf("socketpair()");
 
-	fcntl(fd[0], F_SETFD, FD_CLOEXEC);
+	rc = fcntl(fd[0], F_SETFD, FD_CLOEXEC);
+	if (rc < 0) sysf_printf("fcntl()");
 
 	return 0;
 }
