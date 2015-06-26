@@ -55,6 +55,13 @@ struct mount {
 	struct mount *next, *prev;
 };
 
+struct overlay {
+	char *overlay;
+	char *workdir;
+	char type;
+};
+
+static void make_overlay_opts(struct mount *m, const char *dest);
 static void mount_add_overlay(struct mount **mounts, const char *overlay,
                               const char *dst, const char *work);
 
@@ -67,7 +74,11 @@ void mount_add(struct mount **mounts, const char *src, const char *dst,
 	mnt->dst   = dst  ? strdup(dst)  : NULL;
 	mnt->type  = type ? strdup(type) : NULL;
 	mnt->flags = f;
-	mnt->data  = d    ? strdup(d)    : NULL;
+
+	if (type && !strcmp(type, "overlay"))
+		mnt->data = d;
+	else
+		mnt->data = d ? strdup(d) : NULL;
 
 	DL_APPEND(*mounts, mnt);
 }
@@ -186,7 +197,7 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 			if (rc < 0)
 				sysf_printf("mkdir(%s)", work_dir);
 
-			mount_add_overlay(&sys_mounts, root_dir, dest, work_dir);
+			mount_add_overlay(&sys_mounts, root_dir, "/", work_dir);
 		}
 
 		mount_add(&sys_mounts, "proc", "/proc", "proc",
@@ -221,6 +232,9 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 	DL_FOREACH(sys_mounts, i) {
 		_free_ char *mnt_dest = prefix_root(dest, i->dst);
 
+		if (!strcmp(i->type, "overlay"))
+			make_overlay_opts(i, dest);
+
 		rc = mkdir(mnt_dest, 0755);
 		if (rc < 0) {
 			struct stat sb;
@@ -243,25 +257,45 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 	}
 }
 
-static void mount_add_overlay(struct mount **mounts, const char *overlay,
-                              const char *dst, const char *workdir) {
+static void make_overlay_opts(struct mount *m, const char *dest) {
 	int rc;
 
-	_free_ char *overlayfs_opts = NULL;
+	_free_ struct overlay *ovl = m->data;
+
+	_free_ char *dst = prefix_root(dest, m->dst);
+
+	char *overlay = ovl->overlay;
+	char *workdir = ovl->workdir;
+
+	char *overlayfs_opts = NULL;
+
+	if (ovl->type == 'a') {
+		rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dst);
+		if (rc < 0) fail_printf("OOM");
+	} else if (ovl->type == 'o') {
+		rc = asprintf(&overlayfs_opts,
+		              "upperdir=%s,lowerdir=%s,workdir=%s",
+		              overlay, dst, workdir);
+		if (rc < 0) fail_printf("OOM");
+	}
+
+	m->data = overlayfs_opts;
+}
+
+static void mount_add_overlay(struct mount **mounts, const char *overlay,
+                              const char *dst, const char *workdir) {
+	struct overlay *ovl = malloc(sizeof(struct overlay));
+
+	ovl->overlay = strdup(overlay);
+	ovl->workdir = strdup(workdir);
 
 #ifdef HAVE_AUFS
-	rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dst);
-	if (rc < 0) fail_printf("OOM");
-
-	mount_add(mounts, NULL, dst, "aufs", 0, overlayfs_opts);
+	ovl->type = 'a';
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
-	rc = asprintf(&overlayfs_opts,
-		      "upperdir=%s,lowerdir=%s,workdir=%s",
-		      overlay, dst, workdir);
-	if (rc < 0) fail_printf("OOM");
-
-	mount_add(mounts, NULL, dst, "overlay", 0, overlayfs_opts);
+	ovl->type = 'o';
 #else
 	fail_printf("The 'overlay' mount type is not supported");
 #endif
+
+	mount_add(mounts, NULL, dst, "overlay", 0, ovl);
 }

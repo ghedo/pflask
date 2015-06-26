@@ -140,10 +140,11 @@ overlay
 
 ``--mount=overla,<root_dir>,<dest>,<work_dir>``
 
-Stacks the host *root_dir* directory on top of the container's *dest*
-directory using either AuFS or OverlayFS depending on what is found at
-compile-time. The *work_dir* directory needs to be an empty directory on the
-same filesystem as *root_dir*.
+Stacks the host *root_dir* directory on top of the container's *dest* directory
+using either AuFS or OverlayFS depending on what is found at compile-time. If
+the ``--chroot`` option is used, the destination path will be relative to the
+chroot directory. The *work_dir* directory needs to be an empty directory on
+the same filesystem as *root_dir*.
 
 Note that AuFS and OverlayFS don't support user namespaces, so the ``--user``
 option is incompatible with this mount type unless ``--no-userns`` is also used.
