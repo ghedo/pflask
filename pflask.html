@@ -203,10 +203,11 @@ option is used, the destination path will be relative to the chroot directory.</
 <div class="section" id="overlay">
 <h3>overlay<a class="headerlink" href="#overlay" title="Permalink to this headline">¶</a></h3>
 <p><tt class="docutils literal"><span class="pre">--mount=overla,&lt;root_dir&gt;,&lt;dest&gt;,&lt;work_dir&gt;</span></tt></p>
-<p>Stacks the host <em>root_dir</em> directory on top of the container&#8217;s <em>dest</em>
-directory using either AuFS or OverlayFS depending on what is found at
-compile-time. The <em>work_dir</em> directory needs to be an empty directory on the
-same filesystem as <em>root_dir</em>.</p>
+<p>Stacks the host <em>root_dir</em> directory on top of the container&#8217;s <em>dest</em> directory
+using either AuFS or OverlayFS depending on what is found at compile-time. If
+the <tt class="docutils literal"><span class="pre">--chroot</span></tt> option is used, the destination path will be relative to the
+chroot directory. The <em>work_dir</em> directory needs to be an empty directory on
+the same filesystem as <em>root_dir</em>.</p>
 <p>Note that AuFS and OverlayFS don&#8217;t support user namespaces, so the <tt class="docutils literal"><span class="pre">--user</span></tt>
 option is incompatible with this mount type unless <tt class="docutils literal"><span class="pre">--no-userns</span></tt> is also used.</p>
 <p>Example: <tt class="docutils literal"><span class="pre">--mount=overlay,/overlay/path,/dest/path,/overlay/work</span></tt></p>
