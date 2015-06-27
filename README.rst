@@ -44,7 +44,7 @@ system inside the container:
 
 .. code-block:: bash
 
-   $ sudo pflask --chroot=/path/to/rootfs -- /lib/systemd/systemd
+   $ sudo pflask --chroot=/path/to/rootfs -- /sbin/init
 
 Note that pflask doesn't provide any support for creating the rootfs, but can
 piggyback on existing tools. For example the ``debootstrap(8)`` command can be
@@ -122,7 +122,7 @@ change applied to the root filesystem once the container terminates:
 
 .. code-block:: bash
 
-   $ sudo pflask --chroot=/path/to/rootfs --volatile -- /lib/systemd/systemd
+   $ sudo pflask --chroot=/path/to/rootfs --volatile -- /sbin/init
 
 This can be used for example for a build environment, where dependencies can
 be installed at every run on a clean rootfs, without the need to recreate the
@@ -206,8 +206,8 @@ option:
 Where ``29076`` is the PID of the detached pflask process. Once reattached, it
 can be detached again by pressing ``^@`` (Ctrl + @).
 
-systemd's machined integration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+machined integration
+~~~~~~~~~~~~~~~~~~~~
 
 Containers created with pflask are automatically registered with the machined_
 daemon, if installed and running. The ``machinectl(1)`` command can then be
@@ -217,7 +217,7 @@ Let's create one container as follows:
 
 .. code-block:: bash
 
-   $ sudo pflask --chroot=/path/to/rootfs -- /lib/systemd/systemd
+   $ sudo pflask --chroot=/path/to/rootfs -- /sbin/init
 
 Running containers can be listed using the ``list`` command:
 
