@@ -161,7 +161,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 	}
 }
 
-void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
+void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 	int rc;
 
 	struct mount *sys_mounts = NULL;
@@ -174,13 +174,13 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_volatile) {
 
 	_free_ char *procsys_dir = NULL;
 
-	char template[] = "/tmp/pflask-volatile-XXXXXX";
+	char template[] = "/tmp/pflask-ephemeral-XXXXXX";
 
 	rc = mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL);
 	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
 
 	if (dest != NULL) {
-		if (is_volatile) {
+		if (is_ephemeral) {
 			if (!mkdtemp(template))
 				sysf_printf("mkdtemp()");
 

@@ -57,7 +57,7 @@ OPTIONS
 
    Example: ``--user-map=0:100000,65536``
 
-.. option:: -w, --volatile
+.. option:: -w, --ephemeral
 
    Discard any change to / once the container exits. This can only be used
    along with ``--chroot`` and requires support for the overlay_ mount type.

@@ -63,7 +63,7 @@ static struct option long_opts[] = {
 	{ "user",      required_argument, NULL, 'u' },
 	{ "user-map",  required_argument, NULL, 'e' },
 	{ "chroot",    required_argument, NULL, 'r' },
-	{ "volatile",  no_argument,       NULL, 'w' },
+	{ "ephemeral", no_argument,       NULL, 'w' },
 	{ "chdir",     required_argument, NULL, 'c' },
 	{ "cgroup",    required_argument, NULL, 'g' },
 	{ "detach",    no_argument,       NULL, 'd' },
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 
 	bool detach  = false;
 	bool keepenv = false;
-	bool is_volatile = false;
+	bool is_ephemeral = false;
 
 	siginfo_t status;
 
@@ -195,7 +195,7 @@ int main(int argc, char *argv[]) {
 			break;
 
 		case 'w':
-			is_volatile = 1;
+			is_ephemeral = 1;
 			break;
 
 		case 'g':
@@ -321,7 +321,7 @@ int main(int argc, char *argv[]) {
 			if (rc < 0) sysf_printf("sethostname()");
 		}
 
-		setup_mount(mounts, dest, is_volatile);
+		setup_mount(mounts, dest, is_ephemeral);
 
 		if (dest != NULL) {
 			setup_nodes(dest);
@@ -523,7 +523,7 @@ static inline void help(void) {
 	CMD_HELP("--user",  "-u", "Run the command under the specified user");
 	CMD_HELP("--user-map", "-e", "Map container users to host users");
 
-	CMD_HELP("--volatile", "-w", "Discard changes to /");
+	CMD_HELP("--ephemeral", "-w", "Discard changes to /");
 
 	CMD_HELP("--cgroup", "-g",
 		"Create a new cgroup and move the container inside it");

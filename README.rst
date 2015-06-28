@@ -114,15 +114,15 @@ manpage for more information.
 
 .. _`types of mount points`: https://ghedo.github.io/pflask/pflask.html#mount
 
-Volatile root filesystem
-~~~~~~~~~~~~~~~~~~~~~~~~
+Ephemeral root filesystem
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Using the ``--volatile`` option it's possible to tell pflask to discard any
+Using the ``--ephemeral`` option it's possible to tell pflask to discard any
 change applied to the root filesystem once the container terminates:
 
 .. code-block:: bash
 
-   $ sudo pflask --chroot=/path/to/rootfs --volatile -- /sbin/init
+   $ sudo pflask --chroot=/path/to/rootfs --ephemeral -- /sbin/init
 
 This can be used for example for a build environment, where dependencies can
 be installed at every run on a clean rootfs, without the need to recreate the

@@ -12,7 +12,7 @@ _arguments -C -S \
 	{--user-map=,-e}'[Map container users to host users]:map' \
 	{--chroot=,-r}'[Change the root directory inside the container]:directory:_directories' \
 	{--chdir=,-c}'[Change the current directory inside the container]:directory' \
-	{--volatile,-w}'[Discard changes to /]' \
+	{--ephemeral,-w}'[Discard changes to /]' \
 	{--cgroup=,-g}'[Create new cgroups and move the container inside them]:cgroup spec' \
 	{--detach,-d}'[Detach from terminal]' \
 	{--attach=,-a}'[Attach to the specified detached process]:PID' \
