@@ -71,7 +71,7 @@ but a custom command can also be specified:</p>
 <p>This can be used, for example, as a replacement for the <tt class="docutils literal"><span class="pre">chroot(8)</span></tt> command.
 It&#8217;s even possible to invoke the init binary and boot the whole operating
 system inside the container:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs -- /lib/systemd/systemd
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs -- /sbin/init
 </pre></div>
 </div>
 <p>Note that pflask doesn&#8217;t provide any support for creating the rootfs, but can
@@ -122,11 +122,11 @@ container&#8217;s <tt class="docutils literal"><span class="pre">/tmp</span></tt
 <p>pflask can also create other <a class="reference external" href="https://ghedo.github.io/pflask/pflask.html#mount">types of mount points</a>, have a look at the
 manpage for more information.</p>
 </div>
-<div class="section" id="volatile-root-filesystem">
-<h3>Volatile root filesystem<a class="headerlink" href="#volatile-root-filesystem" title="Permalink to this headline">¶</a></h3>
-<p>Using the <tt class="docutils literal"><span class="pre">--volatile</span></tt> option it&#8217;s possible to tell pflask to discard any
+<div class="section" id="ephemeral-root-filesystem">
+<h3>Ephemeral root filesystem<a class="headerlink" href="#ephemeral-root-filesystem" title="Permalink to this headline">¶</a></h3>
+<p>Using the <tt class="docutils literal"><span class="pre">--ephemeral</span></tt> option it&#8217;s possible to tell pflask to discard any
 change applied to the root filesystem once the container terminates:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --volatile -- /lib/systemd/systemd
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --ephemeral -- /sbin/init
 </pre></div>
 </div>
 <p>This can be used for example for a build environment, where dependencies can
@@ -192,13 +192,13 @@ option:</p>
 <p>Where <tt class="docutils literal"><span class="pre">29076</span></tt> is the PID of the detached pflask process. Once reattached, it
 can be detached again by pressing <tt class="docutils literal"><span class="pre">^&#64;</span></tt> (Ctrl + &#64;).</p>
 </div>
-<div class="section" id="systemd-s-machined-integration">
-<h3>systemd&#8217;s machined integration<a class="headerlink" href="#systemd-s-machined-integration" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="machined-integration">
+<h3>machined integration<a class="headerlink" href="#machined-integration" title="Permalink to this headline">¶</a></h3>
 <p>Containers created with pflask are automatically registered with the <a class="reference external" href="http://www.freedesktop.org/wiki/Software/systemd/machined/">machined</a>
 daemon, if installed and running. The <tt class="docutils literal"><span class="pre">machinectl(1)</span></tt> command can then be
 used to list and manipulate running containers.</p>
 <p>Let&#8217;s create one container as follows:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs -- /lib/systemd/systemd
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs -- /sbin/init
 </pre></div>
 </div>
 <p>Running containers can be listed using the <tt class="docutils literal"><span class="pre">list</span></tt> command:</p>
@@ -290,10 +290,10 @@ kronk login:
 <li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
 <li><a class="reference internal" href="#networking">Networking</a></li>
 <li><a class="reference internal" href="#filesystem">Filesystem</a></li>
-<li><a class="reference internal" href="#volatile-root-filesystem">Volatile root filesystem</a></li>
+<li><a class="reference internal" href="#ephemeral-root-filesystem">Ephemeral root filesystem</a></li>
 <li><a class="reference internal" href="#unprivileged-containers">Unprivileged containers</a></li>
 <li><a class="reference internal" href="#background-containers">Background containers</a></li>
-<li><a class="reference internal" href="#systemd-s-machined-integration">systemd&#8217;s machined integration</a></li>
+<li><a class="reference internal" href="#machined-integration">machined integration</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#building">Building</a></li>
