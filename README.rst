@@ -114,11 +114,8 @@ manpage for more information.
 
 .. _`types of mount points`: https://ghedo.github.io/pflask/pflask.html#mount
 
-Ephemeral root filesystem
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Using the ``--ephemeral`` option it's possible to tell pflask to discard any
-change applied to the root filesystem once the container terminates:
+Additionally, using the ``--ephemeral`` option it's possible to tell pflask to
+discard any change applied to the root filesystem once the container terminates:
 
 .. code-block:: bash
 
