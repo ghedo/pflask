@@ -121,11 +121,8 @@ supplied command.</p>
 container&#8217;s <tt class="docutils literal"><span class="pre">/tmp</span></tt>, so that files can be exchanged between them.</p>
 <p>pflask can also create other <a class="reference external" href="https://ghedo.github.io/pflask/pflask.html#mount">types of mount points</a>, have a look at the
 manpage for more information.</p>
-</div>
-<div class="section" id="ephemeral-root-filesystem">
-<h3>Ephemeral root filesystem<a class="headerlink" href="#ephemeral-root-filesystem" title="Permalink to this headline">¶</a></h3>
-<p>Using the <tt class="docutils literal"><span class="pre">--ephemeral</span></tt> option it&#8217;s possible to tell pflask to discard any
-change applied to the root filesystem once the container terminates:</p>
+<p>Additionally, using the <tt class="docutils literal"><span class="pre">--ephemeral</span></tt> option it&#8217;s possible to tell pflask to
+discard any change applied to the root filesystem once the container terminates:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --ephemeral -- /sbin/init
 </pre></div>
 </div>
@@ -290,7 +287,6 @@ kronk login:
 <li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
 <li><a class="reference internal" href="#networking">Networking</a></li>
 <li><a class="reference internal" href="#filesystem">Filesystem</a></li>
-<li><a class="reference internal" href="#ephemeral-root-filesystem">Ephemeral root filesystem</a></li>
 <li><a class="reference internal" href="#unprivileged-containers">Unprivileged containers</a></li>
 <li><a class="reference internal" href="#background-containers">Background containers</a></li>
 <li><a class="reference internal" href="#machined-integration">machined integration</a></li>
