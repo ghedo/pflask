@@ -79,7 +79,7 @@ void netif_add_from_spec(struct netif **ifs, const char *spec) {
 	tmp = strdup(spec);
 	if (tmp == NULL) fail_printf("OOM");
 
-	size_t c = split_str(tmp, &opts, ",");
+	size_t c = split_str(tmp, &opts, ":");
 	if (c == 0) fail_printf("Invalid netif spec '%s'", spec);
 
 	if (if_nametoindex(opts[0])) {

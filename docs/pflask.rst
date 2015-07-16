@@ -34,7 +34,7 @@ OPTIONS
 
    Set the container hostname.
 
-.. option:: -m, --mount=<type>,<opts>
+.. option:: -m, --mount=<type>:<opts>
 
    Create a new *type* mount point inside the container. See MOUNT_ for more
    information.
@@ -117,28 +117,28 @@ pflask can create the following mount point types using the ``--mount`` option:
 bind
 ~~~~
 
-``--mount=bind,<host_path>,<container_path>``
+``--mount=bind:<host_path>:<container_path>``
 
 Bind mounts the *host_path* directory/file on the host filesystem to the
 *container_path* directory/file in the container. If the ``--chroot`` option is
 used, the destination path will be relative to the chroot directory.
 
-Example: ``--mount=bind,/source/path,/dest/path``
+Example: ``--mount=bind:/source/path:/dest/path``
 
 bind-ro
 ~~~~~~~
 
-``--mount=bind-ro,<host_path>,<container_path>``
+``--mount=bind-ro:<host_path>:<container_path>``
 
 Same as ``bind``, but makes the mount point read-only. If the ``--chroot``
 option is used, the destination path will be relative to the chroot directory.
 
-Example: ``--mount=bind-ro,/source/path,/dest/path``
+Example: ``--mount=bind-ro:/source/path:/dest/path``
 
 overlay
 ~~~~~~~
 
-``--mount=overla,<root_dir>,<dest>,<work_dir>``
+``--mount=overla:<root_dir>:<dest>:<work_dir>``
 
 Stacks the host *root_dir* directory on top of the container's *dest* directory
 using either AuFS or OverlayFS depending on what is found at compile-time. If
@@ -149,17 +149,17 @@ the same filesystem as *root_dir*.
 Note that AuFS and OverlayFS don't support user namespaces, so the ``--user``
 option is incompatible with this mount type unless ``--no-userns`` is also used.
 
-Example: ``--mount=overlay,/overlay/path,/dest/path,/overlay/work``
+Example: ``--mount=overlay:/overlay/path:/dest/path:/overlay/work``
 
 tmp
 ~~~
 
-``--mount=tmp,<dest>``
+``--mount=tmp:<dest>``
 
 Mounts a temporary in-memory filesystem on the *dest* directory inside the
 container.
 
-Example: ``--mount=tmp,/dest/path``
+Example: ``--mount=tmp:/dest/path``
 
 NETIF
 -----
@@ -171,44 +171,44 @@ created inside the container:
 move and rename
 ~~~~~~~~~~~~~~~
 
-``--netif=<dev>,<name>``
+``--netif=<dev>:<name>``
 
 Moves the *dev* network interface from the host to the container, and renames
 it to *name*. No additional configuration will be applied to it.
 
-Example: ``--netif=vxlan0,eth0``
+Example: ``--netif=vxlan0:eth0``
 
 macvlan
 ~~~~~~~
 
-``--netif=macvlan,<master>,<name>``
+``--netif=macvlan:<master>:<name>``
 
 Creates a ``macvlan`` network interface using *master* as master interface,
 moves it inside the container and renames it to *name*. No additional
 configuration will be applied to it.
 
-Example: ``--netif=macvlan,eth0,eth0``
+Example: ``--netif=macvlan:eth0:eth0``
 
 ipvlan
 ~~~~~~~
 
-``--netif=ipvlan,<master>,<name>``
+``--netif=ipvlan:<master>:<name>``
 
 Same as ``macvlan`` but an ``ipvlan`` interface will be created instead. No
 additional configuration will be applied to it.
 
-Example: ``--netif=ipvlan,eth0,eth0``
+Example: ``--netif=ipvlan:eth0:eth0``
 
 veth
 ~~~~
 
-``--netif=veth,<name_outside>,<name_inside>``
+``--netif=veth:<name_outside>:<name_inside>``
 
 Creates a pair of ``veth`` network interfaces called *name_outside* and
 *name_inside*. The *name_inside* twin will then be moved inside the container.
 No additional configuration will be applied to them.
 
-Example: ``--netif=veth,veth0,eth0``
+Example: ``--netif=veth:veth0:eth0``
 
 AUTHOR
 ------

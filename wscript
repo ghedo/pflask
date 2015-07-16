@@ -114,6 +114,7 @@ def build(bld):
 	sources = [
 		# sources
 		( 'src/cgroup.c'          ),
+		( 'src/cmdline.c'         ),
 		( 'src/dev.c'             ),
 		( 'src/machine.c', 'dbus' ),
 		( 'src/mount.c'           ),

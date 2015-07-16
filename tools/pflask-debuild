@@ -143,7 +143,7 @@ elif [ "$1" = "--update" ]; then
 		sh -c "$APT_TOOL update && $APT_TOOL dist-upgrade && $APT_TOOL autoremove --purge && $APT_TOOL autoclean"
 else
 	$PFLASK_TOOL --keepenv --chroot $BASEDIR --ephemeral	\
-		--mount "bind,$RESDIR,$TMPDIR"			\
+		--mount "bind:$RESDIR:$TMPDIR"			\
 		--chdir "/mnt/$PKGDIR"				\
 		--						\
 		sh -c "$BUILD_CMD" | tee "../$LOG_FILE"

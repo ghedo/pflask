@@ -1,0 +1,42 @@
+package "pflask"
+version "0.2"
+
+option "chroot"    r "Change the root directory inside the container"
+       string optional
+option "chdir"     c "Change the current directory inside the container"
+       string optional
+option "hostname"  t "Set the container hostname"
+       string optional
+option "mount"     m "Create a new mount point inside the container"
+       string optional multiple
+option "netif"     n "Disconnect the container networking from the host"
+       string optional argoptional multiple
+option "user"      u "Run the command under the specified user"
+       string default="root" optional
+option "user-map"  e "Map container users to host users"
+       string optional multiple
+option "ephemeral" w "Discard changes to /"
+       flag off dependon="chroot"
+option "cgroup"    g "Create a new cgroup and move the container inside it"
+       string optional multiple
+option "detach"    d "Detach from terminal"
+       flag off
+option "attach"    a "Attach to the specified detached process"
+       int optional
+option "setenv"    s "Set additional environment variables"
+       string optional multiple
+option "keepenv"   k "Do not clear environment"
+       flag off
+
+option "no-userns"  U "Disable user namespace support"
+       flag off
+option "no-mountns" M "Disable mount namespace support"
+       flag off
+option "no-netns"   N "Disable net namespace support"
+       flag off
+option "no-ipcns"   I "Disable IPC namespace support"
+       flag off
+option "no-utsns"   H "Disable UTS namespace support"
+       flag off
+option "no-pidns"   P "Disable PID namespace support"
+       flag off

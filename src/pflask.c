@@ -44,6 +44,8 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include "cmdline.h"
+
 #include "pty.h"
 #include "user.h"
 #include "dev.h"
@@ -55,54 +57,18 @@
 #include "printf.h"
 #include "util.h"
 
-static const char *short_opts = "+m:n::u:e:r:wc:g:da:s:kt:UMNIHPh?";
-
-static struct option long_opts[] = {
-	{ "mount",     required_argument, NULL, 'm' },
-	{ "netif",     optional_argument, NULL, 'n' },
-	{ "user",      required_argument, NULL, 'u' },
-	{ "user-map",  required_argument, NULL, 'e' },
-	{ "chroot",    required_argument, NULL, 'r' },
-	{ "ephemeral", no_argument,       NULL, 'w' },
-	{ "chdir",     required_argument, NULL, 'c' },
-	{ "cgroup",    required_argument, NULL, 'g' },
-	{ "detach",    no_argument,       NULL, 'd' },
-	{ "attach",    required_argument, NULL, 'a' },
-	{ "setenv",    required_argument, NULL, 's' },
-	{ "keepenv",   no_argument,       NULL, 'k' },
-	{ "hostname",  required_argument, NULL, 't' },
-	{ "no-userns", no_argument,       NULL, 'U' },
-	{ "no-mountns", no_argument,      NULL, 'M' },
-	{ "no-netns",  no_argument,       NULL, 'N' },
-	{ "no-ipcns",  no_argument,       NULL, 'I' },
-	{ "no-utsns",  no_argument,       NULL, 'H' },
-	{ "no-pidns",  no_argument,       NULL, 'P' },
-	{ "help",      no_argument,       NULL, 'h' },
-	{ 0, 0, 0, 0 }
-};
-
 static size_t validate_optlist(const char *name, const char *opts);
 
 static void do_daemonize(void);
 static void do_chroot(const char *dest);
 static pid_t do_clone(int *flags);
 
-static inline void help(void);
-
 int main(int argc, char *argv[]) {
-	int rc, i;
+	int rc, sync[2];
 
-	int sync[2];
+	pid_t pid = -1;
 
-	pid_t pid  = -1;
-
-	_free_ char *user   = strdup("root");
-	_free_ char *map    = NULL;
-	_free_ char *dest   = NULL;
-	_free_ char *change = NULL;
-	_free_ char *env    = NULL;
-	_free_ char *cgroup = NULL;
-	_free_ char *hname  = NULL;
+	siginfo_t status;
 
 	struct mount *mounts = NULL;
 	struct netif *netifs = NULL;
@@ -112,187 +78,108 @@ int main(int argc, char *argv[]) {
 	char *master;
 	_close_ int master_fd = -1;
 
-	bool detach  = false;
-	bool keepenv = false;
-	bool is_ephemeral = false;
-
-	siginfo_t status;
-
 	int clone_flags = CLONE_NEWNS  |
                           CLONE_NEWIPC |
                           CLONE_NEWPID |
                           CLONE_NEWUTS;
 
-	while ((rc = getopt_long(argc, argv, short_opts, long_opts, &i)) !=-1) {
-		switch (rc) {
-		case 'm':
-			validate_optlist("--mount", optarg);
+	struct gengetopt_args_info args;
 
-			mount_add_from_spec(&mounts, optarg);
-			break;
+	if (cmdline_parser(argc, argv, &args) != 0)
+		return 1;
 
-		case 'n':
-			clone_flags |= CLONE_NEWNET;
+	for (unsigned int i = 0; i < args.mount_given; i++) {
+		validate_optlist("--mount", args.mount_arg[i]);
+		mount_add_from_spec(&mounts, args.mount_arg[i]);
+	}
 
-			if (optarg != NULL) {
-				validate_optlist("--netif", optarg);
+	for (unsigned int i = 0; i < args.netif_given; i++) {
+		clone_flags |= CLONE_NEWNET;
 
-				netif_add_from_spec(&netifs, optarg);
-			}
-			break;
-
-		case 'u':
-			freep(&user);
-
-			clone_flags |= CLONE_NEWUSER;
-
-			user = strdup(optarg);
-			break;
-
-		case 'e': {
-			uid_t id, host_id;
-			size_t count;
-
-			char *start = optarg, *end = NULL;
-
-			validate_optlist("--user-map", optarg);
-
-			clone_flags |= CLONE_NEWUSER;
-
-			id = strtoul(start, &end, 10);
-			if (*end != ':')
-				fail_printf("a Invalid value '%s' for --user-map", optarg);
-
-			start = end + 1;
-
-			host_id = strtoul(start, &end, 10);
-			if (*end != ':')
-				fail_printf("b Invalid value '%s' for --user-map", optarg);
-
-			start = end + 1;
-
-			count = strtoul(start, &end, 10);
-			if (*end != '\0')
-				fail_printf("c Invalid value '%s' for --user-map", optarg);
-
-			user_add_map(&users, 'u', id, host_id, count);
-			user_add_map(&users, 'g', id, host_id, count);
-
-			break;
-		}
-
-		case 'r':
-			freep(&dest);
-
-			dest = realpath(optarg, NULL);
-			if (dest == NULL) sysf_printf("realpath()");
-			break;
-
-		case 'c':
-			freep(&change);
-
-			change = strdup(optarg);
-			break;
-
-		case 'w':
-			is_ephemeral = 1;
-			break;
-
-		case 'g':
-			cgroup_add(&cgroups, optarg);
-			break;
-
-		case 'd':
-			detach = true;
-			break;
-
-		case 'a': {
-			char *end = NULL;
-			pid = strtol(optarg, &end, 10);
-			if (*end != '\0')
-				fail_printf("Invalid value '%s' for --attach", optarg);
-			break;
-		}
-
-		case 's': {
-			validate_optlist("--setenv", optarg);
-
-			if (env != NULL) {
-				char *tmp = env;
-
-			rc = asprintf(&env, "%s,%s", env, optarg);
-				if (rc < 0) fail_printf("OOM");
-
-				freep(&tmp);
-			} else {
-				env = strdup(optarg);
-			}
-
-			break;
-		}
-
-		case 'k':
-			keepenv = true;
-			break;
-
-		case 't':
-			freep(&hname);
-
-			hname = strdup(optarg);
-			break;
-
-		case 'U':
-			clone_flags &= ~(CLONE_NEWUSER);
-			break;
-
-		case 'M':
-			clone_flags &= ~(CLONE_NEWNS);
-			break;
-
-		case 'N':
-			clone_flags &= ~(CLONE_NEWNET);
-			break;
-
-		case 'I':
-			clone_flags &= ~(CLONE_NEWIPC);
-			break;
-
-		case 'H':
-			clone_flags &= ~(CLONE_NEWUTS);
-			break;
-
-		case 'P':
-			clone_flags &= ~(CLONE_NEWPID);
-			break;
-
-		case '?':
-		case 'h':
-			help();
-			return 0;
+		if (args.netif_arg != NULL) {
+			validate_optlist("--netif", args.netif_arg[i]);
+			netif_add_from_spec(&netifs, args.netif_arg[i]);
 		}
 	}
 
-	if (pid != -1) {
-		master_fd = recv_pty(pid);
-		if (master_fd < 0) fail_printf("Invalid PID '%u'", pid);
-
-		process_pty(master_fd);
-		return 0;
-	}
-
-	if ((clone_flags & CLONE_NEWUSER) && (users == NULL)) {
+	if (args.user_given && !args.user_map_given) {
 		uid_t uid;
 		gid_t gid;
 
-		if (user_get_uid_gid(user, &uid, &gid)) {
+		clone_flags |= CLONE_NEWUSER;
+
+		if (user_get_uid_gid(args.user_arg, &uid, &gid)) {
 			user_add_map(&users, 'u', uid, uid, 1);
 			user_add_map(&users, 'g', gid, gid, 1);
 		}
 	}
 
+	for (unsigned int i = 0; i < args.user_map_given; i++) {
+		size_t count;
+		uid_t id, host_id;
+
+		char *start = args.user_map_arg[i], *end = NULL;
+
+		validate_optlist("--user-map", args.user_map_arg[i]);
+
+		clone_flags |= CLONE_NEWUSER;
+
+		id = strtoul(start, &end, 10);
+		if (*end != ':')
+			fail_printf("Invalid value '%s' for --user-map",
+			            args.user_map_arg[i]);
+
+		start = end + 1;
+
+		host_id = strtoul(start, &end, 10);
+		if (*end != ':')
+			fail_printf("Invalid value '%s' for --user-map",
+			            args.user_map_arg[i]);
+
+		start = end + 1;
+
+		count = strtoul(start, &end, 10);
+		if (*end != '\0')
+			fail_printf("Invalid value '%s' for --user-map",
+			            args.user_map_arg[i]);
+
+		user_add_map(&users, 'u', id, host_id, count);
+		user_add_map(&users, 'g', id, host_id, count);
+	}
+
+	for (unsigned int i = 0; i < args.cgroup_given; i++)
+		cgroup_add(&cgroups, args.cgroup_arg[i]);
+
+	if (args.no_userns_flag)
+		clone_flags &= ~(CLONE_NEWUSER);
+
+	if (args.no_mountns_flag)
+		clone_flags &= ~(CLONE_NEWNS);
+
+	if (args.no_netns_flag)
+		clone_flags &= ~(CLONE_NEWNET);
+
+	if (args.no_ipcns_flag)
+		clone_flags &= ~(CLONE_NEWIPC);
+
+	if (args.no_utsns_flag)
+		clone_flags &= ~(CLONE_NEWUTS);
+
+	if (args.no_pidns_flag)
+		clone_flags &= ~(CLONE_NEWPID);
+
+	if (args.attach_given) {
+		master_fd = recv_pty(args.attach_arg);
+		if (master_fd < 0)
+			fail_printf("Invalid PID '%u'", args.attach_arg);
+
+		process_pty(master_fd);
+		return 0;
+	}
+
 	open_master_pty(&master_fd, &master);
 
-	if (detach)
+	if (args.detach_flag)
 		do_daemonize();
 
 	sync_init(sync);
@@ -314,25 +201,26 @@ int main(int argc, char *argv[]) {
 
 		open_slave_pty(master);
 
-		setup_user(user);
+		setup_user(args.user_arg);
 
-		if (hname != NULL) {
-			rc = sethostname(hname, strlen(hname));
+		if (args.hostname_given) {
+			rc = sethostname(args.hostname_arg,
+			                 strlen(args.hostname_arg));
 			if (rc < 0) sysf_printf("sethostname()");
 		}
 
-		setup_mount(mounts, dest, is_ephemeral);
+		setup_mount(mounts, args.chroot_arg, args.ephemeral_flag);
 
-		if (dest != NULL) {
-			setup_nodes(dest);
+		if (args.chroot_given) {
+			setup_nodes(args.chroot_arg);
 
-			setup_ptmx(dest);
+			setup_ptmx(args.chroot_arg);
 
-			setup_symlinks(dest);
+			setup_symlinks(args.chroot_arg);
 
-			setup_console(dest, master);
+			setup_console(args.chroot_arg, master);
 
-			do_chroot(dest);
+			do_chroot(args.chroot_arg);
 		}
 
 		if (clone_flags & CLONE_NEWNET)
@@ -342,37 +230,26 @@ int main(int argc, char *argv[]) {
 
 		/* TODO: drop capabilities */
 
-		if (change != NULL) {
-			rc = chdir(change);
+		if (args.chdir_given) {
+			rc = chdir(args.chdir_arg);
 			if (rc < 0) sysf_printf("chdir()");
 		}
 
-		if (dest != NULL) {
+		if (args.chroot_given) {
 			char *term = getenv("TERM");
 
-			if (!keepenv)
+			if (!args.keepenv_flag)
 				clearenv();
 
 			setenv("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
-			setenv("USER", user, 1);
-			setenv("LOGNAME", user, 1);
+			setenv("USER", args.user_arg, 1);
+			setenv("LOGNAME", args.user_arg, 1);
 			setenv("TERM", term, 1);
 		}
 
-		if (env != NULL) {
-			size_t i, c;
-
-			_free_ char **vars = NULL;
-
-			_free_ char *tmp = strdup(env);
-			if (tmp == NULL) fail_printf("OOM");
-
-			c = split_str(tmp, &vars, ",");
-
-			for (i = 0; i < c; i++) {
-				rc = putenv(strdup(vars[i]));
-				if (rc != 0) sysf_printf("putenv()");
-			}
+		for (unsigned int i = 0; i < args.setenv_given; i++) {
+			rc = putenv(strdup(args.setenv_arg[i]));
+			if (rc != 0) sysf_printf("putenv()");
 		}
 
 		setenv("container", "pflask", 1);
@@ -387,7 +264,7 @@ int main(int argc, char *argv[]) {
 
 	sync_wait_child(sync, SYNC_START);
 
-	if ((dest != NULL) && (clone_flags & CLONE_NEWUSER))
+	if (args.chroot_given && (clone_flags & CLONE_NEWUSER))
 		setup_console_owner(master, users);
 
 	setup_cgroup(cgroups, pid);
@@ -395,7 +272,7 @@ int main(int argc, char *argv[]) {
 	setup_netif(netifs, pid);
 
 #ifdef HAVE_DBUS
-	register_machine(pid, dest != NULL ? dest : "");
+	register_machine(pid, args.chroot_given ? args.chroot_arg : "");
 #endif
 
 	if (clone_flags & CLONE_NEWUSER)
@@ -405,7 +282,7 @@ int main(int argc, char *argv[]) {
 
 	sync_close(sync);
 
-	if (detach)
+	if (args.detach_flag)
 		serve_pty(master_fd);
 	else
 		process_pty(master_fd);
@@ -447,7 +324,7 @@ static size_t validate_optlist(const char *name, const char *opts) {
 	_free_ char *tmp = strdup(opts);
 	if (tmp == NULL) fail_printf("OOM");
 
-	c = split_str(tmp, &vars, ",");
+	c = split_str(tmp, &vars, ":");
 	if (c == 0) fail_printf("Invalid value '%s' for %s", opts, name);
 
 	for (i = 0; i < c; i++) {
@@ -497,51 +374,4 @@ static pid_t do_clone(int *flags) {
 	if (pid < 0) sysf_printf("clone()");
 
 	return pid;
-}
-
-static inline void help(void) {
-	#define CMD_HELP(CMDL, CMDS, MSG) printf("  %s, %-15s \t%s.\n", COLOR_YELLOW CMDS, CMDL COLOR_OFF, MSG);
-
-	printf(COLOR_RED "Usage: " COLOR_OFF);
-	printf(COLOR_GREEN "pflask " COLOR_OFF);
-	puts("[options] [--] [command ...]\n");
-
-	puts(COLOR_RED " Options:" COLOR_OFF);
-
-	CMD_HELP("--chroot",  "-r",
-		"Change the root directory inside the container");
-	CMD_HELP("--chdir", "-c",
-		"Change the current directory inside the container");
-
-	CMD_HELP("--hostname", "-t", "Set the container hostname");
-
-	CMD_HELP("--mount", "-m",
-		"Create a new mount point inside the container");
-	CMD_HELP("--netif", "-n",
-	         "Disconnect the container networking from the host");
-
-	CMD_HELP("--user",  "-u", "Run the command under the specified user");
-	CMD_HELP("--user-map", "-e", "Map container users to host users");
-
-	CMD_HELP("--ephemeral", "-w", "Discard changes to /");
-
-	CMD_HELP("--cgroup", "-g",
-		"Create a new cgroup and move the container inside it");
-
-	CMD_HELP("--detach", "-d", "Detach from terminal");
-	CMD_HELP("--attach", "-a", "Attach to the specified detached process");
-
-	CMD_HELP("--setenv", "-s", "Set additional environment variables");
-	CMD_HELP("--keepenv", "-k", "Do not clear environment");
-
-	puts("");
-
-	CMD_HELP("--no-userns",  "-U", "Disable user namespace support");
-	CMD_HELP("--no-mountns", "-M", "Disable mount namespace support");
-	CMD_HELP("--no-netns",   "-N", "Disable net namespace support");
-	CMD_HELP("--no-ipcns",   "-I", "Disable IPC namespace support");
-	CMD_HELP("--no-utsns",   "-H", "Disable UTS namespace support");
-	CMD_HELP("--no-pidns",   "-P", "Disable PID namespace support");
-
-	puts("");
 }

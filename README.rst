@@ -75,7 +75,7 @@ The ``--netif`` option can also be used to create private network interfaces:
 
 .. code-block:: bash
 
-   $ sudo pflask --netif=macvlan,eth0,net0 -- ip link
+   $ sudo pflask --netif=macvlan:eth0:net0 -- ip link
    1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default 
        link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
    5: net0@if2: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default 
@@ -104,7 +104,7 @@ supplied command.
 
 .. code-block:: bash
 
-   $ sudo pflask --chroot=/path/to/rootfs --mount=bind,/tmp,/tmp
+   $ sudo pflask --chroot=/path/to/rootfs --mount=bind:/tmp:/tmp
 
 The command above will bind mount the host's ``/tmp`` directory into the
 container's ``/tmp``, so that files can be exchanged between them.
@@ -149,7 +149,7 @@ web browser inside a container:
 
 .. code-block:: bash
 
-   $ pflask --user=$USER --mount=tmp,$HOME -- chromium --disable-setuid-sandbox
+   $ pflask --user=$USER --mount=tmp:$HOME -- chromium --disable-setuid-sandbox
 
 The command above uses the ``--mount`` option to create a ``tmpfs`` mount point
 on the ``$HOME`` directory, so that the application (chromium in the example)

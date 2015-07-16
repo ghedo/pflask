@@ -93,7 +93,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 	_free_ char *tmp = strdup(spec);
 	if (tmp == NULL) fail_printf("OOM");
 
-	c = split_str(tmp, &opts, ",");
+	c = split_str(tmp, &opts, ":");
 	if (c == 0) fail_printf("Invalid mount spec '%s'", spec);
 
 	if (strncmp(opts[0], "bind", 4) == 0) {
