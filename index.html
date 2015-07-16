@@ -92,7 +92,7 @@ unavailable to the container:</p>
 </pre></div>
 </div>
 <p>The <tt class="docutils literal"><span class="pre">--netif</span></tt> option can also be used to create private network interfaces:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --netif<span class="o">=</span>macvlan,eth0,net0 -- ip link
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --netif<span class="o">=</span>macvlan:eth0:net0 -- ip link
 1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu <span class="m">65536</span> qdisc noqueue state UNKNOWN mode DEFAULT group default
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 5: net0@if2: &lt;BROADCAST,MULTICAST&gt; mtu <span class="m">1500</span> qdisc noop state DOWN mode DEFAULT group default
@@ -114,7 +114,7 @@ manpage for more information.</p>
 filesystems mounted inside it won&#8217;t affect the host system. The <tt class="docutils literal"><span class="pre">--mount</span></tt>
 option can then be used to create new mount points before the execution of the
 supplied command.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --mount<span class="o">=</span><span class="nb">bind</span>,/tmp,/tmp
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>sudo pflask --chroot<span class="o">=</span>/path/to/rootfs --mount<span class="o">=</span><span class="nb">bind</span>:/tmp:/tmp
 </pre></div>
 </div>
 <p>The command above will bind mount the host&#8217;s <tt class="docutils literal"><span class="pre">/tmp</span></tt> directory into the
@@ -146,7 +146,7 @@ restricted to the root user only. To enable them for unprivileged users run:</p>
 </div>
 <p>This functionality can be used to run every-day user applications such as a
 web browser inside a container:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --mount<span class="o">=</span>tmp,<span class="nv">$HOME</span> -- chromium --disable-setuid-sandbox
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>pflask --user<span class="o">=</span><span class="nv">$USER</span> --mount<span class="o">=</span>tmp:<span class="nv">$HOME</span> -- chromium --disable-setuid-sandbox
 </pre></div>
 </div>
 <p>The command above uses the <tt class="docutils literal"><span class="pre">--mount</span></tt> option to create a <tt class="docutils literal"><span class="pre">tmpfs</span></tt> mount point

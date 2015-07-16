@@ -77,7 +77,7 @@ host system and other containers.</p>
 
 <dl class="option">
 <dt id="cmdoption-pflask-m">
-<span id="cmdoption-pflask--mount"></span><tt class="descname">-m</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--mount</tt><tt class="descclassname">=&lt;type&gt;,&lt;opts&gt;</tt><a class="headerlink" href="#cmdoption-pflask-m" title="Permalink to this definition">¶</a></dt>
+<span id="cmdoption-pflask--mount"></span><tt class="descname">-m</tt><tt class="descclassname"></tt><tt class="descclassname">, </tt><tt class="descname">--mount</tt><tt class="descclassname">=&lt;type&gt;:&lt;opts&gt;</tt><a class="headerlink" href="#cmdoption-pflask-m" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a new <em>type</em> mount point inside the container. See <a class="reference internal" href="#mount">MOUNT</a> for more
 information.</p>
 </dd></dl>
@@ -187,22 +187,22 @@ variables of the form <cite>name=value</cite>. This option may be used more than
 <p>pflask can create the following mount point types using the <tt class="docutils literal"><span class="pre">--mount</span></tt> option:</p>
 <div class="section" id="bind">
 <h3>bind<a class="headerlink" href="#bind" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--mount=bind,&lt;host_path&gt;,&lt;container_path&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--mount=bind:&lt;host_path&gt;:&lt;container_path&gt;</span></tt></p>
 <p>Bind mounts the <em>host_path</em> directory/file on the host filesystem to the
 <em>container_path</em> directory/file in the container. If the <tt class="docutils literal"><span class="pre">--chroot</span></tt> option is
 used, the destination path will be relative to the chroot directory.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--mount=bind,/source/path,/dest/path</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=bind:/source/path:/dest/path</span></tt></p>
 </div>
 <div class="section" id="bind-ro">
 <h3>bind-ro<a class="headerlink" href="#bind-ro" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--mount=bind-ro,&lt;host_path&gt;,&lt;container_path&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--mount=bind-ro:&lt;host_path&gt;:&lt;container_path&gt;</span></tt></p>
 <p>Same as <tt class="docutils literal"><span class="pre">bind</span></tt>, but makes the mount point read-only. If the <tt class="docutils literal"><span class="pre">--chroot</span></tt>
 option is used, the destination path will be relative to the chroot directory.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--mount=bind-ro,/source/path,/dest/path</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=bind-ro:/source/path:/dest/path</span></tt></p>
 </div>
 <div class="section" id="overlay">
 <h3>overlay<a class="headerlink" href="#overlay" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--mount=overla,&lt;root_dir&gt;,&lt;dest&gt;,&lt;work_dir&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--mount=overla:&lt;root_dir&gt;:&lt;dest&gt;:&lt;work_dir&gt;</span></tt></p>
 <p>Stacks the host <em>root_dir</em> directory on top of the container&#8217;s <em>dest</em> directory
 using either AuFS or OverlayFS depending on what is found at compile-time. If
 the <tt class="docutils literal"><span class="pre">--chroot</span></tt> option is used, the destination path will be relative to the
@@ -210,14 +210,14 @@ chroot directory. The <em>work_dir</em> directory needs to be an empty directory
 the same filesystem as <em>root_dir</em>.</p>
 <p>Note that AuFS and OverlayFS don&#8217;t support user namespaces, so the <tt class="docutils literal"><span class="pre">--user</span></tt>
 option is incompatible with this mount type unless <tt class="docutils literal"><span class="pre">--no-userns</span></tt> is also used.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--mount=overlay,/overlay/path,/dest/path,/overlay/work</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=overlay:/overlay/path:/dest/path:/overlay/work</span></tt></p>
 </div>
 <div class="section" id="tmp">
 <h3>tmp<a class="headerlink" href="#tmp" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--mount=tmp,&lt;dest&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--mount=tmp:&lt;dest&gt;</span></tt></p>
 <p>Mounts a temporary in-memory filesystem on the <em>dest</em> directory inside the
 container.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--mount=tmp,/dest/path</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--mount=tmp:/dest/path</span></tt></p>
 </div>
 </div>
 <div class="section" id="netif">
@@ -227,33 +227,33 @@ If one of the following arguments is provided, a network interface will also be
 created inside the container:</p>
 <div class="section" id="move-and-rename">
 <h3>move and rename<a class="headerlink" href="#move-and-rename" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--netif=&lt;dev&gt;,&lt;name&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--netif=&lt;dev&gt;:&lt;name&gt;</span></tt></p>
 <p>Moves the <em>dev</em> network interface from the host to the container, and renames
 it to <em>name</em>. No additional configuration will be applied to it.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--netif=vxlan0,eth0</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=vxlan0:eth0</span></tt></p>
 </div>
 <div class="section" id="macvlan">
 <h3>macvlan<a class="headerlink" href="#macvlan" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--netif=macvlan,&lt;master&gt;,&lt;name&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--netif=macvlan:&lt;master&gt;:&lt;name&gt;</span></tt></p>
 <p>Creates a <tt class="docutils literal"><span class="pre">macvlan</span></tt> network interface using <em>master</em> as master interface,
 moves it inside the container and renames it to <em>name</em>. No additional
 configuration will be applied to it.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--netif=macvlan,eth0,eth0</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=macvlan:eth0:eth0</span></tt></p>
 </div>
 <div class="section" id="ipvlan">
 <h3>ipvlan<a class="headerlink" href="#ipvlan" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--netif=ipvlan,&lt;master&gt;,&lt;name&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--netif=ipvlan:&lt;master&gt;:&lt;name&gt;</span></tt></p>
 <p>Same as <tt class="docutils literal"><span class="pre">macvlan</span></tt> but an <tt class="docutils literal"><span class="pre">ipvlan</span></tt> interface will be created instead. No
 additional configuration will be applied to it.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--netif=ipvlan,eth0,eth0</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=ipvlan:eth0:eth0</span></tt></p>
 </div>
 <div class="section" id="veth">
 <h3>veth<a class="headerlink" href="#veth" title="Permalink to this headline">¶</a></h3>
-<p><tt class="docutils literal"><span class="pre">--netif=veth,&lt;name_outside&gt;,&lt;name_inside&gt;</span></tt></p>
+<p><tt class="docutils literal"><span class="pre">--netif=veth:&lt;name_outside&gt;:&lt;name_inside&gt;</span></tt></p>
 <p>Creates a pair of <tt class="docutils literal"><span class="pre">veth</span></tt> network interfaces called <em>name_outside</em> and
 <em>name_inside</em>. The <em>name_inside</em> twin will then be moved inside the container.
 No additional configuration will be applied to them.</p>
-<p>Example: <tt class="docutils literal"><span class="pre">--netif=veth,veth0,eth0</span></tt></p>
+<p>Example: <tt class="docutils literal"><span class="pre">--netif=veth:veth0:eth0</span></tt></p>
 </div>
 </div>
 <div class="section" id="author">
