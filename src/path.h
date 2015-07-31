@@ -30,6 +30,6 @@
 
 int path_compare(const char *a, const char *b);
 
-char *prefix_root(const char *root, const char *path);
+char *path_prefix_root(const char *root, const char *path);
 
 char *on_path(char *cmd, const char *rootfs);

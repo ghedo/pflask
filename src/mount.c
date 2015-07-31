@@ -187,12 +187,12 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 			rc = mount("tmpfs", template, "tmpfs", 0, NULL);
 			if (rc < 0) sysf_printf("mount(tmpfs)");
 
-			root_dir = prefix_root(template, "root");
+			root_dir = path_prefix_root(template, "root");
 			rc = mkdir(root_dir, 0755);
 			if (rc < 0)
 				sysf_printf("mkdir(%s)", work_dir);
 
-			work_dir = prefix_root(template, "work");
+			work_dir = path_prefix_root(template, "work");
 			rc = mkdir(work_dir, 0755);
 			if (rc < 0)
 				sysf_printf("mkdir(%s)", work_dir);
@@ -203,7 +203,7 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 		mount_add(&sys_mounts, "proc", "/proc", "proc",
 		          MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL);
 
-		procsys_dir = prefix_root(dest, "/proc/sys");
+		procsys_dir = path_prefix_root(dest, "/proc/sys");
 		mount_add(&sys_mounts, procsys_dir, "/proc/sys", "proc/sys",
 		          MS_BIND, NULL);
 
@@ -230,7 +230,7 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 	DL_CONCAT(sys_mounts, mounts);
 
 	DL_FOREACH(sys_mounts, i) {
-		_free_ char *mnt_dest = prefix_root(dest, i->dst);
+		_free_ char *mnt_dest = path_prefix_root(dest, i->dst);
 
 		if (!strcmp(i->type, "overlay"))
 			make_overlay_opts(i, dest);
