@@ -99,21 +99,18 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 	if (c == 0) fail_printf("Invalid mount spec '%s'", spec);
 
 	if (strncmp(opts[0], "bind", 4) == 0) {
-		_free_ char *src = NULL;
-		_free_ char *dst = NULL;
-
 		if (c < 3) fail_printf("Invalid mount spec '%s'", spec);
 
-		src = realpath(opts[1], NULL);
-		if (src == NULL) sysf_printf("realpath()");
+		if (!path_is_absolute(opts[1]))
+			fail_printf("Invalid mount spec '%s': path not absolute", spec);
 
-		dst = realpath(opts[2], NULL);
-		if (dst == NULL) sysf_printf("realpath()");
+		if (!path_is_absolute(opts[2]))
+			fail_printf("Invalid mount spec '%s': path not absolute", spec);
 
-		mount_add(mounts, src, dst, "bind", MS_BIND, NULL);
+		mount_add(mounts, opts[1], opts[2], "bind", MS_BIND, NULL);
 
 		if (strncmp(opts[0], "bind-ro", 8) == 0)
-			mount_add(mounts, src, dst, "bind-ro",
+			mount_add(mounts, opts[1], opts[2], "bind-ro",
 			          MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
 	} else if (strncmp(opts[0], "aufs", 5) == 0) {
 		_free_ char *dst = NULL;
@@ -133,31 +130,25 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 
 		mount_add(mounts, NULL, dst, "aufs", 0, aufs_opts);
 	} else if (strncmp(opts[0], "overlay", 8) == 0) {
-		_free_ char *dst = NULL;
-		_free_ char *overlay = NULL;
-		_free_ char *workdir = NULL;
-
 		if (c < 4) fail_printf("Invalid mount spec '%s'", spec);
 
-		overlay = realpath(opts[1], NULL);
-		if (overlay == NULL) sysf_printf("realpath()");
+		if (!path_is_absolute(opts[1]))
+			fail_printf("Invalid mount spec '%s': path not absolute", spec);
 
-		dst = realpath(opts[2], NULL);
-		if (dst == NULL) sysf_printf("realpath()");
+		if (!path_is_absolute(opts[2]))
+			fail_printf("Invalid mount spec '%s': path not absolute", spec);
 
-		workdir = realpath(opts[3], NULL);
-		if (workdir == NULL) sysf_printf("realpath()");
+		if (!path_is_absolute(opts[3]))
+			fail_printf("Invalid mount spec '%s': path not absolute", spec);
 
-		mount_add_overlay(mounts, overlay, dst, workdir);
+		mount_add_overlay(mounts, opts[1], opts[2], opts[3]);
 	} else if (strncmp(opts[0], "tmp", 4) == 0) {
-		_free_ char *dst = NULL;
-
 		if (c < 2) fail_printf("Invalid mount spec '%s'", spec);
 
-		dst = realpath(opts[1], NULL);
-		if (dst == NULL) sysf_printf("realpath()");
+		if (!path_is_absolute(opts[1]))
+			fail_printf("Invalid mount spec '%s': path not absolute", spec);
 
-		mount_add(mounts, "tmpfs", dst, "tmpfs", 0, NULL);
+		mount_add(mounts, "tmpfs", opts[1], "tmpfs", 0, NULL);
 	} else {
 		fail_printf("Invalid mount type '%s'", opts[0]);
 	}

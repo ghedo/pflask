@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "printf.h"
@@ -145,4 +146,8 @@ char *on_path(char *cmd, const char *rootfs) {
 	}
 
 	return NULL;
+}
+
+bool path_is_absolute(const char *p) {
+	return p[0] == '/';
 }

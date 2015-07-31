@@ -33,3 +33,5 @@ int path_compare(const char *a, const char *b);
 char *path_prefix_root(const char *root, const char *path);
 
 char *on_path(char *cmd, const char *rootfs);
+
+bool path_is_absolute(const char *p);
