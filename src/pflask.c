@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 
 	pid = do_clone(&clone_flags);
 
-	if (pid == 0) {
+	if (!pid) {
 		closep(&master_fd);
 
 		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
@@ -321,7 +321,7 @@ static size_t validate_optlist(const char *name, const char *opts) {
 	_free_ char **vars = NULL;
 
 	_free_ char *tmp = strdup(opts);
-	if (tmp == NULL) fail_printf("OOM");
+	fail_if(!tmp, "OOM");
 
 	c = split_str(tmp, &vars, ":");
 	fail_if(!c, "Invalid value '%s' for %s", opts, name);

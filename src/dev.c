@@ -85,7 +85,7 @@ void setup_console_owner(char *path, struct user *u) {
 
 	rootgid = (uid_t) tmp;
 
-	if (geteuid() == 0) {
+	if (!geteuid()) {
 		rc = chown(path, rootuid, rootgid);
 		sys_fail_if(rc < 0, "Error chowning '%s'", path);
 
@@ -111,7 +111,7 @@ void setup_console_owner(char *path, struct user *u) {
 	sync_init(sync);
 
 	pid = fork();
-	if (pid == 0) {
+	if (!pid) {
 		_free_ char *chown_cmd = NULL;
 
 		unshare(CLONE_NEWNS | CLONE_NEWUSER);

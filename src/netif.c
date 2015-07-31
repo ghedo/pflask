@@ -73,8 +73,7 @@ void netif_add_from_spec(struct netif **ifs, const char *spec) {
 	_free_ char *tmp = NULL;
 	_free_ char **opts = NULL;
 
-	if (spec == NULL)
-		return;
+	if (!spec) return;
 
 	tmp = strdup(spec);
 	fail_if(!tmp, "OOM");
@@ -86,15 +85,15 @@ void netif_add_from_spec(struct netif **ifs, const char *spec) {
 		fail_if(c < 2, "Invalid netif spec '%s': not enough args",spec);
 
 		netif_add(ifs, MOVE, opts[0], opts[1]);
-	} else if (strncmp(opts[0], "macvlan", 8) == 0) {
+	} else if (!strncmp(opts[0], "macvlan", 8)) {
 		fail_if(c < 3, "Invalid netif spec '%s': not enough args",spec);
 
 		netif_add(ifs, MACVLAN, opts[1], opts[2]);
-	} else if (strncmp(opts[0], "ipvlan", 8) == 0) {
+	} else if (!strncmp(opts[0], "ipvlan", 8)) {
 		fail_if(c < 3, "Invalid netif spec '%s': not enough args",spec);
 
 		netif_add(ifs, IPVLAN, opts[1], opts[2]);
-	} else if (strncmp(opts[0], "veth", 5) == 0) {
+	} else if (!strncmp(opts[0], "veth", 5)) {
 		fail_if(c < 3, "Invalid netif spec '%s': not enough args",spec);
 
 		netif_add(ifs, VETH, opts[1], opts[2]);

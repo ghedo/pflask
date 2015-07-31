@@ -62,13 +62,13 @@ void open_master_pty(int *master_fd, char **master_name) {
 	sys_fail_if(rc < 0, "ioctl(TIOCGWINSZ)");
 
 	*master_fd = posix_openpt(O_RDWR | O_NOCTTY | O_NDELAY);
-	if (*master_fd < 0) sysf_printf("posix_openpt()");
+	sys_fail_if(*master_fd < 0, "Error opening master pty");
 
 	*master_name = ptsname(*master_fd);
-	if (*master_name == NULL) sysf_printf("ptsname()");
+	sys_fail_if(!*master_name, "ptsname()");
 
 	rc = unlockpt(*master_fd);
-	sys_fail_if(rc < 0, "unlckpt()");
+	sys_fail_if(rc < 0, "Error unlocking master pty");
 }
 
 void open_slave_pty(const char *master_name) {
@@ -77,7 +77,7 @@ void open_slave_pty(const char *master_name) {
 	_close_ int slave_fd = -1;
 
 	slave_fd = open(master_name, O_RDWR, 0);
-	if (slave_fd < 0) sysf_printf("open()");
+	sys_fail_if(slave_fd < 0, "Error opening slave pty");
 
 	if (!isatty(slave_fd)) fail_printf("Not a TTY");
 
@@ -162,7 +162,7 @@ void process_pty(int master_fd) {
 
 			int rc = read(STDIN_FILENO, buf, line_max);
 
-			if (rc == 0)
+			if (!rc)
 				goto done;
 			else if (rc < 0)
 				goto done;
@@ -179,7 +179,7 @@ void process_pty(int master_fd) {
 		if (events[0].data.fd == master_fd) {
 			rc = read(master_fd, buf, line_max);
 
-			if (rc == 0)
+			if (!rc)
 				goto done;
 			else if (rc < 0)
 				goto done;

@@ -38,7 +38,7 @@ size_t split_str(char *orig, char ***dest, char *needle) {
 	size_t size  = 0;
 	char  *token = NULL;
 
-	if (orig == NULL || dest == NULL)
+	if (!orig || !dest)
 		return 0;
 
 	token = strtok(orig, needle);
@@ -46,7 +46,7 @@ size_t split_str(char *orig, char ***dest, char *needle) {
 	do {
 		char **tmp = realloc(*dest, sizeof(char *) * (size + 1));
 
-		if (tmp == NULL) {
+		if (!tmp) {
 			if (*dest != NULL)
 				free(*dest);
 

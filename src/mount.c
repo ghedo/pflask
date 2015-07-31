@@ -70,7 +70,7 @@ static void mount_add_overlay(struct mount **mounts, const char *overlay,
 void mount_add(struct mount **mounts, const char *src, const char *dst,
                       const char *type, unsigned long f, void *d) {
 	struct mount *mnt = malloc(sizeof(struct mount));
-	if (mnt == NULL) fail_printf("OOM");
+	fail_if(!mnt, "OOM");
 
 	mnt->src   = src  ? strdup(src)  : NULL;
 	mnt->dst   = dst  ? strdup(dst)  : NULL;
@@ -96,7 +96,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 	c = split_str(tmp, &opts, ":");
 	fail_if(!c, "Invalid mount spec '%s': not enough args",spec);
 
-	if (strncmp(opts[0], "bind", 4) == 0) {
+	if (!strncmp(opts[0], "bind", 4)) {
 		fail_if(c < 3, "Invalid mount spec '%s': not enough args",spec);
 
 		if (!path_is_absolute(opts[1]))
@@ -107,10 +107,10 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 
 		mount_add(mounts, opts[1], opts[2], "bind", MS_BIND, NULL);
 
-		if (strncmp(opts[0], "bind-ro", 8) == 0)
+		if (!strncmp(opts[0], "bind-ro", 8))
 			mount_add(mounts, opts[1], opts[2], "bind-ro",
 			          MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
-	} else if (strncmp(opts[0], "overlay", 8) == 0) {
+	} else if (!strncmp(opts[0], "overlay", 8)) {
 		fail_if(c < 4, "Invalid mount spec '%s': not enough args",spec);
 
 		if (!path_is_absolute(opts[1]))
@@ -123,7 +123,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 			fail_printf("Invalid mount spec '%s': path not absolute", spec);
 
 		mount_add_overlay(mounts, opts[1], opts[2], opts[3]);
-	} else if (strncmp(opts[0], "tmp", 4) == 0) {
+	} else if (!strncmp(opts[0], "tmp", 4)) {
 		fail_if(c < 2, "Invalid mount spec '%s': not enough args",spec);
 
 		if (!path_is_absolute(opts[1]))

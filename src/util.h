@@ -51,8 +51,7 @@
 #define _close_ __attribute__((cleanup(closep)))
 
 static inline void freep(void *p) {
-	if (p == NULL)
-		return;
+	if (!p) return;
 
 	free(*(void **) p);
 
