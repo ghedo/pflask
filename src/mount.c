@@ -233,7 +233,7 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 		_free_ char *mnt_dest = path_prefix_root(dest, i->dst);
 
 		if (!strcmp(i->type, "overlay"))
-			make_overlay_opts(i, dest);
+			make_overlay_opts(i, mnt_dest);
 
 		rc = mkdir(mnt_dest, 0755);
 		if (rc < 0) {
@@ -262,20 +262,18 @@ static void make_overlay_opts(struct mount *m, const char *dest) {
 
 	_free_ struct overlay *ovl = m->data;
 
-	_free_ char *dst = prefix_root(dest, m->dst);
-
 	char *overlay = ovl->overlay;
 	char *workdir = ovl->workdir;
 
 	char *overlayfs_opts = NULL;
 
 	if (ovl->type == 'a') {
-		rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dst);
+		rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dest);
 		if (rc < 0) fail_printf("OOM");
 	} else if (ovl->type == 'o') {
 		rc = asprintf(&overlayfs_opts,
 		              "upperdir=%s,lowerdir=%s,workdir=%s",
-		              overlay, dst, workdir);
+		              overlay, dest, workdir);
 		if (rc < 0) fail_printf("OOM");
 	}
 
