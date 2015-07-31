@@ -35,6 +35,7 @@
 
 #include <sys/mount.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <linux/version.h>
 
@@ -61,6 +62,7 @@ struct overlay {
 	char type;
 };
 
+static void make_bind_dest(struct mount *m, const char *dest);
 static void make_overlay_opts(struct mount *m, const char *dest);
 static void mount_add_overlay(struct mount **mounts, const char *overlay,
                               const char *dst, const char *work);
@@ -235,25 +237,64 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 		if (!strcmp(i->type, "overlay"))
 			make_overlay_opts(i, mnt_dest);
 
-		rc = mkdir(mnt_dest, 0755);
-		if (rc < 0) {
-			struct stat sb;
+		if (!strcmp(i->type, "bind") || !strcmp(i->type, "bind-ro")) {
+			make_bind_dest(i, mnt_dest);
+		} else {
+			rc = mkdir(mnt_dest, 0755);
+			if (rc < 0) {
+				struct stat sb;
 
-			switch (errno) {
-			case EEXIST:
-				if (!stat(mnt_dest, &sb) &&
-				    !S_ISDIR(sb.st_mode))
-					fail_printf("Not a directory");
-				break;
+				switch (errno) {
+				case EEXIST:
+					if (!stat(mnt_dest, &sb) &&
+					    !S_ISDIR(sb.st_mode))
+						fail_printf("Not a directory");
+					break;
 
-			default:
-				sysf_printf("mkdir(%s)", mnt_dest);
-				break;
+				default:
+					sysf_printf("mkdir(%s)", mnt_dest);
+					break;
+				}
 			}
 		}
 
 		rc = mount(i->src, mnt_dest, i->type, i->flags, i->data);
 		if (rc < 0) err_printf("mount(%s): %s", i->type, strerror(errno));
+	}
+}
+
+static void make_bind_dest(struct mount *m, const char *dest) {
+	int rc;
+
+	struct stat src_sb, dst_sb;
+
+	rc = stat(m->src, &src_sb);
+	if (rc < 0) sysf_printf("stat(%s)", m->src);
+
+	if (stat(dest, &dst_sb) >= 0) {
+		if (S_ISDIR(src_sb.st_mode) && !S_ISDIR(dst_sb.st_mode))
+			fail_printf("Could not bind mount dir %s on file %s",
+				    m->src, dest);
+
+		if (!S_ISDIR(src_sb.st_mode) && S_ISDIR(dst_sb.st_mode))
+			fail_printf("Could not bind mount file %s on dir %s",
+				    m->src, dest);
+	} else if (errno == ENOENT) {
+		if (S_ISDIR(src_sb.st_mode)) {
+			rc = mkdir(dest, 0755);
+		} else {
+			_close_ int fd = -1;
+
+			fd = open(dest,
+			          O_WRONLY | O_CREAT | O_CLOEXEC | O_NOCTTY,
+			          0644);
+
+			rc = fd;
+		}
+
+		if (rc < 0) sysf_printf("Could not create mount dest %s", dest);
+	} else {
+		sysf_printf("stat(%s)", dest);
 	}
 }
 
