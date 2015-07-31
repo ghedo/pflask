@@ -60,7 +60,7 @@ static void create_veth_pair(int sock, char *name_out, char *name_in);
 
 void netif_add(struct netif **ifs, enum netif_type type, char *dev, char *name) {
 	struct netif *nif = malloc(sizeof(struct netif));
-	if (nif == NULL) fail_printf("OOM");
+	fail_if(!nif, "OOM");
 
 	nif->dev  = strdup(dev);
 	nif->name = strdup(name);
@@ -77,25 +77,30 @@ void netif_add_from_spec(struct netif **ifs, const char *spec) {
 		return;
 
 	tmp = strdup(spec);
-	if (tmp == NULL) fail_printf("OOM");
+	fail_if(!tmp, "OOM");
 
 	size_t c = split_str(tmp, &opts, ":");
-	if (c == 0) fail_printf("Invalid netif spec '%s'", spec);
+	fail_if(!c, "Invalid netif spec '%s': not enough args", spec);
 
 	if (if_nametoindex(opts[0])) {
-		if (c < 2) fail_printf("Invalid netif spec '%s'", spec);
+		fail_if(c < 2, "Invalid netif spec '%s': not enough args",spec);
+
 		netif_add(ifs, MOVE, opts[0], opts[1]);
 	} else if (strncmp(opts[0], "macvlan", 8) == 0) {
-		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
+		fail_if(c < 3, "Invalid netif spec '%s': not enough args",spec);
+
 		netif_add(ifs, MACVLAN, opts[1], opts[2]);
 	} else if (strncmp(opts[0], "ipvlan", 8) == 0) {
-		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
+		fail_if(c < 3, "Invalid netif spec '%s': not enough args",spec);
+
 		netif_add(ifs, IPVLAN, opts[1], opts[2]);
 	} else if (strncmp(opts[0], "veth", 5) == 0) {
-		if (c < 3) fail_printf("Invalid netif spec '%s'", spec);
+		fail_if(c < 3, "Invalid netif spec '%s': not enough args",spec);
+
 		netif_add(ifs, VETH, opts[1], opts[2]);
-	} else
+	} else {
 		fail_printf("Invalid netif spec '%s'", spec);
+	}
 }
 
 void setup_netif(struct netif *ifs, pid_t pid) {
@@ -112,11 +117,10 @@ void setup_netif(struct netif *ifs, pid_t pid) {
 			_free_ char *name = NULL;
 
 			rc = asprintf(&name, "pflask-%d", pid);
-			if (rc < 0) fail_printf("OOM");
+			fail_if(rc < 0, "OOM");
 
 			if_index = if_nametoindex(i->dev);
-			if (if_index == 0)
-				sysf_printf("Error searching for '%s'", i->dev);
+			sys_fail_if(!if_index, "Error searching for '%s'", i->dev);
 
 			create_macvlan(sock, if_index, name);
 
@@ -128,11 +132,10 @@ void setup_netif(struct netif *ifs, pid_t pid) {
 			_free_ char *name = NULL;
 
 			rc = asprintf(&name, "pflask-%d", pid);
-			if (rc < 0) fail_printf("OOM");
+			fail_if(rc < 0, "OOM");
 
 			if_index = if_nametoindex(i->dev);
-			if (if_index == 0)
-				sysf_printf("Error searching for '%s'", i->dev);
+			sys_fail_if(!if_index, "Error searching for '%s'", i->dev);
 
 			create_ipvlan(sock, if_index, name);
 
@@ -144,18 +147,18 @@ void setup_netif(struct netif *ifs, pid_t pid) {
 			_free_ char *name = NULL;
 
 			rc = asprintf(&name, "pflask-%d", pid);
-			if (rc < 0) fail_printf("OOM");
+			fail_if(rc < 0, "OOM");
 
 			create_veth_pair(sock, i->dev, name);
 
 			if_index = if_nametoindex(name);
+			sys_fail_if(!if_index, "Error searching for '%s'", name);
 			break;
 		}
 
 		case MOVE:
 			if_index = if_nametoindex(i->dev);
-			if (if_index == 0)
-				sysf_printf("Error searching for '%s'", i->dev);
+			sys_fail_if(!if_index, "Error searching for '%s'", i->dev);
 			break;
 		}
 
@@ -184,11 +187,9 @@ static void if_up(int sock, int if_index) {
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req->msg.err.error < 0)
-			fail_printf("Error sending netlink request: %s",
-			            strerror(-req->msg.err.error));
-	}
+	if (req->hdr.nlmsg_type == NLMSG_ERROR)
+		sys_fail_if(req->msg.err.error < 0,
+		            "Error sending netlink request");
 }
 
 static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name) {
@@ -208,11 +209,9 @@ static void move_and_rename_if(int sock, pid_t pid, int if_index, char *new_name
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req->msg.err.error < 0)
-			fail_printf("Error sending netlink request: %s",
-			            strerror(-req->msg.err.error));
-	}
+	if (req->hdr.nlmsg_type == NLMSG_ERROR)
+		sys_fail_if(req->msg.err.error < 0,
+		            "Error sending netlink request");
 }
 
 static void create_macvlan(int sock, int master, char *name) {
@@ -240,11 +239,9 @@ static void create_macvlan(int sock, int master, char *name) {
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req->msg.err.error < 0)
-			fail_printf("Error sending netlink request: %s",
-			            strerror(-req->msg.err.error));
-	}
+	if (req->hdr.nlmsg_type == NLMSG_ERROR)
+		sys_fail_if(req->msg.err.error < 0,
+		            "Error sending netlink request");
 }
 
 static void create_ipvlan(int sock, int master, char *name) {
@@ -272,11 +269,9 @@ static void create_ipvlan(int sock, int master, char *name) {
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req->msg.err.error < 0)
-			fail_printf("Error sending netlink request: %s",
-			            strerror(-req->msg.err.error));
-	}
+	if (req->hdr.nlmsg_type == NLMSG_ERROR)
+		sys_fail_if(req->msg.err.error < 0,
+		            "Error sending netlink request");
 }
 
 static void create_veth_pair(int sock, char *name_out, char *name_in) {
@@ -315,9 +310,7 @@ static void create_veth_pair(int sock, char *name_out, char *name_in) {
 	nl_send(sock, req);
 	nl_recv(sock, req);
 
-	if (req->hdr.nlmsg_type == NLMSG_ERROR) {
-		if (req->msg.err.error < 0)
-			fail_printf("Error sending netlink request: %s",
-			            strerror(-req->msg.err.error));
-	}
+	if (req->hdr.nlmsg_type == NLMSG_ERROR)
+		sys_fail_if(req->msg.err.error < 0,
+		            "Error sending netlink request");
 }

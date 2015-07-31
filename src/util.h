@@ -33,6 +33,20 @@
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
+#define fail_if_(cond, fmt, ...)				\
+	do {							\
+		if ((cond))					\
+			fail_printf(fmt, __VA_ARGS__);		\
+	} while (0)
+#define fail_if(...) fail_if_(__VA_ARGS__, "")
+
+#define sys_fail_if_(cond, fmt, ...)				\
+	do {							\
+		if ((cond))					\
+			sysf_printf(fmt, __VA_ARGS__);		\
+	} while (0)
+#define sys_fail_if(...) sys_fail_if_(__VA_ARGS__, "")
+
 #define _free_ __attribute__((cleanup(freep)))
 #define _close_ __attribute__((cleanup(closep)))
 
@@ -52,7 +66,7 @@ static inline void closep(int *p) {
 		return;
 
 	rc = close(*p);
-	if (rc < 0) sysf_printf("close()");
+	sys_fail_if(rc < 0, "Error closing fd");
 
 	*p = -1;
 }

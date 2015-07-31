@@ -56,10 +56,10 @@ void open_master_pty(int *master_fd, char **master_name) {
 	int rc;
 
 	rc = tcgetattr(STDIN_FILENO, &stdin_attr);
-	if (rc < 0) sysf_printf("tcgetattr()");
+	sys_fail_if(rc < 0, "tcgetattr()");
 
 	rc = ioctl(STDIN_FILENO, TIOCGWINSZ, &stdin_ws);
-	if (rc < 0) sysf_printf("ioctl(TIOCGWINSZ)");
+	sys_fail_if(rc < 0, "ioctl(TIOCGWINSZ)");
 
 	*master_fd = posix_openpt(O_RDWR | O_NOCTTY | O_NDELAY);
 	if (*master_fd < 0) sysf_printf("posix_openpt()");
@@ -68,7 +68,7 @@ void open_master_pty(int *master_fd, char **master_name) {
 	if (*master_name == NULL) sysf_printf("ptsname()");
 
 	rc = unlockpt(*master_fd);
-	if (rc < 0) sysf_printf("unlckpt()");
+	sys_fail_if(rc < 0, "unlckpt()");
 }
 
 void open_slave_pty(const char *master_name) {
@@ -82,19 +82,19 @@ void open_slave_pty(const char *master_name) {
 	if (!isatty(slave_fd)) fail_printf("Not a TTY");
 
 	rc = dup2(slave_fd, STDIN_FILENO);
-	if (rc < 0) sysf_printf("dup2(STDIN)");
+	sys_fail_if(rc < 0, "dup2(STDIN)");
 
 	rc = dup2(slave_fd, STDOUT_FILENO);
-	if (rc < 0) sysf_printf("dup2(STDOUT)");
+	sys_fail_if(rc < 0, "dup2(STDOUT)");
 
 	rc = dup2(slave_fd, STDERR_FILENO);
-	if (rc < 0) sysf_printf("dup2(STDERR)");
+	sys_fail_if(rc < 0, "dup2(STDERR)");
 
 	rc = tcsetattr(slave_fd, TCSANOW, &stdin_attr);
-	if (rc < 0) sysf_printf("tcsetattr()");
+	sys_fail_if(rc < 0, "tcsetattr()");
 
 	rc = ioctl(slave_fd, TIOCSWINSZ, &stdin_ws);
-	if (rc < 0) sysf_printf("ioctl(TIOCWINSZ)");
+	sys_fail_if(rc < 0, "ioctl(TIOCWINSZ)");
 }
 
 void process_pty(int master_fd) {
@@ -122,40 +122,40 @@ void process_pty(int master_fd) {
 	sigaddset(&mask, SIGRTMIN + 4);
 
 	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
-	if (rc < 0) sysf_printf("sigprocmask()");
+	sys_fail_if(rc < 0, "sigprocmask()");
 
 	signal_fd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
 	if (signal_fd < 0) sysf_printf("signalfd()");
 
 	rc = tcgetattr(STDIN_FILENO, &stdin_attr);
-	if (rc < 0) sysf_printf("tcgetattr()");
+	sys_fail_if(rc < 0, "tcgetattr()");
 
 	cfmakeraw(&raw_attr);
 	raw_attr.c_lflag &= ~ECHO;
 
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &raw_attr);
-	if (rc < 0) sysf_printf("tcsetattr()");
+	sys_fail_if(rc < 0, "tcsetattr()");
 
 	epoll_fd = epoll_create1(EPOLL_CLOEXEC);
 	if (epoll_fd < 0) sysf_printf("epoll_create1()");
 
 	stdin_ev.events = EPOLLIN; stdin_ev.data.fd = STDIN_FILENO;
 	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, stdin_ev.data.fd, &stdin_ev);
-	if (rc < 0) sysf_printf("epoll_ctl(STDIN_FILENO)");
+	sys_fail_if(rc < 0, "epoll_ctl(STDIN_FILENO)");
 
 	master_ev.events = EPOLLIN; master_ev.data.fd = master_fd;
 	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, master_ev.data.fd, &master_ev);
-	if (rc < 0) sysf_printf("epoll_ctl(master_fd)");
+	sys_fail_if(rc < 0, "epoll_ctl(master_fd)");
 
 	signal_ev.events = EPOLLIN; signal_ev.data.fd = signal_fd;
 	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, signal_ev.data.fd, &signal_ev);
-	if (rc < 0) sysf_printf("epoll_ctl(signal_fd)");
+	sys_fail_if(rc < 0, "epoll_ctl(signal_fd)");
 
 	while (1) {
 		char buf[line_max];
 
 		rc = epoll_wait(epoll_fd, events, 1, -1);
-		if (rc < 0) sysf_printf("epoll_wait()");
+		sys_fail_if(rc < 0, "epoll_wait()");
 
 		if (events[0].data.fd == STDIN_FILENO) {
 			char *p;
@@ -168,7 +168,7 @@ void process_pty(int master_fd) {
 				goto done;
 
 			rc = write(master_fd, buf, rc);
-			if (rc < 0) sysf_printf("write()");
+			sys_fail_if(rc < 0, "write()");
 
 			for (p = buf; p < buf + rc; p++) {
 				if (*p == '\0')
@@ -185,7 +185,7 @@ void process_pty(int master_fd) {
 				goto done;
 
 			rc = write(STDOUT_FILENO, buf, rc);
-			if (rc < 0) sysf_printf("write()");
+			sys_fail_if(rc < 0, "write()");
 		}
 
 		if (events[0].data.fd == signal_fd) {
@@ -199,10 +199,10 @@ void process_pty(int master_fd) {
 				struct winsize ws;
 
 				rc = ioctl(STDIN_FILENO,TIOCGWINSZ,&ws);
-				if (rc < 0) sysf_printf("ioctl()");
+				sys_fail_if(rc < 0, "ioctl()");
 
 				rc = ioctl(master_fd, TIOCSWINSZ, &ws);
-				if (rc < 0) sysf_printf("ioctl()");
+				sys_fail_if(rc < 0, "ioctl()");
 
 				break;
 			}
@@ -220,7 +220,7 @@ void process_pty(int master_fd) {
 
 done:
 	rc = tcsetattr(STDIN_FILENO, TCSANOW, &stdin_attr);
-	if (rc < 0) sysf_printf("tcsetattr()");
+	sys_fail_if(rc < 0, "tcsetattr()");
 }
 
 void serve_pty(int fd) {
@@ -245,7 +245,7 @@ void serve_pty(int fd) {
 	memset(&servaddr_un, 0, sizeof(struct sockaddr_un));
 
 	rc = asprintf(&path, SOCKET_PATH, pid);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	if ((size_t) rc >= sizeof(servaddr_un.sun_path))
 		fail_printf("Socket path too long");
@@ -261,10 +261,10 @@ void serve_pty(int fd) {
 	if (sock < 0) sysf_printf("socket()");
 
 	rc = bind(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
-	if (rc < 0) sysf_printf("bind()");
+	sys_fail_if(rc < 0, "bind()");
 
 	rc = listen(sock, 1);
-	if (rc < 0) sysf_printf("listen()");
+	sys_fail_if(rc < 0, "listen()");
 
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGINT);
@@ -273,7 +273,7 @@ void serve_pty(int fd) {
 	sigaddset(&mask, SIGRTMIN + 4);
 
 	rc = sigprocmask(SIG_BLOCK, &mask, NULL);
-	if (rc < 0) sysf_printf("sigprocmask()");
+	sys_fail_if(rc < 0, "sigprocmask()");
 
 	signal_fd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
 	if (signal_fd < 0) sysf_printf("signalfd()");
@@ -283,15 +283,15 @@ void serve_pty(int fd) {
 
 	sock_ev.events = EPOLLIN; sock_ev.data.fd = sock;
 	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock_ev.data.fd, &sock_ev);
-	if (rc < 0) sysf_printf("epoll_ctl(STDIN_FILENO)");
+	sys_fail_if(rc < 0, "epoll_ctl(STDIN_FILENO)");
 
 	signal_ev.events = EPOLLIN; signal_ev.data.fd = signal_fd;
 	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, signal_ev.data.fd, &signal_ev);
-	if (rc < 0) sysf_printf("epoll_ctl(signal_fd)");
+	sys_fail_if(rc < 0, "epoll_ctl(signal_fd)");
 
 	while (1) {
 		rc = epoll_wait(epoll_fd, events, 1, -1);
-		if (rc < 0) sysf_printf("epoll_wait()");
+		sys_fail_if(rc < 0, "epoll_wait()");
 
 		if (events[0].data.fd == sock) {
 			socklen_t len;
@@ -305,7 +305,7 @@ void serve_pty(int fd) {
 			len = sizeof(struct ucred);
 			rc = getsockopt(send_sock, SOL_SOCKET, SO_PEERCRED,
 			                &ucred, &len);
-			if (rc < 0) sysf_printf("getsockopt(SO_PEERCRED)");
+			sys_fail_if(rc < 0, "getsockopt(SO_PEERCRED)");
 
 			if (ucred.uid == geteuid())
 				send_fd(send_sock, fd);
@@ -340,7 +340,7 @@ int recv_pty(pid_t pid) {
 	struct sockaddr_un servaddr_un;
 
 	rc = asprintf(&path, SOCKET_PATH, pid);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	if ((size_t) rc >= sizeof(servaddr_un.sun_path))
 		fail_printf("Socket path too long");
@@ -356,7 +356,7 @@ int recv_pty(pid_t pid) {
 	if (sock < 0) sysf_printf("socket()");
 
 	rc = connect(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
-	if (rc < 0) sysf_printf("connect()");
+	sys_fail_if(rc < 0, "connect()");
 
 	return recv_fd(sock);
 }
@@ -396,7 +396,7 @@ static void send_fd(int sock, int fd) {
 	memcpy(CMSG_DATA(cmsg), &fd, sizeof(fd));
 
 	rc = sendmsg(sock, &msg, 0);
-	if (rc < 0) sysf_printf("sendmsg()");
+	sys_fail_if(rc < 0, "sendmsg()");
 }
 
 static int recv_fd(int sock) {
@@ -427,7 +427,7 @@ static int recv_fd(int sock) {
 	};
 
 	rc = recvmsg(sock, &msg, 0);
-	if (rc < 0) sysf_printf("recvmsg()");
+	sys_fail_if(rc < 0, "recvmsg()");
 
 	for (cmsg = CMSG_FIRSTHDR(&msg); cmsg; cmsg = CMSG_NXTHDR(&msg, cmsg)) {
 		int fd;

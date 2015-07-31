@@ -91,13 +91,13 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 	_free_ char **opts = NULL;
 
 	_free_ char *tmp = strdup(spec);
-	if (tmp == NULL) fail_printf("OOM");
+	fail_if(!tmp, "OOM");
 
 	c = split_str(tmp, &opts, ":");
-	if (c == 0) fail_printf("Invalid mount spec '%s'", spec);
+	fail_if(!c, "Invalid mount spec '%s': not enough args",spec);
 
 	if (strncmp(opts[0], "bind", 4) == 0) {
-		if (c < 3) fail_printf("Invalid mount spec '%s'", spec);
+		fail_if(c < 3, "Invalid mount spec '%s': not enough args",spec);
 
 		if (!path_is_absolute(opts[1]))
 			fail_printf("Invalid mount spec '%s': path not absolute", spec);
@@ -111,7 +111,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 			mount_add(mounts, opts[1], opts[2], "bind-ro",
 			          MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
 	} else if (strncmp(opts[0], "overlay", 8) == 0) {
-		if (c < 4) fail_printf("Invalid mount spec '%s'", spec);
+		fail_if(c < 4, "Invalid mount spec '%s': not enough args",spec);
 
 		if (!path_is_absolute(opts[1]))
 			fail_printf("Invalid mount spec '%s': path not absolute", spec);
@@ -124,7 +124,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 
 		mount_add_overlay(mounts, opts[1], opts[2], opts[3]);
 	} else if (strncmp(opts[0], "tmp", 4) == 0) {
-		if (c < 2) fail_printf("Invalid mount spec '%s'", spec);
+		fail_if(c < 2, "Invalid mount spec '%s': not enough args",spec);
 
 		if (!path_is_absolute(opts[1]))
 			fail_printf("Invalid mount spec '%s': path not absolute", spec);
@@ -151,7 +151,7 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 	char template[] = "/tmp/pflask-ephemeral-XXXXXX";
 
 	rc = mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL);
-	if (rc < 0) sysf_printf("mount(MS_SLAVE)");
+	sys_fail_if(rc < 0, "Error mounting slave /");
 
 	if (dest != NULL) {
 		if (is_ephemeral) {
@@ -159,17 +159,19 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 				sysf_printf("mkdtemp()");
 
 			rc = mount("tmpfs", template, "tmpfs", 0, NULL);
-			if (rc < 0) sysf_printf("mount(tmpfs)");
+			sys_fail_if(rc < 0, "Error mounting tmpfs");
 
 			root_dir = path_prefix_root(template, "root");
+
 			rc = mkdir(root_dir, 0755);
-			if (rc < 0)
-				sysf_printf("mkdir(%s)", work_dir);
+			sys_fail_if(rc < 0, "Error creating directory '%s'",
+			                    root_dir);
 
 			work_dir = path_prefix_root(template, "work");
+
 			rc = mkdir(work_dir, 0755);
-			if (rc < 0)
-				sysf_printf("mkdir(%s)", work_dir);
+			sys_fail_if(rc < 0, "Error creating directory '%s'",
+			                    work_dir);
 
 			mount_add_overlay(&sys_mounts, root_dir, "/", work_dir);
 		}
@@ -231,7 +233,7 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 		}
 
 		rc = mount(i->src, mnt_dest, i->type, i->flags, i->data);
-		if (rc < 0) err_printf("mount(%s): %s", i->type, strerror(errno));
+		sys_fail_if(rc < 0, "Error mounting '%s'", i->type);
 	}
 }
 
@@ -241,20 +243,18 @@ static void make_bind_dest(struct mount *m, const char *dest) {
 	struct stat src_sb, dst_sb;
 
 	rc = stat(m->src, &src_sb);
-	if (rc < 0) sysf_printf("stat(%s)", m->src);
+	sys_fail_if(rc < 0, "stat(%s)", m->src);
 
 	if (stat(dest, &dst_sb) >= 0) {
 		if (S_ISDIR(src_sb.st_mode) && !S_ISDIR(dst_sb.st_mode))
 			fail_printf("Could not bind mount dir %s on file %s",
-				    m->src, dest);
+			            m->src, dest);
 
 		if (!S_ISDIR(src_sb.st_mode) && S_ISDIR(dst_sb.st_mode))
 			fail_printf("Could not bind mount file %s on dir %s",
-				    m->src, dest);
+			            m->src, dest);
 	} else if (errno == ENOENT) {
-		if (S_ISDIR(src_sb.st_mode)) {
-			rc = mkdir(dest, 0755);
-		} else {
+		if (!S_ISDIR(src_sb.st_mode)) {
 			_close_ int fd = -1;
 
 			fd = open(dest,
@@ -262,11 +262,13 @@ static void make_bind_dest(struct mount *m, const char *dest) {
 			          0644);
 
 			rc = fd;
+		} else {
+			rc = mkdir(dest, 0755);
 		}
 
-		if (rc < 0) sysf_printf("Could not create mount dest %s", dest);
+		sys_fail_if(rc < 0, "Could not create mount dest %s", dest);
 	} else {
-		sysf_printf("stat(%s)", dest);
+		sysf_printf("Error opening '%s'", dest);
 	}
 }
 
@@ -282,12 +284,12 @@ static void make_overlay_opts(struct mount *m, const char *dest) {
 
 	if (ovl->type == 'a') {
 		rc = asprintf(&overlayfs_opts, "br:%s=rw:%s=ro", overlay, dest);
-		if (rc < 0) fail_printf("OOM");
+		fail_if(rc < 0, "OOM");
 	} else if (ovl->type == 'o') {
 		rc = asprintf(&overlayfs_opts,
 		              "upperdir=%s,lowerdir=%s,workdir=%s",
 		              overlay, dest, workdir);
-		if (rc < 0) fail_printf("OOM");
+		fail_if(rc < 0, "OOM");
 	}
 
 	m->data = overlayfs_opts;

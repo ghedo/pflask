@@ -50,10 +50,10 @@ void setup_ptmx(const char *dest) {
 	_free_ char *target = NULL;
 
 	rc = asprintf(&target, "%s/dev/ptmx", dest);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	rc = symlink("/dev/pts/ptmx", target);
-	if (rc < 0) sysf_printf("symlink()");
+	sys_fail_if(rc < 0, "Error creating symlink '%s'", target);
 }
 
 void setup_console_owner(char *path, struct user *u) {
@@ -86,8 +86,8 @@ void setup_console_owner(char *path, struct user *u) {
 	rootgid = (uid_t) tmp;
 
 	if (geteuid() == 0) {
-		if (chown(path, rootuid, rootgid) < 0)
-			sysf_printf("chown(%s)", path);
+		rc = chown(path, rootuid, rootgid);
+		sys_fail_if(rc < 0, "Error chowning '%s'", path);
 
 		return;
 	}
@@ -99,7 +99,7 @@ void setup_console_owner(char *path, struct user *u) {
 		sysf_printf("stat(%s)", path);
 
 	if (sb.st_uid == geteuid()  && chown(path, -1, hostgid) < 0)
-		sysf_printf("Failed chgrping %s", path);
+		sysf_printf("Error chgrping '%s'", path);
 
 	user_add_map(&users, 'u', 0, rootuid, 1);
 	user_add_map(&users, 'u', hostuid, hostuid, 1);
@@ -123,7 +123,7 @@ void setup_console_owner(char *path, struct user *u) {
 		setup_user("root");
 
 		rc = chown(path, 0, sb.st_gid);
-		if (rc < 0) sysf_printf("chown()");
+		sys_fail_if(rc < 0, "Error chowning '%s'", path);
 
 		exit(0);
 	}
@@ -147,13 +147,13 @@ void setup_console(const char *dest, const char *console) {
 	_free_ char *target = NULL;
 
 	rc = asprintf(&target, "%s/dev/console", dest);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	rc = chmod(console, 0600);
-	if (rc < 0) sysf_printf("chmod()");
+	sys_fail_if(rc < 0, "Error chmoding '%s'", console);
 
 	rc = mount(console, target, NULL, MS_BIND, NULL);
-	if (rc < 0) sysf_printf("mount()");
+	sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
 }
 
 void setup_symlinks(const char *dest) {
@@ -179,10 +179,10 @@ void setup_symlinks(const char *dest) {
 		_free_ char *link = NULL;
 
 		rc = asprintf(&link, "%s/%s", dest, dst[i]);
-		if (rc < 0) fail_printf("OOM");
+		fail_if(rc < 0, "OOM");
 
 		rc = symlink(src[i], link);
-		if (rc < 0) sysf_printf("symlink()");
+		sys_fail_if(rc < 0, "Error creating symlink '%s'", link);
 	}
 }
 
@@ -202,20 +202,17 @@ void setup_nodes(const char *dest) {
 	};
 
 	for (size_t i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
-		FILE *file = NULL;
-
+		_close_ int fd = -1;
 		_free_ char *target = NULL;
 
 		rc = asprintf(&target, "%s%s", dest, nodes[i]);
-		if (rc < 0) fail_printf("OOM");
+		fail_if(rc < 0, "OOM");
 
-		file = fopen(target, "wb");
-		if (!file)
-			sysf_printf("fopen()");
-		fclose(file);
+		fd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, 644);
+		sys_fail_if(fd < 0, "Error creating file '%s'", target);
 
 		rc = mount(nodes[i], target, NULL, MS_BIND, NULL);
-		if (rc < 0) sysf_printf("mount()");
+		sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
 	}
 
 	umask(u);

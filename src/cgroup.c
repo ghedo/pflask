@@ -58,12 +58,12 @@ void cgroup_add(struct cgroup **groups, char *controller) {
 	pid_t pid = getpid();
 
 	struct cgroup *cg = malloc(sizeof(struct cgroup));
-	if (cg == NULL) fail_printf("OOM");
+	fail_if(!cg, "OOM");
 
 	cg->controller = strdup(controller);
 
 	rc = asprintf(&cg->name, "pflask.%d", pid);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	DL_APPEND(*groups, cg);
 }
@@ -91,18 +91,10 @@ static void create_cgroup(const char *controller, const char *name) {
 	_free_ char *path = NULL;
 
 	rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	rc = mkdir(path, 0755);
-	if (rc < 0) {
-		switch (errno) {
-		case EEXIST:
-			return;
-
-		default:
-			sysf_printf("Error creating cgroup");
-		}
-	}
+	sys_fail_if((rc < 0) && (errno != EEXIST), "Error creating cgroup");
 }
 
 static void attach_cgroup(const char *controller, const char *name, pid_t pid) {
@@ -112,15 +104,15 @@ static void attach_cgroup(const char *controller, const char *name, pid_t pid) {
 	_free_ char *path = NULL;
 
 	rc = asprintf(&path, CGROUP_BASE "/%s/%s/tasks", controller, name);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	tasks = fopen(path, "w");
-	if (tasks == NULL) sysf_printf("fopen()");
+	sys_fail_if(!tasks, "Error opening cgroup");
 
 	fprintf(tasks, "%d\n", pid);
 
 	rc = fclose(tasks);
-	if (rc < 0) sysf_printf("fclose()");
+	sys_fail_if(rc < 0, "Error closing cgroup");
 }
 
 static void destroy_cgroup(const char *controller, const char *name) {
@@ -129,8 +121,8 @@ static void destroy_cgroup(const char *controller, const char *name) {
 	_free_ char *path = NULL;
 
 	rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	rc = rmdir(path);
-	if (rc < 0) sysf_printf("Error destroying cgroup");
+	sys_fail_if(rc < 0, "Error destroying cgroup");
 }

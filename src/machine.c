@@ -56,7 +56,7 @@ void register_machine(pid_t pid, const char *dest) {
 	dbus_error_init(&err);
 
 	rc = asprintf(&name, "pflask-%d", pid);
-	if (rc < 0) fail_printf("OOM");
+	fail_if(rc < 0, "OOM");
 
 	conn = dbus_bus_get_private(DBUS_BUS_SYSTEM, &err);
 	if (dbus_error_is_set(&err))

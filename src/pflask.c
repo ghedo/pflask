@@ -170,8 +170,7 @@ int main(int argc, char *argv[]) {
 
 	if (args.attach_given) {
 		master_fd = recv_pty(args.attach_arg);
-		if (master_fd < 0)
-			fail_printf("Invalid PID '%u'", args.attach_arg);
+		fail_if(master_fd < 0, "Invalid PID '%u'", args.attach_arg);
 
 		process_pty(master_fd);
 		return 0;
@@ -190,10 +189,10 @@ int main(int argc, char *argv[]) {
 		closep(&master_fd);
 
 		rc = prctl(PR_SET_PDEATHSIG, SIGKILL);
-		if (rc < 0) sysf_printf("prctl(PR_SET_PDEATHSIG)");
+		sys_fail_if(rc < 0, "prctl(PR_SET_PDEATHSIG)");
 
 		rc = setsid();
-		if (rc < 0) sysf_printf("setsid()");
+		sys_fail_if(rc < 0, "setsid()");
 
 		sync_barrier_parent(sync, SYNC_START);
 
@@ -206,7 +205,7 @@ int main(int argc, char *argv[]) {
 		if (args.hostname_given) {
 			rc = sethostname(args.hostname_arg,
 			                 strlen(args.hostname_arg));
-			if (rc < 0) sysf_printf("sethostname()");
+			sys_fail_if(rc < 0, "Error setting hostname");
 		}
 
 		setup_mount(mounts, args.chroot_arg, args.ephemeral_flag);
@@ -232,7 +231,7 @@ int main(int argc, char *argv[]) {
 
 		if (args.chdir_given) {
 			rc = chdir(args.chdir_arg);
-			if (rc < 0) sysf_printf("chdir()");
+			sys_fail_if(rc < 0, "Error changing cwd");
 		}
 
 		if (args.chroot_given) {
@@ -249,7 +248,7 @@ int main(int argc, char *argv[]) {
 
 		for (unsigned int i = 0; i < args.setenv_given; i++) {
 			rc = putenv(strdup(args.setenv_arg[i]));
-			if (rc != 0) sysf_printf("putenv()");
+			sys_fail_if(rc != 0, "Error setting environment");
 		}
 
 		setenv("container", "pflask", 1);
@@ -259,7 +258,7 @@ int main(int argc, char *argv[]) {
 		else
 			rc = execle("/bin/bash", "-bash", NULL, environ);
 
-		if (rc < 0) sysf_printf("exec()");
+		sys_fail_if(rc < 0, "Error executing command");
 	}
 
 	sync_wait_child(sync, SYNC_START);
@@ -290,7 +289,7 @@ int main(int argc, char *argv[]) {
 	kill(pid, SIGKILL);
 
 	rc = waitid(P_PID, pid, &status, WEXITED);
-	if (rc < 0) sysf_printf("waitid()");
+	sys_fail_if(rc < 0, "Error waiting for child");
 
 	switch (status.si_code) {
 	case CLD_EXITED:
@@ -325,7 +324,7 @@ static size_t validate_optlist(const char *name, const char *opts) {
 	if (tmp == NULL) fail_printf("OOM");
 
 	c = split_str(tmp, &vars, ":");
-	if (c == 0) fail_printf("Invalid value '%s' for %s", opts, name);
+	fail_if(!c, "Invalid value '%s' for %s", opts, name);
 
 	for (i = 0; i < c; i++) {
 		if (vars[i] == '\0')
@@ -342,20 +341,20 @@ static void do_daemonize(void) {
 	use_syslog = 1;
 
 	rc = daemon(0, 0);
-	if (rc < 0) sysf_printf("daemon()");
+	sys_fail_if(rc < 0, "Error daemonizing");
 }
 
 static void do_chroot(const char *dest) {
 	int rc;
 
 	rc = chdir(dest);
-	if (rc < 0) sysf_printf("chdir()");
+	sys_fail_if(rc < 0, "chdir()");
 
 	rc = chroot(".");
-	if (rc < 0) sysf_printf("chroot()");
+	sys_fail_if(rc < 0, "Error chrooting");
 
 	rc = chdir("/");
-	if (rc < 0) sysf_printf("chdir(/)");
+	sys_fail_if(rc < 0, "chdir(/)");
 }
 
 static pid_t do_clone(int *flags) {
@@ -371,7 +370,7 @@ static pid_t do_clone(int *flags) {
 		}
 	}
 
-	if (pid < 0) sysf_printf("clone()");
+	sys_fail_if(pid < 0, "Error cloning process");
 
 	return pid;
 }

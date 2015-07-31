@@ -57,7 +57,7 @@ struct user {
 void user_add_map(struct user **users, char type, uid_t id, uid_t host_id,
                   size_t count) {
 	struct user *usr = malloc(sizeof(struct user));
-	if (usr == NULL) fail_printf("OOM");
+	fail_if(!usr, "OOM");
 
 	usr->type    = type;
 	usr->id      = id;
@@ -88,7 +88,7 @@ void setup_user_map2(struct user *users, char type, pid_t pid) {
 		rc = asprintf(&tmp, "%s%u %u %lu%c", map,
 		              i->id, i->host_id, i->count,
 		              have_cmd ? ' ' : '\n');
-		if (rc < 0) fail_printf("OOM");
+		fail_if(rc < 0, "OOM");
 		freep(&map);
 
 		map = tmp;
@@ -98,23 +98,23 @@ void setup_user_map2(struct user *users, char type, pid_t pid) {
 		_free_ char *cmd = NULL;
 
 		rc = asprintf(&map, "new%cidmap %u %s", type, pid, map);
-		if (rc < 0) fail_printf("OOM");
+		fail_if(rc < 0, "OOM");
 
 		rc = system(map);
-		if (rc != 0) fail_printf("system(idmap): returned %d", rc);
+		fail_if(rc != 0, "new%cidmap %u returned %d", type, rc);
 	} else {
 		_close_ int map_fd = -1;
 
 		_free_ char *map_file = NULL;
 
 		rc = asprintf(&map_file, "/proc/%d/%cid_map", pid, type);
-		if (rc < 0) fail_printf("OOM");
+		fail_if(rc < 0, "OOM");
 
 		map_fd = open(map_file, O_RDWR);
-		if (map_fd < 0) sysf_printf("open(%s)", map_file);
+		sys_fail_if(map_fd < 0, "Error opening file '%s'", map_file);
 
 		rc = write(map_fd, map, strlen(map));
-		if (rc < 0) sysf_printf("write(%c %s)", type, map);
+		sys_fail_if(rc < 0, "Error writing to file '%s'", map_file);
 	}
 }
 
@@ -133,13 +133,13 @@ void setup_user(const char *user) {
 		return;
 
 	rc = setresgid(pw_gid, pw_gid, pw_gid);
-	if (rc < 0) sysf_printf("setresgid()");
+	sys_fail_if(rc < 0, "Error settign GID");
 
 	rc = setresuid(pw_uid, pw_uid, pw_uid);
-	if (rc < 0) sysf_printf("setresuid()");
+	sys_fail_if(rc < 0, "Error setting UID");
 
 	rc = setgroups(0, NULL);
-	if (rc < 0) sysf_printf("setgroups()");
+	sys_fail_if(rc < 0, "Error setting groups");
 }
 
 bool user_get_mapped_root(struct user *users, char type, unsigned *id) {
@@ -174,8 +174,7 @@ bool user_get_uid_gid(const char *user, uid_t *uid, gid_t *gid) {
 			return false;
 		}
 
-		if (!pwd && errno)
-			sysf_printf("getpwnam()");
+		sys_fail_if(!pwd && errno, "Error getting user");
 
 		*uid = pwd->pw_uid;
 		*gid = pwd->pw_gid;

@@ -41,10 +41,10 @@ int sync_init(int fd[2]) {
 	int rc;
 
 	rc = socketpair(AF_LOCAL, SOCK_STREAM, 0, fd);
-	if (rc < 0) sysf_printf("socketpair()");
+	sys_fail_if(rc < 0, "Error creating socket pair");
 
 	rc = fcntl(fd[0], F_SETFD, FD_CLOEXEC);
-	if (rc < 0) sysf_printf("fcntl()");
+	sys_fail_if(rc < 0, "Error setting FD_CLOEXEC");
 
 	return 0;
 }
@@ -54,8 +54,7 @@ static int sync_wait(int fd, int seq) {
 	int sync = -1;
 
 	rc = read(fd, &sync, sizeof(sync));
-	if (rc < 0)
-		sysf_printf("sync_wait()");
+	sys_fail_if(rc < 0, "Error reading from socket");
 
 	if (!rc)
 		return 0;
@@ -75,8 +74,10 @@ int sync_wait_parent(int fd[2], int seq) {
 }
 
 static int sync_wake(int fd, int seq) {
-	if (write(fd, &seq, sizeof(seq)) < 0)
-		sysf_printf("sync_wake()");
+	int rc;
+
+	rc = write(fd, &seq, sizeof(seq));
+	sys_fail_if(rc < 0, "Error waking process");
 
 	return 0;
 }

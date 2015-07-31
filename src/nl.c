@@ -49,12 +49,11 @@ void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
 	memcpy(RTA_DATA(rtattr), d, len);
 
 	nlmsg->hdr.nlmsg_len = NLMSG_ALIGN(nlmsg->hdr.nlmsg_len) +
-	                         RTA_ALIGN(rtalen);
+	                       RTA_ALIGN(rtalen);
 }
 
 struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
 	struct rtattr *rtattr = NLMSG_TAIL(&nlmsg->hdr);
-
 	rtattr_append(nlmsg, attr, NULL, 0);
 
 	return rtattr;
@@ -66,12 +65,13 @@ void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr) {
 
 int nl_open(void) {
 	int rc;
+
 	int sock = -1;
 
 	struct sockaddr_nl addr;
 
 	sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-	if (sock < 0) sysf_printf("socket()");
+	sys_fail_if(sock < 0, "Error creating netlink socket");
 
 	addr.nl_family = AF_NETLINK;
 	addr.nl_pad    = 0;
@@ -79,7 +79,7 @@ int nl_open(void) {
 	addr.nl_groups = 0;
 
 	rc = bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_nl));
-	if (rc < 0) sysf_printf("bind()");
+	sys_fail_if(rc < 0, "Error binding netlink socket");
 
 	return sock;
 }
@@ -106,7 +106,7 @@ void nl_send(int sock, struct nlmsg *nlmsg) {
 	addr.nl_groups = 0;
 
 	rc = sendmsg(sock, &msg, 0);
-	if (rc < 0) sysf_printf("sendmsg()");
+	sys_fail_if(rc < 0, "Error sending netlink message");
 }
 
 void nl_recv(int sock, struct nlmsg *nlmsg) {
@@ -131,5 +131,5 @@ void nl_recv(int sock, struct nlmsg *nlmsg) {
 	addr.nl_groups = 0;
 
 	rc = recvmsg(sock, &msg, 0);
-	if (rc < 0) sysf_printf("recvmsg()");
+	sys_fail_if(rc < 0, "Error receiving netlink message");
 }
