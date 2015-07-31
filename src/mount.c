@@ -86,8 +86,6 @@ void mount_add(struct mount **mounts, const char *src, const char *dst,
 }
 
 void mount_add_from_spec(struct mount **mounts, const char *spec) {
-	int rc;
-
 	size_t c;
 
 	_free_ char **opts = NULL;
@@ -112,23 +110,6 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 		if (strncmp(opts[0], "bind-ro", 8) == 0)
 			mount_add(mounts, opts[1], opts[2], "bind-ro",
 			          MS_REMOUNT | MS_BIND | MS_RDONLY, NULL);
-	} else if (strncmp(opts[0], "aufs", 5) == 0) {
-		_free_ char *dst = NULL;
-		_free_ char *overlay = NULL;
-		_free_ char *aufs_opts = NULL;
-
-		if (c < 3) fail_printf("Invalid mount spec '%s'", spec);
-
-		overlay = realpath(opts[1], NULL);
-		if (overlay == NULL) sysf_printf("realpath()");
-
-		dst = realpath(opts[2], NULL);
-		if (dst == NULL) sysf_printf("realpath()");
-
-		rc = asprintf(&aufs_opts, "br:%s=rw:%s=ro", overlay, dst);
-		if (rc < 0) fail_printf("OOM");
-
-		mount_add(mounts, NULL, dst, "aufs", 0, aufs_opts);
 	} else if (strncmp(opts[0], "overlay", 8) == 0) {
 		if (c < 4) fail_printf("Invalid mount spec '%s'", spec);
 
