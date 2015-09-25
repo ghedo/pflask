@@ -320,7 +320,12 @@ static size_t validate_optlist(const char *name, const char *opts) {
 	size_t i, c;
 	_free_ char **vars = NULL;
 
-	_free_ char *tmp = strdup(opts);
+	_free_ char *tmp = NULL;
+
+	if (!opts || !*opts)
+		return 0;
+
+	tmp = strdup(opts);
 	fail_if(!tmp, "OOM");
 
 	c = split_str(tmp, &vars, ":");
