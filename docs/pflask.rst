@@ -46,14 +46,20 @@ OPTIONS
 
 .. option:: -u, --user=<user>
 
-   Run the command under the specified user.
+   Run the command under the specified user. This also automatically creates
+   a user namespace and maps the user *user* to itself, unless ``--user-map``
+   is also used.
+
+   This is not always the correct behaviour (e.g. when using ``--user`` with
+   ``--chroot`` without ``--user-map``), so the ``--no-userns`` option can be
+   used to disable the user namespace.
 
 .. option:: -e, --user-map=<map>
 
-   Map container users to host users. The *map* argument is composed of three
-   values separated by ``:``: the first userid as seen in the user namespace of
-   the container, the first userid as seen on the host, and a range indicating
-   the number of consecutive ids to map.
+   Create a user namespace and map container users to host users. The *map*
+   argument is composed of three values separated by ``:``: the first userid
+   as seen in the user namespace of the container, the first userid as seen
+   on the host, and a range indicating the number of consecutive ids to map.
 
    Example: ``--user-map=0:100000,65536``
 
