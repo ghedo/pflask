@@ -44,6 +44,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include "capabilities.h"
 #include "cmdline.h"
 
 #include "pty.h"
@@ -227,7 +228,9 @@ int main(int argc, char *argv[]) {
 
 		umask(0022);
 
-		/* TODO: drop capabilities */
+#if HAVE_LIBCAP_NG
+		setup_capabilities(args.caps_arg);
+#endif
 
 		if (args.chdir_given) {
 			rc = chdir(args.chdir_arg);
