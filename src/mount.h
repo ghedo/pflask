@@ -35,4 +35,4 @@ void mount_add(struct mount **mounts, const char *src, const char *dst,
 
 void mount_add_from_spec(struct mount **mounts, const char *spec);
 
-void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral);
+void setup_mount(struct mount *mounts, const char *dest, const char *ephemeral_dir);

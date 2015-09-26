@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
 	struct cgroup *cgroups = NULL;
 	struct user *users = NULL;
 
+	char ephemeral_dir[] = "/tmp/pflask-ephemeral-XXXXXX";
 	char *master;
 	_close_ int master_fd = -1;
 
@@ -183,6 +184,12 @@ int main(int argc, char *argv[]) {
 
 	sync_init(sync);
 
+	// create ephemeral directory before cloning
+	if (args.ephemeral_flag) {
+		if (!mkdtemp(ephemeral_dir))
+			sysf_printf("mkdtemp()");
+	}
+
 	pid = do_clone(&clone_flags);
 
 	if (!pid) {
@@ -208,7 +215,7 @@ int main(int argc, char *argv[]) {
 			sys_fail_if(rc < 0, "Error setting hostname");
 		}
 
-		setup_mount(mounts, args.chroot_arg, args.ephemeral_flag);
+		setup_mount(mounts, args.chroot_arg, args.ephemeral_flag ? ephemeral_dir : NULL);
 
 		if (args.chroot_given) {
 			setup_nodes(args.chroot_arg);
@@ -312,6 +319,11 @@ int main(int argc, char *argv[]) {
 	sync_close(sync);
 
 	clean_cgroup(cgroups);
+
+	if (args.ephemeral_flag) {
+		rc = rmdir(ephemeral_dir);
+		sys_fail_if(rc != 0, "Error deleting ephemeral directory: %s", ephemeral_dir);
+	}
 
 	return status.si_status;
 }
