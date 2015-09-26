@@ -101,7 +101,7 @@ void setup_user_map2(struct user *users, char type, pid_t pid) {
 		fail_if(rc < 0, "OOM");
 
 		rc = system(map);
-		fail_if(rc != 0, "new%cidmap %u returned %d", type, rc);
+		fail_if(rc != 0, "new%cidmap returned %d", type, rc);
 	} else {
 		_close_ int map_fd = -1;
 
