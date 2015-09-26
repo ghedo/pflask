@@ -135,7 +135,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 	}
 }
 
-void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
+void setup_mount(struct mount *mounts, const char *dest, const char *ephemeral_dir) {
 	int rc;
 
 	struct mount *sys_mounts = NULL;
@@ -148,26 +148,21 @@ void setup_mount(struct mount *mounts, const char *dest, bool is_ephemeral) {
 
 	_free_ char *procsys_dir = NULL;
 
-	char template[] = "/tmp/pflask-ephemeral-XXXXXX";
-
 	rc = mount(NULL, "/", NULL, MS_SLAVE | MS_REC, NULL);
 	sys_fail_if(rc < 0, "Error mounting slave /");
 
 	if (dest != NULL) {
-		if (is_ephemeral) {
-			if (!mkdtemp(template))
-				sysf_printf("mkdtemp()");
-
-			rc = mount("tmpfs", template, "tmpfs", 0, NULL);
+		if (ephemeral_dir != NULL) {
+			rc = mount("tmpfs", ephemeral_dir, "tmpfs", 0, NULL);
 			sys_fail_if(rc < 0, "Error mounting tmpfs");
 
-			root_dir = path_prefix_root(template, "root");
+			root_dir = path_prefix_root(ephemeral_dir, "root");
 
 			rc = mkdir(root_dir, 0755);
 			sys_fail_if(rc < 0, "Error creating directory '%s'",
 			                    root_dir);
 
-			work_dir = path_prefix_root(template, "work");
+			work_dir = path_prefix_root(ephemeral_dir, "work");
 
 			rc = mkdir(work_dir, 0755);
 			sys_fail_if(rc < 0, "Error creating directory '%s'",
