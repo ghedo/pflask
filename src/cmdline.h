@@ -73,6 +73,11 @@ struct gengetopt_args_info
   unsigned int cgroup_min; /**< @brief Create a new cgroup and move the container inside it's minimum occurreces */
   unsigned int cgroup_max; /**< @brief Create a new cgroup and move the container inside it's maximum occurreces */
   const char *cgroup_help; /**< @brief Create a new cgroup and move the container inside it help description.  */
+  char ** caps_arg;	/**< @brief Change the effective capabilities inside the container (default='+all').  */
+  char ** caps_orig;	/**< @brief Change the effective capabilities inside the container original value given at command line.  */
+  unsigned int caps_min; /**< @brief Change the effective capabilities inside the container's minimum occurreces */
+  unsigned int caps_max; /**< @brief Change the effective capabilities inside the container's maximum occurreces */
+  const char *caps_help; /**< @brief Change the effective capabilities inside the container help description.  */
   int detach_flag;	/**< @brief Detach from terminal (default=off).  */
   const char *detach_help; /**< @brief Detach from terminal help description.  */
   int attach_arg;	/**< @brief Attach to the specified detached process.  */
@@ -109,6 +114,7 @@ struct gengetopt_args_info
   unsigned int user_map_given ;	/**< @brief Whether user-map was given.  */
   unsigned int ephemeral_given ;	/**< @brief Whether ephemeral was given.  */
   unsigned int cgroup_given ;	/**< @brief Whether cgroup was given.  */
+  unsigned int caps_given ;	/**< @brief Whether caps was given.  */
   unsigned int detach_given ;	/**< @brief Whether detach was given.  */
   unsigned int attach_given ;	/**< @brief Whether attach was given.  */
   unsigned int setenv_given ;	/**< @brief Whether setenv was given.  */

@@ -45,6 +45,7 @@ const char *gengetopt_args_info_help[] = {
   "  -e, --user-map=STRING  Map container users to host users",
   "  -w, --ephemeral        Discard changes to /  (default=off)",
   "  -g, --cgroup=STRING    Create a new cgroup and move the container inside it",
+  "  -b, --caps=STRING      Change the effective capabilities inside the container\n                           (default=`+all')",
   "  -d, --detach           Detach from terminal  (default=off)",
   "  -a, --attach=INT       Attach to the specified detached process",
   "  -s, --setenv=STRING    Set additional environment variables",
@@ -93,6 +94,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->user_map_given = 0 ;
   args_info->ephemeral_given = 0 ;
   args_info->cgroup_given = 0 ;
+  args_info->caps_given = 0 ;
   args_info->detach_given = 0 ;
   args_info->attach_given = 0 ;
   args_info->setenv_given = 0 ;
@@ -126,6 +128,8 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->ephemeral_flag = 0;
   args_info->cgroup_arg = NULL;
   args_info->cgroup_orig = NULL;
+  args_info->caps_arg = NULL;
+  args_info->caps_orig = NULL;
   args_info->detach_flag = 0;
   args_info->attach_orig = NULL;
   args_info->setenv_arg = NULL;
@@ -164,18 +168,21 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->cgroup_help = gengetopt_args_info_help[10] ;
   args_info->cgroup_min = 0;
   args_info->cgroup_max = 0;
-  args_info->detach_help = gengetopt_args_info_help[11] ;
-  args_info->attach_help = gengetopt_args_info_help[12] ;
-  args_info->setenv_help = gengetopt_args_info_help[13] ;
+  args_info->caps_help = gengetopt_args_info_help[11] ;
+  args_info->caps_min = 0;
+  args_info->caps_max = 0;
+  args_info->detach_help = gengetopt_args_info_help[12] ;
+  args_info->attach_help = gengetopt_args_info_help[13] ;
+  args_info->setenv_help = gengetopt_args_info_help[14] ;
   args_info->setenv_min = 0;
   args_info->setenv_max = 0;
-  args_info->keepenv_help = gengetopt_args_info_help[14] ;
-  args_info->no_userns_help = gengetopt_args_info_help[15] ;
-  args_info->no_mountns_help = gengetopt_args_info_help[16] ;
-  args_info->no_netns_help = gengetopt_args_info_help[17] ;
-  args_info->no_ipcns_help = gengetopt_args_info_help[18] ;
-  args_info->no_utsns_help = gengetopt_args_info_help[19] ;
-  args_info->no_pidns_help = gengetopt_args_info_help[20] ;
+  args_info->keepenv_help = gengetopt_args_info_help[15] ;
+  args_info->no_userns_help = gengetopt_args_info_help[16] ;
+  args_info->no_mountns_help = gengetopt_args_info_help[17] ;
+  args_info->no_netns_help = gengetopt_args_info_help[18] ;
+  args_info->no_ipcns_help = gengetopt_args_info_help[19] ;
+  args_info->no_utsns_help = gengetopt_args_info_help[20] ;
+  args_info->no_pidns_help = gengetopt_args_info_help[21] ;
   
 }
 
@@ -316,6 +323,7 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   free_string_field (&(args_info->user_orig));
   free_multiple_string_field (args_info->user_map_given, &(args_info->user_map_arg), &(args_info->user_map_orig));
   free_multiple_string_field (args_info->cgroup_given, &(args_info->cgroup_arg), &(args_info->cgroup_orig));
+  free_multiple_string_field (args_info->caps_given, &(args_info->caps_arg), &(args_info->caps_orig));
   free_string_field (&(args_info->attach_orig));
   free_multiple_string_field (args_info->setenv_given, &(args_info->setenv_arg), &(args_info->setenv_orig));
   
@@ -374,6 +382,7 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
   if (args_info->ephemeral_given)
     write_into_file(outfile, "ephemeral", 0, 0 );
   write_multiple_into_file(outfile, args_info->cgroup_given, "cgroup", args_info->cgroup_orig, 0);
+  write_multiple_into_file(outfile, args_info->caps_given, "caps", args_info->caps_orig, 0);
   if (args_info->detach_given)
     write_into_file(outfile, "detach", 0, 0 );
   if (args_info->attach_given)
@@ -656,6 +665,9 @@ cmdline_parser_required2 (struct gengetopt_args_info *args_info, const char *pro
   if (check_multiple_option_occurrences(prog_name, args_info->cgroup_given, args_info->cgroup_min, args_info->cgroup_max, "'--cgroup' ('-g')"))
      error_occurred = 1;
   
+  if (check_multiple_option_occurrences(prog_name, args_info->caps_given, args_info->caps_min, args_info->caps_max, "'--caps' ('-b')"))
+     error_occurred = 1;
+  
   if (check_multiple_option_occurrences(prog_name, args_info->setenv_given, args_info->setenv_min, args_info->setenv_max, "'--setenv' ('-s')"))
      error_occurred = 1;
   
@@ -924,11 +936,13 @@ cmdline_parser_internal (
                         struct cmdline_parser_params *params, const char *additional_error)
 {
   int c;	/* Character of the parsed option.  */
+  union generic_value multiple_default_value;
 
   struct generic_list * mount_list = NULL;
   struct generic_list * netif_list = NULL;
   struct generic_list * user_map_list = NULL;
   struct generic_list * cgroup_list = NULL;
+  struct generic_list * caps_list = NULL;
   struct generic_list * setenv_list = NULL;
   int error_occurred = 0;
   struct gengetopt_args_info local_args_info;
@@ -971,6 +985,7 @@ cmdline_parser_internal (
         { "user-map",	1, NULL, 'e' },
         { "ephemeral",	0, NULL, 'w' },
         { "cgroup",	1, NULL, 'g' },
+        { "caps",	1, NULL, 'b' },
         { "detach",	0, NULL, 'd' },
         { "attach",	1, NULL, 'a' },
         { "setenv",	1, NULL, 's' },
@@ -984,7 +999,7 @@ cmdline_parser_internal (
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVr:c:t:m:n::u:e:wg:da:s:kUMNIHP", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVr:c:t:m:n::u:e:wg:b:da:s:kUMNIHP", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -1090,6 +1105,15 @@ cmdline_parser_internal (
           if (update_multiple_arg_temp(&cgroup_list, 
               &(local_args_info.cgroup_given), optarg, 0, 0, ARG_STRING,
               "cgroup", 'g',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'b':	/* Change the effective capabilities inside the container.  */
+        
+          if (update_multiple_arg_temp(&caps_list, 
+              &(local_args_info.caps_given), optarg, 0, "+all", ARG_STRING,
+              "caps", 'b',
               additional_error))
             goto failure;
         
@@ -1224,6 +1248,11 @@ cmdline_parser_internal (
     &(args_info->cgroup_orig), args_info->cgroup_given,
     local_args_info.cgroup_given, 0,
     ARG_STRING, cgroup_list);
+  multiple_default_value.default_string_arg = "+all";
+  update_multiple_arg((void *)&(args_info->caps_arg),
+    &(args_info->caps_orig), args_info->caps_given,
+    local_args_info.caps_given, &multiple_default_value,
+    ARG_STRING, caps_list);
   update_multiple_arg((void *)&(args_info->setenv_arg),
     &(args_info->setenv_orig), args_info->setenv_given,
     local_args_info.setenv_given, 0,
@@ -1237,6 +1266,8 @@ cmdline_parser_internal (
   local_args_info.user_map_given = 0;
   args_info->cgroup_given += local_args_info.cgroup_given;
   local_args_info.cgroup_given = 0;
+  args_info->caps_given += local_args_info.caps_given;
+  local_args_info.caps_given = 0;
   args_info->setenv_given += local_args_info.setenv_given;
   local_args_info.setenv_given = 0;
   
@@ -1257,6 +1288,7 @@ failure:
   free_list (netif_list, 1 );
   free_list (user_map_list, 1 );
   free_list (cgroup_list, 1 );
+  free_list (caps_list, 1 );
   free_list (setenv_list, 1 );
   
   cmdline_parser_release (&local_args_info);

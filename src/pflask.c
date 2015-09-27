@@ -46,6 +46,7 @@
 
 #include "cmdline.h"
 
+#include "capabilities.h"
 #include "pty.h"
 #include "user.h"
 #include "dev.h"
@@ -74,6 +75,9 @@ int main(int argc, char *argv[]) {
 	struct netif *netifs = NULL;
 	struct cgroup *cgroups = NULL;
 	struct user *users = NULL;
+#if HAVE_LIBCAP_NG
+	struct capability *caps = NULL;
+#endif
 
 	char *master;
 	_close_ int master_fd = -1;
@@ -151,6 +155,11 @@ int main(int argc, char *argv[]) {
 
 	for (unsigned int i = 0; i < args.cgroup_given; i++)
 		cgroup_add(&cgroups, args.cgroup_arg[i]);
+
+#if HAVE_LIBCAP_NG
+	for (unsigned int i = 0; i < args.caps_given; i++)
+		capability_add(&caps, args.caps_arg[i]);
+#endif
 
 	if (args.no_userns_flag)
 		clone_flags &= ~(CLONE_NEWUSER);
@@ -235,7 +244,9 @@ int main(int argc, char *argv[]) {
 
 		umask(0022);
 
-		/* TODO: drop capabilities */
+#if HAVE_LIBCAP_NG
+		setup_capabilities(caps);
+#endif
 
 		if (args.chdir_given) {
 			rc = chdir(args.chdir_arg);

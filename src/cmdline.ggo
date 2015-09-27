@@ -19,6 +19,8 @@ option "ephemeral" w "Discard changes to /"
        flag off dependon="chroot"
 option "cgroup"    g "Create a new cgroup and move the container inside it"
        string optional multiple
+option "caps"      b "Change the effective capabilities inside the container"
+       string default="+all" optional multiple
 option "detach"    d "Detach from terminal"
        flag off
 option "attach"    a "Attach to the specified detached process"
