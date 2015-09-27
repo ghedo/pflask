@@ -27,6 +27,8 @@ option "setenv"    s "Set additional environment variables"
        string optional multiple
 option "keepenv"   k "Do not clear environment"
        flag off
+option "caps"  b "Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)"
+       string default="+all" optional
 
 option "no-userns"  U "Disable user namespace support"
        flag off

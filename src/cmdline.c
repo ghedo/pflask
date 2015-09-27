@@ -49,6 +49,7 @@ const char *gengetopt_args_info_help[] = {
   "  -a, --attach=INT       Attach to the specified detached process",
   "  -s, --setenv=STRING    Set additional environment variables",
   "  -k, --keepenv          Do not clear environment  (default=off)",
+  "  -b, --caps=STRING      Specify comma-separated capabilities to add ('+'\n                           prefix) or drop ('-' prefix)  (default=`+all')",
   "  -U, --no-userns        Disable user namespace support  (default=off)",
   "  -M, --no-mountns       Disable mount namespace support  (default=off)",
   "  -N, --no-netns         Disable net namespace support  (default=off)",
@@ -97,6 +98,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->attach_given = 0 ;
   args_info->setenv_given = 0 ;
   args_info->keepenv_given = 0 ;
+  args_info->caps_given = 0 ;
   args_info->no_userns_given = 0 ;
   args_info->no_mountns_given = 0 ;
   args_info->no_netns_given = 0 ;
@@ -131,6 +133,8 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->setenv_arg = NULL;
   args_info->setenv_orig = NULL;
   args_info->keepenv_flag = 0;
+  args_info->caps_arg = gengetopt_strdup ("+all");
+  args_info->caps_orig = NULL;
   args_info->no_userns_flag = 0;
   args_info->no_mountns_flag = 0;
   args_info->no_netns_flag = 0;
@@ -170,12 +174,13 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->setenv_min = 0;
   args_info->setenv_max = 0;
   args_info->keepenv_help = gengetopt_args_info_help[14] ;
-  args_info->no_userns_help = gengetopt_args_info_help[15] ;
-  args_info->no_mountns_help = gengetopt_args_info_help[16] ;
-  args_info->no_netns_help = gengetopt_args_info_help[17] ;
-  args_info->no_ipcns_help = gengetopt_args_info_help[18] ;
-  args_info->no_utsns_help = gengetopt_args_info_help[19] ;
-  args_info->no_pidns_help = gengetopt_args_info_help[20] ;
+  args_info->caps_help = gengetopt_args_info_help[15] ;
+  args_info->no_userns_help = gengetopt_args_info_help[16] ;
+  args_info->no_mountns_help = gengetopt_args_info_help[17] ;
+  args_info->no_netns_help = gengetopt_args_info_help[18] ;
+  args_info->no_ipcns_help = gengetopt_args_info_help[19] ;
+  args_info->no_utsns_help = gengetopt_args_info_help[20] ;
+  args_info->no_pidns_help = gengetopt_args_info_help[21] ;
   
 }
 
@@ -318,6 +323,8 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   free_multiple_string_field (args_info->cgroup_given, &(args_info->cgroup_arg), &(args_info->cgroup_orig));
   free_string_field (&(args_info->attach_orig));
   free_multiple_string_field (args_info->setenv_given, &(args_info->setenv_arg), &(args_info->setenv_orig));
+  free_string_field (&(args_info->caps_arg));
+  free_string_field (&(args_info->caps_orig));
   
   
 
@@ -381,6 +388,8 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
   write_multiple_into_file(outfile, args_info->setenv_given, "setenv", args_info->setenv_orig, 0);
   if (args_info->keepenv_given)
     write_into_file(outfile, "keepenv", 0, 0 );
+  if (args_info->caps_given)
+    write_into_file(outfile, "caps", args_info->caps_orig, 0);
   if (args_info->no_userns_given)
     write_into_file(outfile, "no-userns", 0, 0 );
   if (args_info->no_mountns_given)
@@ -975,6 +984,7 @@ cmdline_parser_internal (
         { "attach",	1, NULL, 'a' },
         { "setenv",	1, NULL, 's' },
         { "keepenv",	0, NULL, 'k' },
+        { "caps",	1, NULL, 'b' },
         { "no-userns",	0, NULL, 'U' },
         { "no-mountns",	0, NULL, 'M' },
         { "no-netns",	0, NULL, 'N' },
@@ -984,7 +994,7 @@ cmdline_parser_internal (
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVr:c:t:m:n::u:e:wg:da:s:kUMNIHP", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVr:c:t:m:n::u:e:wg:da:s:kb:UMNIHP", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -1131,6 +1141,18 @@ cmdline_parser_internal (
           if (update_arg((void *)&(args_info->keepenv_flag), 0, &(args_info->keepenv_given),
               &(local_args_info.keepenv_given), optarg, 0, 0, ARG_FLAG,
               check_ambiguity, override, 1, 0, "keepenv", 'k',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'b':	/* Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix).  */
+        
+        
+          if (update_arg( (void *)&(args_info->caps_arg), 
+               &(args_info->caps_orig), &(args_info->caps_given),
+              &(local_args_info.caps_given), optarg, 0, "+all", ARG_STRING,
+              check_ambiguity, override, 0, 0,
+              "caps", 'b',
               additional_error))
             goto failure;
         

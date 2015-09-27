@@ -85,6 +85,9 @@ struct gengetopt_args_info
   const char *setenv_help; /**< @brief Set additional environment variables help description.  */
   int keepenv_flag;	/**< @brief Do not clear environment (default=off).  */
   const char *keepenv_help; /**< @brief Do not clear environment help description.  */
+  char * caps_arg;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) (default='+all').  */
+  char * caps_orig;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) original value given at command line.  */
+  const char *caps_help; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) help description.  */
   int no_userns_flag;	/**< @brief Disable user namespace support (default=off).  */
   const char *no_userns_help; /**< @brief Disable user namespace support help description.  */
   int no_mountns_flag;	/**< @brief Disable mount namespace support (default=off).  */
@@ -113,6 +116,7 @@ struct gengetopt_args_info
   unsigned int attach_given ;	/**< @brief Whether attach was given.  */
   unsigned int setenv_given ;	/**< @brief Whether setenv was given.  */
   unsigned int keepenv_given ;	/**< @brief Whether keepenv was given.  */
+  unsigned int caps_given ;	/**< @brief Whether caps was given.  */
   unsigned int no_userns_given ;	/**< @brief Whether no-userns was given.  */
   unsigned int no_mountns_given ;	/**< @brief Whether no-mountns was given.  */
   unsigned int no_netns_given ;	/**< @brief Whether no-netns was given.  */
