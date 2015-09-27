@@ -1,5 +1,5 @@
 package "pflask"
-version "0.2"
+version "0.3"
 
 option "caps"  b "Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)"
        string default="+all" optional multiple

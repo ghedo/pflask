@@ -5,7 +5,7 @@ import re
 from waflib import Utils
 
 APPNAME = 'pflask'
-VERSION = '0.2'
+VERSION = '0.3'
 
 _INSTALL_DIRS_LIST = [
 	('bindir',  '${DESTDIR}${PREFIX}/bin',      'binary files'),
