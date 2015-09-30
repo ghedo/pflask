@@ -28,4 +28,4 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void setup_capabilities(char *caps);
+void setup_capabilities(unsigned int caps_given, char **caps);

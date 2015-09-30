@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
 		umask(0022);
 
 #if HAVE_LIBCAP_NG
-		setup_capabilities(args.caps_arg);
+		setup_capabilities(args.caps_given, args.caps_arg);
 #endif
 
 		if (args.chdir_given) {

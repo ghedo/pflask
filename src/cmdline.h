@@ -39,6 +39,11 @@ struct gengetopt_args_info
 {
   const char *help_help; /**< @brief Print help and exit help description.  */
   const char *version_help; /**< @brief Print version and exit help description.  */
+  char ** caps_arg;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) (default='+all').  */
+  char ** caps_orig;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) original value given at command line.  */
+  unsigned int caps_min; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)'s minimum occurreces */
+  unsigned int caps_max; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)'s maximum occurreces */
+  const char *caps_help; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) help description.  */
   char * chroot_arg;	/**< @brief Change the root directory inside the container.  */
   char * chroot_orig;	/**< @brief Change the root directory inside the container original value given at command line.  */
   const char *chroot_help; /**< @brief Change the root directory inside the container help description.  */
@@ -85,9 +90,6 @@ struct gengetopt_args_info
   const char *setenv_help; /**< @brief Set additional environment variables help description.  */
   int keepenv_flag;	/**< @brief Do not clear environment (default=off).  */
   const char *keepenv_help; /**< @brief Do not clear environment help description.  */
-  char * caps_arg;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) (default='+all').  */
-  char * caps_orig;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) original value given at command line.  */
-  const char *caps_help; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) help description.  */
   int no_userns_flag;	/**< @brief Disable user namespace support (default=off).  */
   const char *no_userns_help; /**< @brief Disable user namespace support help description.  */
   int no_mountns_flag;	/**< @brief Disable mount namespace support (default=off).  */
@@ -103,6 +105,7 @@ struct gengetopt_args_info
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
+  unsigned int caps_given ;	/**< @brief Whether caps was given.  */
   unsigned int chroot_given ;	/**< @brief Whether chroot was given.  */
   unsigned int chdir_given ;	/**< @brief Whether chdir was given.  */
   unsigned int hostname_given ;	/**< @brief Whether hostname was given.  */
@@ -116,7 +119,6 @@ struct gengetopt_args_info
   unsigned int attach_given ;	/**< @brief Whether attach was given.  */
   unsigned int setenv_given ;	/**< @brief Whether setenv was given.  */
   unsigned int keepenv_given ;	/**< @brief Whether keepenv was given.  */
-  unsigned int caps_given ;	/**< @brief Whether caps was given.  */
   unsigned int no_userns_given ;	/**< @brief Whether no-userns was given.  */
   unsigned int no_mountns_given ;	/**< @brief Whether no-mountns was given.  */
   unsigned int no_netns_given ;	/**< @brief Whether no-netns was given.  */

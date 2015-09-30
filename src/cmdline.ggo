@@ -1,6 +1,8 @@
 package "pflask"
 version "0.2"
 
+option "caps"  b "Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)"
+       string default="+all" optional multiple
 option "chroot"    r "Change the root directory inside the container"
        string optional
 option "chdir"     c "Change the current directory inside the container"
@@ -27,8 +29,6 @@ option "setenv"    s "Set additional environment variables"
        string optional multiple
 option "keepenv"   k "Do not clear environment"
        flag off
-option "caps"  b "Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)"
-       string default="+all" optional
 
 option "no-userns"  U "Disable user namespace support"
        flag off

@@ -35,30 +35,30 @@
 #include "printf.h"
 #include "util.h"
 
-void setup_capabilities(char *caps) {
+void setup_capabilities(unsigned int caps_given, char **caps) {
 	int rc;
 	capng_act_t cap_action;
 	char *cap, *name;
-	char *remainder = ",";
 
 	// initialize capng state
 	capng_get_caps_process();
 
-	// get first cap
-	cap = strtok(caps, remainder);
+	for (unsigned int i = 0; i < caps_given; i++) {
+		cap = caps[i];
 
-	if (!strcasecmp(caps, "+all") || !strcasecmp(caps, "all")) {
-		// nop
-
-		cap = strtok(NULL, remainder);
-	} else if (!strcasecmp(caps, "-all")) {
-		capng_clear(CAPNG_SELECT_BOTH);
-
-		cap = strtok(NULL, remainder);
-	}
-
-	while (cap != NULL) {
 		sys_fail_if(strlen(cap) == 0, "Empty capability name specified");
+
+		if (i == 0) {
+			if (!strcasecmp(cap, "+all") || !strcasecmp(cap, "all")) {
+				// nop
+
+				continue;
+			} else if (!strcasecmp(cap, "-all")) {
+				capng_clear(CAPNG_SELECT_BOTH);
+
+				continue;
+			}
+		}
 
 		if (cap[0] == '+') {
 			cap_action = CAPNG_ADD;
@@ -75,9 +75,12 @@ void setup_capabilities(char *caps) {
 			name = cap;
 		}
 
-		if (!strcasecmp(name, "all")) {
-			fail_printf("Alias '%s' is valid only as first capability", cap);
-			return;
+		if (i != 0) {
+			// check for alias after prefix removal
+			if (!strcasecmp(name, "all")) {
+				fail_printf("Alias '%s' is valid only as first capability", cap);
+				return;
+			}
 		}
 
 		rc = capng_name_to_capability(name);
@@ -91,8 +94,6 @@ void setup_capabilities(char *caps) {
 			fail_printf("Error updating capabilities");
 			return;
 		}
-
-		cap = strtok(NULL, remainder);
 	}
 
 	rc = capng_apply(CAPNG_SELECT_BOTH);
