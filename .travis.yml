@@ -1,5 +1,13 @@
 language: c
 
+sudo: false
+
+addons:
+  apt_packages:
+   - pkg-config
+   - libdbus-1-dev
+   - libcap-ng-dev
+
 before_script:
  - ./bootstrap.py
  - ./waf configure
