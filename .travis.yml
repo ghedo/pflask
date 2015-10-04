@@ -1,12 +1,10 @@
 language: c
 
-sudo: false
+sudo: true
 
-addons:
-  apt_packages:
-   - pkg-config
-   - libdbus-1-dev
-   - libcap-ng-dev
+install:
+ - sudo apt-get update
+ - sudo apt-get install pkg-config libdbus-1-dev libcap-ng-dev
 
 before_script:
  - ./bootstrap.py
