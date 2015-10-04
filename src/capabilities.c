@@ -84,21 +84,12 @@ void setup_capabilities(unsigned int caps_given, char **caps) {
 		}
 
 		rc = capng_name_to_capability(name);
-		if (rc == -1) {
-			fail_printf("Invalid capability name: '%s'", name);
-			return;
-		}
+		fail_if(rc == -1, "Invalid capability name: '%s'", name);
 
 		rc = capng_update(cap_action, CAPNG_EFFECTIVE|CAPNG_PERMITTED|CAPNG_INHERITABLE|CAPNG_BOUNDING_SET, rc);
-		if (rc != 0) {
-			fail_printf("Error updating capabilities");
-			return;
-		}
+		fail_if(rc != 0, "Error updating capabilities");
 	}
 
 	rc = capng_apply(CAPNG_SELECT_BOTH);
-	if (rc != 0) {
-		fail_printf("Could not apply capabilities");
-		return;
-	}
+	fail_if(rc != 0, "Could not apply capabilities");
 }
