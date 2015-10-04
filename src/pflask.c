@@ -79,10 +79,13 @@ int main(int argc, char *argv[]) {
 	struct cgroup *cgroups = NULL;
 	struct user *users = NULL;
 
-	char *cap, *name;
+	char *cap;
+#ifdef HAVE_LIBCAP_NG
+	char *name;
 	bool clear_caps = false;
 	size_t total_caps = 0;
 	struct cap_action parsed_cap;
+#endif
 
 	char *master;
 	_close_ int master_fd = -1;
@@ -169,10 +172,11 @@ int main(int argc, char *argv[]) {
 			} else if (!strcasecmp(cap, "-all")) {
 #ifndef HAVE_LIBCAP_NG
 				fail_printf("No capabilities support built-in");
-#endif
+#else
 				clear_caps = true;
 
 				continue;
+#endif
 			}
 		}
 
