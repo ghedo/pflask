@@ -30,63 +30,23 @@
 
 #include <string.h>
 
-#include <cap-ng.h>
+#include "capabilities.h"
 
 #include "printf.h"
 #include "util.h"
 
-void setup_capabilities(unsigned int caps_given, char **caps) {
+void setup_capabilities(bool clear_caps, size_t total_caps, struct cap_action *caps) {
 	int rc;
-	capng_act_t cap_action;
-	char *cap, *name;
 
 	// initialize capng state
 	capng_get_caps_process();
 
-	for (unsigned int i = 0; i < caps_given; i++) {
-		cap = caps[i];
+	if (clear_caps) {
+		capng_clear(CAPNG_SELECT_BOTH);
+	}
 
-		sys_fail_if(strlen(cap) == 0, "Empty capability name specified");
-
-		if (i == 0) {
-			if (!strcasecmp(cap, "+all") || !strcasecmp(cap, "all")) {
-				// nop
-
-				continue;
-			} else if (!strcasecmp(cap, "-all")) {
-				capng_clear(CAPNG_SELECT_BOTH);
-
-				continue;
-			}
-		}
-
-		if (cap[0] == '+') {
-			cap_action = CAPNG_ADD;
-
-			name = &cap[1];
-		} else if (cap[0] == '-') {
-			cap_action = CAPNG_DROP;
-
-			name = &cap[1];
-		} else {
-			// implicit '+'
-			cap_action = CAPNG_ADD;
-
-			name = cap;
-		}
-
-		if (i != 0) {
-			// check for alias after prefix removal
-			if (!strcasecmp(name, "all")) {
-				fail_printf("Alias '%s' is valid only as first capability", cap);
-				return;
-			}
-		}
-
-		rc = capng_name_to_capability(name);
-		fail_if(rc == -1, "Invalid capability name: '%s'", name);
-
-		rc = capng_update(cap_action, CAPNG_EFFECTIVE|CAPNG_PERMITTED|CAPNG_INHERITABLE|CAPNG_BOUNDING_SET, rc);
+	for (size_t i = 0; i < total_caps; i++) {
+		rc = capng_update(caps[i].action, CAPNG_EFFECTIVE|CAPNG_PERMITTED|CAPNG_INHERITABLE|CAPNG_BOUNDING_SET, caps[i].capability);
 		fail_if(rc != 0, "Error updating capabilities");
 	}
 

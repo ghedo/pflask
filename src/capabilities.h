@@ -28,4 +28,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-void setup_capabilities(unsigned int caps_given, char **caps);
+#include <stdbool.h>
+
+#ifdef HAVE_LIBCAP_NG
+#include <cap-ng.h>
+#endif
+
+struct cap_action {
+#ifdef HAVE_LIBCAP_NG
+	capng_act_t action;
+#endif
+	int capability;
+};
+
+void setup_capabilities(bool clear_caps, size_t total_caps, struct cap_action *caps);
