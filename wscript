@@ -5,7 +5,7 @@ import re
 from waflib import Utils
 
 APPNAME = 'pflask'
-VERSION = '0.2'
+VERSION = '0.3'
 
 _INSTALL_DIRS_LIST = [
 	('bindir',  '${DESTDIR}${PREFIX}/bin',      'binary files'),
@@ -71,6 +71,9 @@ def configure(cfg):
 	# libdbus
 	my_check_cfg(cfg, 'dbus', package='dbus-1', mandatory=False)
 
+        # libcap-ng
+        my_check_cfg(cfg, 'libcap-ng', package='libcap-ng', mandatory=False)
+
 	# sphinx
 	cfg.find_program('sphinx-build', mandatory=False)
 
@@ -113,20 +116,21 @@ def build(bld):
 
 	sources = [
 		# sources
-		( 'src/cgroup.c'          ),
-		( 'src/cmdline.c'         ),
-		( 'src/dev.c'             ),
-		( 'src/machine.c', 'dbus' ),
-		( 'src/mount.c'           ),
-		( 'src/netif.c'           ),
-		( 'src/nl.c'              ),
-		( 'src/path.c'            ),
-		( 'src/pflask.c'          ),
-		( 'src/printf.c'          ),
-		( 'src/pty.c'             ),
-		( 'src/sync.c'            ),
-		( 'src/user.c'            ),
-		( 'src/util.c'            ),
+		( 'src/capabilities.c', 'libcap-ng'),
+		( 'src/cgroup.c'                   ),
+		( 'src/cmdline.c'                  ),
+		( 'src/dev.c'                      ),
+		( 'src/machine.c',      'dbus'     ),
+		( 'src/mount.c'                    ),
+		( 'src/netif.c'                    ),
+		( 'src/nl.c'                       ),
+		( 'src/path.c'                     ),
+		( 'src/pflask.c'                   ),
+		( 'src/printf.c'                   ),
+		( 'src/pty.c'                      ),
+		( 'src/sync.c'                     ),
+		( 'src/user.c'                     ),
+		( 'src/util.c'                     ),
 	]
 
 	bld.env.append_value('INCLUDES', ['deps', 'src'])

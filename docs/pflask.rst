@@ -22,6 +22,11 @@ host system and other containers.
 OPTIONS
 -------
 
+.. option:: -b, --caps=<+cap1>,<cap2>,<-cap3>
+
+   Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix).
+   See CAPABILITIES_ for more information.
+
 .. option:: -r, --chroot=<dir>
 
    Change the root directory inside the container.
@@ -215,6 +220,23 @@ Creates a pair of ``veth`` network interfaces called *name_outside* and
 No additional configuration will be applied to them.
 
 Example: ``--netif=veth:veth0:eth0``
+
+CAPABILITIES
+------------
+
+pflask can customize the capabilities set of the container process with the ``--caps`` option.
+The argument of ``--caps`` is a comma-separated list of capability names; each capability can be prefixed by either an optional '+' sign (to require an add operation)
+or a '-' sign (to require drop).
+
+Valid capability names are the same name as defined in <linux/capabilities.h>  with the ``CAP_`` prefix removed.
+The string case does not matter.
+
+The first specified capability name can be the alias 'all' to specify either a full or an empty initial set.
+Container processes will start by default with a full set e.g. ``--caps=all``.
+
+Full set example: ``--caps=all,-chown,-setuid,-setgid`` or equivalently ``--caps=-chown,-setuid,-setgid``
+
+Empty set example: ``--caps=-all,+chown``
 
 AUTHOR
 ------

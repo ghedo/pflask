@@ -31,7 +31,7 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define CMDLINE_PARSER_VERSION "0.2"
+#define CMDLINE_PARSER_VERSION "0.3"
 #endif
 
 /** @brief Where the command line options are stored */
@@ -39,6 +39,11 @@ struct gengetopt_args_info
 {
   const char *help_help; /**< @brief Print help and exit help description.  */
   const char *version_help; /**< @brief Print version and exit help description.  */
+  char ** caps_arg;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) (default='+all').  */
+  char ** caps_orig;	/**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) original value given at command line.  */
+  unsigned int caps_min; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)'s minimum occurreces */
+  unsigned int caps_max; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix)'s maximum occurreces */
+  const char *caps_help; /**< @brief Specify comma-separated capabilities to add ('+' prefix) or drop ('-' prefix) help description.  */
   char * chroot_arg;	/**< @brief Change the root directory inside the container.  */
   char * chroot_orig;	/**< @brief Change the root directory inside the container original value given at command line.  */
   const char *chroot_help; /**< @brief Change the root directory inside the container help description.  */
@@ -100,6 +105,7 @@ struct gengetopt_args_info
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
+  unsigned int caps_given ;	/**< @brief Whether caps was given.  */
   unsigned int chroot_given ;	/**< @brief Whether chroot was given.  */
   unsigned int chdir_given ;	/**< @brief Whether chdir was given.  */
   unsigned int hostname_given ;	/**< @brief Whether hostname was given.  */

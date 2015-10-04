@@ -44,6 +44,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 
+#include "capabilities.h"
 #include "cmdline.h"
 
 #include "pty.h"
@@ -62,6 +63,9 @@ static size_t validate_optlist(const char *name, const char *opts);
 static void do_daemonize(void);
 static void do_chroot(const char *dest);
 static pid_t do_clone(int *flags);
+static void memory_cleanup(void);
+
+struct cap_action *caps = NULL;
 
 int main(int argc, char *argv[]) {
 	int rc, sync[2];
@@ -74,6 +78,14 @@ int main(int argc, char *argv[]) {
 	struct netif *netifs = NULL;
 	struct cgroup *cgroups = NULL;
 	struct user *users = NULL;
+
+	char *cap;
+#ifdef HAVE_LIBCAP_NG
+	char *name;
+	bool clear_caps = false;
+	size_t total_caps = 0;
+	struct cap_action parsed_cap;
+#endif
 
 	char *master;
 	_close_ int master_fd = -1;
@@ -148,6 +160,66 @@ int main(int argc, char *argv[]) {
 		user_add_map(&users, 'u', id, host_id, count);
 		user_add_map(&users, 'g', id, host_id, count);
 	}
+
+	for (unsigned int i = 0; i < args.caps_given; i++) {
+		cap = args.caps_arg[i];
+
+		fail_if(strlen(cap) == 0, "Empty capability name specified");
+
+		if (i == 0) {
+			if (!strcasecmp(cap, "+all") || !strcasecmp(cap, "all")) {
+				// nop
+
+				continue;
+			} else if (!strcasecmp(cap, "-all")) {
+#ifndef HAVE_LIBCAP_NG
+				fail_printf("No capabilities support built-in");
+#else
+				clear_caps = true;
+
+				continue;
+#endif
+			}
+		}
+
+#ifndef HAVE_LIBCAP_NG
+		fail_printf("No capabilities support built-in");
+#else
+		if (cap[0] == '+') {
+			parsed_cap.action = CAPNG_ADD;
+
+			name = &cap[1];
+		} else if (cap[0] == '-') {
+			parsed_cap.action = CAPNG_DROP;
+
+			name = &cap[1];
+		} else {
+			// implicit '+'
+			parsed_cap.action = CAPNG_ADD;
+
+			name = cap;
+		}
+
+		if (i != 0) {
+			// check for alias after prefix removal
+			if (!strcasecmp(name, "all")) {
+				fail_printf("Alias '%s' is valid only as first capability", cap);
+			}
+		}
+
+		rc = capng_name_to_capability(name);
+		fail_if(rc == -1, "Invalid capability name: '%s'", name);
+
+		parsed_cap.capability = rc;
+
+		// reallocate and copy
+		caps = realloc(caps, ++total_caps);
+		caps[total_caps-1] = parsed_cap;
+#endif
+	}
+
+	// release allocated buffers at exit
+	atexit(memory_cleanup);
 
 	for (unsigned int i = 0; i < args.cgroup_given; i++)
 		cgroup_add(&cgroups, args.cgroup_arg[i]);
@@ -235,7 +307,9 @@ int main(int argc, char *argv[]) {
 
 		umask(0022);
 
-		/* TODO: drop capabilities */
+#if HAVE_LIBCAP_NG
+		setup_capabilities(clear_caps, total_caps, caps);
+#endif
 
 		if (args.chdir_given) {
 			rc = chdir(args.chdir_arg);
@@ -328,6 +402,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	return status.si_status;
+}
+
+static void memory_cleanup() {
+	if (caps != NULL) {
+		free(caps);
+	}
 }
 
 static size_t validate_optlist(const char *name, const char *opts) {
