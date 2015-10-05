@@ -50,8 +50,7 @@ void capability_add(struct capability **caps, char *cap) {
 	struct capability *c = malloc(sizeof(struct capability));
 	fail_if(!c, "OOM");
 
-	if (!cap || !cap[0])
-		fail_printf("Invalid empty capability name");
+	fail_if(!cap[0], "Invalid empty capability name");
 
 	switch (cap[0]) {
 	case '+':
@@ -70,6 +69,7 @@ void capability_add(struct capability **caps, char *cap) {
 	}
 
 	if (!strcasecmp(cap, "all")) {
+		/* *caps == NULL means that the list is empty */
 		fail_if(*caps, "Alias 'all' is valid only as first capability");
 
 		c->capability = -1;
