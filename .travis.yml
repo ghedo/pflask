@@ -12,10 +12,3 @@ before_script:
 
 script:
  - ./waf build
-
-notifications:
-  recipient:
-   - alessandro@ghedini.me
-  email:
-    on_success: change
-    on_failure: always
