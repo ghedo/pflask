@@ -11,6 +11,8 @@ option "mount"     m "Create a new mount point inside the container"
        string optional multiple
 option "netif"     n "Disconnect the container networking from the host"
        string optional argoptional multiple
+option "exec"      E "Execute commands when the container is ready"
+       string optional multiple
 option "user"      u "Run the command under the specified user"
        string default="root" optional
 option "user-map"  e "Map container users to host users"
