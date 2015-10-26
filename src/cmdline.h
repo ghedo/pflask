@@ -58,6 +58,11 @@ struct gengetopt_args_info
   unsigned int netif_min; /**< @brief Disconnect the container networking from the host's minimum occurreces */
   unsigned int netif_max; /**< @brief Disconnect the container networking from the host's maximum occurreces */
   const char *netif_help; /**< @brief Disconnect the container networking from the host help description.  */
+  char ** exec_arg;	/**< @brief Execute commands when the container is ready.  */
+  char ** exec_orig;	/**< @brief Execute commands when the container is ready original value given at command line.  */
+  unsigned int exec_min; /**< @brief Execute commands when the container is ready's minimum occurreces */
+  unsigned int exec_max; /**< @brief Execute commands when the container is ready's maximum occurreces */
+  const char *exec_help; /**< @brief Execute commands when the container is ready help description.  */
   char * user_arg;	/**< @brief Run the command under the specified user (default='root').  */
   char * user_orig;	/**< @brief Run the command under the specified user original value given at command line.  */
   const char *user_help; /**< @brief Run the command under the specified user help description.  */
@@ -110,6 +115,7 @@ struct gengetopt_args_info
   unsigned int hostname_given ;	/**< @brief Whether hostname was given.  */
   unsigned int mount_given ;	/**< @brief Whether mount was given.  */
   unsigned int netif_given ;	/**< @brief Whether netif was given.  */
+  unsigned int exec_given ;	/**< @brief Whether exec was given.  */
   unsigned int user_given ;	/**< @brief Whether user was given.  */
   unsigned int user_map_given ;	/**< @brief Whether user-map was given.  */
   unsigned int ephemeral_given ;	/**< @brief Whether ephemeral was given.  */
