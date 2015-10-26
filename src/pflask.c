@@ -101,7 +101,6 @@ int main(int argc, char *argv[]) {
 
 	for (unsigned int i = 0; i < args.netif_given; i++) {
 		clone_flags |= CLONE_NEWNET;
-
 		if (args.netif_arg != NULL) {
 			validate_optlist("--netif", args.netif_arg[i]);
 			netif_add_from_spec(&netifs, args.netif_arg[i]);
@@ -225,16 +224,20 @@ int main(int argc, char *argv[]) {
 		}
 
 		setup_mount(mounts, args.chroot_arg, args.ephemeral_flag ?
-		                                       ephemeral_dir : NULL);
+		                                       ephemeral_dir : NULL,
+						     args.no_dev_flag);
 
 		if (args.chroot_given) {
-			setup_nodes(args.chroot_arg);
+			if (! args.no_dev_flag) {
 
-			setup_ptmx(args.chroot_arg);
+				setup_nodes(args.chroot_arg);
 
-			setup_symlinks(args.chroot_arg);
+				setup_ptmx(args.chroot_arg);
 
-			setup_console(args.chroot_arg, master);
+				setup_symlinks(args.chroot_arg);
+
+				setup_console(args.chroot_arg, master);
+			}
 
 			do_chroot(args.chroot_arg);
 		}

@@ -135,7 +135,7 @@ void mount_add_from_spec(struct mount **mounts, const char *spec) {
 	}
 }
 
-void setup_mount(struct mount *mounts, const char *dest, const char *ephemeral_dir) {
+void setup_mount(struct mount *mounts, const char *dest, const char *ephemeral_dir, int no_dev_flag) {
 	int rc;
 
 	struct mount *sys_mounts = NULL;
@@ -184,12 +184,14 @@ void setup_mount(struct mount *mounts, const char *dest, const char *ephemeral_d
 		mount_add(&sys_mounts, "sysfs", "/sys", "sysfs",
 		          MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
 
-		mount_add(&sys_mounts, "tmpfs", "/dev", "tmpfs",
-		          MS_NOSUID | MS_STRICTATIME, "mode=755");
+		if(! no_dev_flag){
+			mount_add(&sys_mounts, "tmpfs", "/dev", "tmpfs",
+		        	  MS_NOSUID | MS_STRICTATIME, "mode=755");
 
-		mount_add(&sys_mounts, "devpts", "/dev/pts", "devpts",
-		          MS_NOSUID | MS_NOEXEC,
-		          "newinstance,ptmxmode=0666,mode=0620,gid=5");
+			mount_add(&sys_mounts, "devpts", "/dev/pts", "devpts",
+			          MS_NOSUID | MS_NOEXEC,
+		        	  "newinstance,ptmxmode=0666,mode=0620,gid=5");
+		}
 
 		mount_add(&sys_mounts, "tmpfs", "/dev/shm", "tmpfs",
 		          MS_NOSUID | MS_STRICTATIME | MS_NODEV, "mode=1777");

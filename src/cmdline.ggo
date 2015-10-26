@@ -44,3 +44,5 @@ option "no-utsns"   H "Disable UTS namespace support"
        flag off
 option "no-pidns"   P "Disable PID namespace support"
        flag off
+option "no-dev"     D "Do not create nodes in /dev"
+       flag off
