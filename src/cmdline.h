@@ -107,6 +107,8 @@ struct gengetopt_args_info
   const char *no_utsns_help; /**< @brief Disable UTS namespace support help description.  */
   int no_pidns_flag;	/**< @brief Disable PID namespace support (default=off).  */
   const char *no_pidns_help; /**< @brief Disable PID namespace support help description.  */
+  int no_dev_flag;	/**< @brief Do not create nodes in /dev (default=off).  */
+  const char *no_dev_help; /**< @brief Do not create nodes in /dev help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int version_given ;	/**< @brief Whether version was given.  */
@@ -131,6 +133,7 @@ struct gengetopt_args_info
   unsigned int no_ipcns_given ;	/**< @brief Whether no-ipcns was given.  */
   unsigned int no_utsns_given ;	/**< @brief Whether no-utsns was given.  */
   unsigned int no_pidns_given ;	/**< @brief Whether no-pidns was given.  */
+  unsigned int no_dev_given ;	/**< @brief Whether no-dev was given.  */
 
 } ;
 

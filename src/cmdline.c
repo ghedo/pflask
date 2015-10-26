@@ -57,6 +57,7 @@ const char *gengetopt_args_info_help[] = {
   "  -I, --no-ipcns         Disable IPC namespace support  (default=off)",
   "  -H, --no-utsns         Disable UTS namespace support  (default=off)",
   "  -P, --no-pidns         Disable PID namespace support  (default=off)",
+  "  -D, --no-dev           Do not create nodes in /dev  (default=off)",
     0
 };
 
@@ -107,6 +108,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->no_ipcns_given = 0 ;
   args_info->no_utsns_given = 0 ;
   args_info->no_pidns_given = 0 ;
+  args_info->no_dev_given = 0 ;
 }
 
 static
@@ -145,6 +147,7 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->no_ipcns_flag = 0;
   args_info->no_utsns_flag = 0;
   args_info->no_pidns_flag = 0;
+  args_info->no_dev_flag = 0;
   
 }
 
@@ -190,6 +193,7 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->no_ipcns_help = gengetopt_args_info_help[20] ;
   args_info->no_utsns_help = gengetopt_args_info_help[21] ;
   args_info->no_pidns_help = gengetopt_args_info_help[22] ;
+  args_info->no_dev_help = gengetopt_args_info_help[23] ;
   
 }
 
@@ -411,6 +415,8 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "no-utsns", 0, 0 );
   if (args_info->no_pidns_given)
     write_into_file(outfile, "no-pidns", 0, 0 );
+  if (args_info->no_dev_given)
+    write_into_file(outfile, "no-dev", 0, 0 );
   
 
   i = EXIT_SUCCESS;
@@ -1010,10 +1016,11 @@ cmdline_parser_internal (
         { "no-ipcns",	0, NULL, 'I' },
         { "no-utsns",	0, NULL, 'H' },
         { "no-pidns",	0, NULL, 'P' },
+        { "no-dev",	0, NULL, 'D' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVr:c:t:m:n::E:u:e:wg:b:da:s:kUMNIHP", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVr:c:t:m:n::E:u:e:wg:b:da:s:kUMNIHPD", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -1238,6 +1245,16 @@ cmdline_parser_internal (
           if (update_arg((void *)&(args_info->no_pidns_flag), 0, &(args_info->no_pidns_given),
               &(local_args_info.no_pidns_given), optarg, 0, 0, ARG_FLAG,
               check_ambiguity, override, 1, 0, "no-pidns", 'P',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'D':	/* Do not create nodes in /dev.  */
+        
+        
+          if (update_arg((void *)&(args_info->no_dev_flag), 0, &(args_info->no_dev_given),
+              &(local_args_info.no_dev_given), optarg, 0, 0, ARG_FLAG,
+              check_ambiguity, override, 1, 0, "no-dev", 'D',
               additional_error))
             goto failure;
         
