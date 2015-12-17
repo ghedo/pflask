@@ -66,7 +66,7 @@ OPTIONS
    as seen in the user namespace of the container, the first userid as seen
    on the host, and a range indicating the number of consecutive ids to map.
 
-   Example: ``--user-map=0:100000,65536``
+   Example: ``--user-map=0:100000:65536``
 
 .. option:: -w, --ephemeral
 
