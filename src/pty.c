@@ -79,7 +79,7 @@ void open_slave_pty(const char *master_name) {
 	slave_fd = open(master_name, O_RDWR, 0);
 	sys_fail_if(slave_fd < 0, "Error opening slave pty");
 
-	if (!isatty(slave_fd)) fail_printf("Not a TTY");
+	fail_if(!isatty(slave_fd), "Not a TTY");
 
 	rc = dup2(slave_fd, STDIN_FILENO);
 	sys_fail_if(rc < 0, "dup2(STDIN)");
@@ -110,7 +110,7 @@ void process_pty(int master_fd) {
 	struct epoll_event stdin_ev, master_ev, signal_ev, events[3];
 
 	int line_max = sysconf(_SC_LINE_MAX);
-	if (line_max < 0) sysf_printf("sysconf()");
+	sys_fail_if(line_max < 0, "sysconf()");
 
 	memcpy(&raw_attr, &stdin_attr, sizeof(stdin_attr));
 
@@ -125,7 +125,7 @@ void process_pty(int master_fd) {
 	sys_fail_if(rc < 0, "sigprocmask()");
 
 	signal_fd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
-	if (signal_fd < 0) sysf_printf("signalfd()");
+	sys_fail_if(signal_fd < 0, "signalfd()");
 
 	rc = tcgetattr(STDIN_FILENO, &stdin_attr);
 	sys_fail_if(rc < 0, "tcgetattr()");
@@ -137,7 +137,7 @@ void process_pty(int master_fd) {
 	sys_fail_if(rc < 0, "tcsetattr()");
 
 	epoll_fd = epoll_create1(EPOLL_CLOEXEC);
-	if (epoll_fd < 0) sysf_printf("epoll_create1()");
+	sys_fail_if(epoll_fd < 0, "epoll_create1()");
 
 	stdin_ev.events = EPOLLIN; stdin_ev.data.fd = STDIN_FILENO;
 	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, stdin_ev.data.fd, &stdin_ev);
@@ -192,7 +192,7 @@ void process_pty(int master_fd) {
 			struct signalfd_siginfo fdsi;
 
 			rc = read(signal_fd, &fdsi, sizeof(fdsi));
-			if (rc != sizeof(fdsi)) sysf_printf("read()");
+			sys_fail_if(rc != sizeof(fdsi), "read()");
 
 			switch (fdsi.ssi_signo) {
 			case SIGWINCH: {
@@ -258,7 +258,7 @@ void serve_pty(int fd) {
 	servaddr_un.sun_path[0] = '\0';
 
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (sock < 0) sysf_printf("socket()");
+	sys_fail_if(sock < 0, "socket()");
 
 	rc = bind(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
 	sys_fail_if(rc < 0, "bind()");
@@ -276,10 +276,10 @@ void serve_pty(int fd) {
 	sys_fail_if(rc < 0, "sigprocmask()");
 
 	signal_fd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
-	if (signal_fd < 0) sysf_printf("signalfd()");
+	sys_fail_if(signal_fd < 0, "signalfd()");
 
 	epoll_fd = epoll_create1(EPOLL_CLOEXEC);
-	if (epoll_fd < 0) sysf_printf("epoll_create1()");
+	sys_fail_if(epoll_fd < 0, "epoll_create1()");
 
 	sock_ev.events = EPOLLIN; sock_ev.data.fd = sock;
 	rc = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sock_ev.data.fd, &sock_ev);
@@ -300,7 +300,7 @@ void serve_pty(int fd) {
 			_close_ int send_sock = -1;
 
 			send_sock = accept(sock, (struct sockaddr *) NULL,NULL);
-			if (send_sock < 0) sysf_printf("accept()");
+			sys_fail_if(send_sock < 0, "accept()");
 
 			len = sizeof(struct ucred);
 			rc = getsockopt(send_sock, SOL_SOCKET, SO_PEERCRED,
@@ -315,7 +315,7 @@ void serve_pty(int fd) {
 			struct signalfd_siginfo fdsi;
 
 			rc = read(signal_fd, &fdsi, sizeof(fdsi));
-			if (rc != sizeof(fdsi)) sysf_printf("read()");
+			sys_fail_if(rc != sizeof(fdsi), "read()");
 
 			switch (fdsi.ssi_signo) {
 			case SIGINT:
@@ -353,7 +353,7 @@ int recv_pty(pid_t pid) {
 	servaddr_un.sun_path[0] = '\0';
 
 	sock = socket(AF_UNIX, SOCK_STREAM, 0);
-	if (sock < 0) sysf_printf("socket()");
+	sys_fail_if(sock < 0, "socket()");
 
 	rc = connect(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
 	sys_fail_if(rc < 0, "connect()");
