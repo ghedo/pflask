@@ -29,6 +29,7 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
 #include <signal.h>
 
 #include <fcntl.h>
@@ -158,7 +159,10 @@ void process_pty(int master_fd) {
     while (1) {
         char buf[line_max];
 
-        rc = epoll_wait(epoll_fd, events, 1, -1);
+        do {
+            rc = epoll_wait(epoll_fd, events, 1, -1);
+        } while ((rc < 0) && (errno == EINTR));
+
         sys_fail_if(rc < 0, "epoll_wait()");
 
         if (events[0].data.fd == STDIN_FILENO) {
@@ -294,7 +298,10 @@ void serve_pty(int fd) {
     sys_fail_if(rc < 0, "epoll_ctl(signal_fd)");
 
     while (1) {
-        rc = epoll_wait(epoll_fd, events, 1, -1);
+        do {
+            rc = epoll_wait(epoll_fd, events, 1, -1);
+        } while ((rc < 0) && (errno == EINTR));
+
         sys_fail_if(rc < 0, "epoll_wait()");
 
         if (events[0].data.fd == sock) {
