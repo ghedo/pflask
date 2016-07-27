@@ -87,6 +87,9 @@ int main(int argc, char *argv[]) {
     int clone_flags = CLONE_NEWNS  |
                           CLONE_NEWIPC |
                           CLONE_NEWPID |
+#ifdef CLONE_NEWCGROUP
+                          CLONE_NEWCGROUP |
+#endif
                           CLONE_NEWUTS;
 
     struct gengetopt_args_info args;
