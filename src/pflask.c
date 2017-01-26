@@ -262,7 +262,8 @@ int main(int argc, char *argv[]) {
 			setenv("PATH", "/usr/sbin:/usr/bin:/sbin:/bin", 1);
 			setenv("USER", args.user_arg, 1);
 			setenv("LOGNAME", args.user_arg, 1);
-			setenv("TERM", term, 1);
+			if (term)
+				setenv("TERM", term, 1);
 		}
 
 		for (unsigned int i = 0; i < args.setenv_given; i++) {
