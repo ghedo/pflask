@@ -55,11 +55,13 @@ static void send_fd(int sock, int fd);
 void open_master_pty(int *master_fd, char **master_name) {
 	int rc;
 
-	rc = tcgetattr(STDIN_FILENO, &stdin_attr);
-	sys_fail_if(rc < 0, "tcgetattr()");
+	if (isatty(STDIN_FILENO)) {
+		rc = tcgetattr(STDIN_FILENO, &stdin_attr);
+		sys_fail_if(rc < 0, "tcgetattr()");
 
-	rc = ioctl(STDIN_FILENO, TIOCGWINSZ, &stdin_ws);
-	sys_fail_if(rc < 0, "ioctl(TIOCGWINSZ)");
+		rc = ioctl(STDIN_FILENO, TIOCGWINSZ, &stdin_ws);
+		sys_fail_if(rc < 0, "ioctl(TIOCGWINSZ)");
+	}
 
 	*master_fd = posix_openpt(O_RDWR | O_NOCTTY | O_NDELAY);
 	sys_fail_if(*master_fd < 0, "Error opening master pty");
@@ -90,11 +92,13 @@ void open_slave_pty(const char *master_name) {
 	rc = dup2(slave_fd, STDERR_FILENO);
 	sys_fail_if(rc < 0, "dup2(STDERR)");
 
-	rc = tcsetattr(slave_fd, TCSANOW, &stdin_attr);
-	sys_fail_if(rc < 0, "tcsetattr()");
+	if (isatty(STDIN_FILENO)) {
+		rc = tcsetattr(slave_fd, TCSANOW, &stdin_attr);
+		sys_fail_if(rc < 0, "tcsetattr()");
 
-	rc = ioctl(slave_fd, TIOCSWINSZ, &stdin_ws);
-	sys_fail_if(rc < 0, "ioctl(TIOCWINSZ)");
+		rc = ioctl(slave_fd, TIOCSWINSZ, &stdin_ws);
+		sys_fail_if(rc < 0, "ioctl(TIOCWINSZ)");
+	}
 }
 
 void process_pty(int master_fd) {
