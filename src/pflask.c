@@ -300,6 +300,15 @@ int main(int argc, char *argv[]) {
 	sync_wake_child(sync, SYNC_DONE);
 
 	sync_close(sync);
+	
+	for (unsigned int i = 0; i < args.exec_given; i++) {
+		int status = system(args.exec_arg[i]);
+		if(status == 0){
+			ok_printf("Success: %s", args.exec_arg[i]);
+		}else{
+			err_printf("Fail: %s", args.exec_arg[i]);
+		}
+	}
 
 	if (args.detach_flag)
 		serve_pty(master_fd);
