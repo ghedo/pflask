@@ -41,6 +41,7 @@ const char *gengetopt_args_info_help[] = {
   "  -t, --hostname=STRING  Set the container hostname",
   "  -m, --mount=STRING     Create a new mount point inside the container",
   "  -n, --netif[=STRING]   Disconnect the container networking from the host",
+  "  -E, --exec=STRING      Execute commands when the container is ready",
   "  -u, --user=STRING      Run the command under the specified user\n                           (default=`root')",
   "  -e, --user-map=STRING  Map container users to host users",
   "  -w, --ephemeral        Discard changes to /  (default=off)",
@@ -56,6 +57,7 @@ const char *gengetopt_args_info_help[] = {
   "  -I, --no-ipcns         Disable IPC namespace support  (default=off)",
   "  -H, --no-utsns         Disable UTS namespace support  (default=off)",
   "  -P, --no-pidns         Disable PID namespace support  (default=off)",
+  "  -D, --no-dev           Do not create nodes in /dev  (default=off)",
     0
 };
 
@@ -90,6 +92,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->hostname_given = 0 ;
   args_info->mount_given = 0 ;
   args_info->netif_given = 0 ;
+  args_info->exec_given = 0 ;
   args_info->user_given = 0 ;
   args_info->user_map_given = 0 ;
   args_info->ephemeral_given = 0 ;
@@ -105,6 +108,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->no_ipcns_given = 0 ;
   args_info->no_utsns_given = 0 ;
   args_info->no_pidns_given = 0 ;
+  args_info->no_dev_given = 0 ;
 }
 
 static
@@ -121,6 +125,8 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->mount_orig = NULL;
   args_info->netif_arg = NULL;
   args_info->netif_orig = NULL;
+  args_info->exec_arg = NULL;
+  args_info->exec_orig = NULL;
   args_info->user_arg = gengetopt_strdup ("root");
   args_info->user_orig = NULL;
   args_info->user_map_arg = NULL;
@@ -141,6 +147,7 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->no_ipcns_flag = 0;
   args_info->no_utsns_flag = 0;
   args_info->no_pidns_flag = 0;
+  args_info->no_dev_flag = 0;
   
 }
 
@@ -160,29 +167,33 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->netif_help = gengetopt_args_info_help[6] ;
   args_info->netif_min = 0;
   args_info->netif_max = 0;
-  args_info->user_help = gengetopt_args_info_help[7] ;
-  args_info->user_map_help = gengetopt_args_info_help[8] ;
+  args_info->exec_help = gengetopt_args_info_help[7] ;
+  args_info->exec_min = 0;
+  args_info->exec_max = 0;
+  args_info->user_help = gengetopt_args_info_help[8] ;
+  args_info->user_map_help = gengetopt_args_info_help[9] ;
   args_info->user_map_min = 0;
   args_info->user_map_max = 0;
-  args_info->ephemeral_help = gengetopt_args_info_help[9] ;
-  args_info->cgroup_help = gengetopt_args_info_help[10] ;
+  args_info->ephemeral_help = gengetopt_args_info_help[10] ;
+  args_info->cgroup_help = gengetopt_args_info_help[11] ;
   args_info->cgroup_min = 0;
   args_info->cgroup_max = 0;
-  args_info->caps_help = gengetopt_args_info_help[11] ;
+  args_info->caps_help = gengetopt_args_info_help[12] ;
   args_info->caps_min = 0;
   args_info->caps_max = 0;
-  args_info->detach_help = gengetopt_args_info_help[12] ;
-  args_info->attach_help = gengetopt_args_info_help[13] ;
-  args_info->setenv_help = gengetopt_args_info_help[14] ;
+  args_info->detach_help = gengetopt_args_info_help[13] ;
+  args_info->attach_help = gengetopt_args_info_help[14] ;
+  args_info->setenv_help = gengetopt_args_info_help[15] ;
   args_info->setenv_min = 0;
   args_info->setenv_max = 0;
-  args_info->keepenv_help = gengetopt_args_info_help[15] ;
-  args_info->no_userns_help = gengetopt_args_info_help[16] ;
-  args_info->no_mountns_help = gengetopt_args_info_help[17] ;
-  args_info->no_netns_help = gengetopt_args_info_help[18] ;
-  args_info->no_ipcns_help = gengetopt_args_info_help[19] ;
-  args_info->no_utsns_help = gengetopt_args_info_help[20] ;
-  args_info->no_pidns_help = gengetopt_args_info_help[21] ;
+  args_info->keepenv_help = gengetopt_args_info_help[16] ;
+  args_info->no_userns_help = gengetopt_args_info_help[17] ;
+  args_info->no_mountns_help = gengetopt_args_info_help[18] ;
+  args_info->no_netns_help = gengetopt_args_info_help[19] ;
+  args_info->no_ipcns_help = gengetopt_args_info_help[20] ;
+  args_info->no_utsns_help = gengetopt_args_info_help[21] ;
+  args_info->no_pidns_help = gengetopt_args_info_help[22] ;
+  args_info->no_dev_help = gengetopt_args_info_help[23] ;
   
 }
 
@@ -319,6 +330,7 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   free_string_field (&(args_info->hostname_orig));
   free_multiple_string_field (args_info->mount_given, &(args_info->mount_arg), &(args_info->mount_orig));
   free_multiple_string_field (args_info->netif_given, &(args_info->netif_arg), &(args_info->netif_orig));
+  free_multiple_string_field (args_info->exec_given, &(args_info->exec_arg), &(args_info->exec_orig));
   free_string_field (&(args_info->user_arg));
   free_string_field (&(args_info->user_orig));
   free_multiple_string_field (args_info->user_map_given, &(args_info->user_map_arg), &(args_info->user_map_orig));
@@ -376,6 +388,7 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "hostname", args_info->hostname_orig, 0);
   write_multiple_into_file(outfile, args_info->mount_given, "mount", args_info->mount_orig, 0);
   write_multiple_into_file(outfile, args_info->netif_given, "netif", args_info->netif_orig, 0);
+  write_multiple_into_file(outfile, args_info->exec_given, "exec", args_info->exec_orig, 0);
   if (args_info->user_given)
     write_into_file(outfile, "user", args_info->user_orig, 0);
   write_multiple_into_file(outfile, args_info->user_map_given, "user-map", args_info->user_map_orig, 0);
@@ -402,6 +415,8 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "no-utsns", 0, 0 );
   if (args_info->no_pidns_given)
     write_into_file(outfile, "no-pidns", 0, 0 );
+  if (args_info->no_dev_given)
+    write_into_file(outfile, "no-dev", 0, 0 );
   
 
   i = EXIT_SUCCESS;
@@ -657,6 +672,9 @@ cmdline_parser_required2 (struct gengetopt_args_info *args_info, const char *pro
      error_occurred = 1;
   
   if (check_multiple_option_occurrences(prog_name, args_info->netif_given, args_info->netif_min, args_info->netif_max, "'--netif' ('-n')"))
+     error_occurred = 1;
+  
+  if (check_multiple_option_occurrences(prog_name, args_info->exec_given, args_info->exec_min, args_info->exec_max, "'--exec' ('-E')"))
      error_occurred = 1;
   
   if (check_multiple_option_occurrences(prog_name, args_info->user_map_given, args_info->user_map_min, args_info->user_map_max, "'--user-map' ('-e')"))
@@ -940,6 +958,7 @@ cmdline_parser_internal (
 
   struct generic_list * mount_list = NULL;
   struct generic_list * netif_list = NULL;
+  struct generic_list * exec_list = NULL;
   struct generic_list * user_map_list = NULL;
   struct generic_list * cgroup_list = NULL;
   struct generic_list * caps_list = NULL;
@@ -981,6 +1000,7 @@ cmdline_parser_internal (
         { "hostname",	1, NULL, 't' },
         { "mount",	1, NULL, 'm' },
         { "netif",	2, NULL, 'n' },
+        { "exec",	1, NULL, 'E' },
         { "user",	1, NULL, 'u' },
         { "user-map",	1, NULL, 'e' },
         { "ephemeral",	0, NULL, 'w' },
@@ -996,10 +1016,11 @@ cmdline_parser_internal (
         { "no-ipcns",	0, NULL, 'I' },
         { "no-utsns",	0, NULL, 'H' },
         { "no-pidns",	0, NULL, 'P' },
+        { "no-dev",	0, NULL, 'D' },
         { 0,  0, 0, 0 }
       };
 
-      c = getopt_long (argc, argv, "hVr:c:t:m:n::u:e:wg:b:da:s:kUMNIHP", long_options, &option_index);
+      c = getopt_long (argc, argv, "hVr:c:t:m:n::E:u:e:wg:b:da:s:kUMNIHPD", long_options, &option_index);
 
       if (c == -1) break;	/* Exit from `while (1)' loop.  */
 
@@ -1065,6 +1086,15 @@ cmdline_parser_internal (
           if (update_multiple_arg_temp(&netif_list, 
               &(local_args_info.netif_given), optarg, 0, 0, ARG_STRING,
               "netif", 'n',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'E':	/* Execute commands when the container is ready.  */
+        
+          if (update_multiple_arg_temp(&exec_list, 
+              &(local_args_info.exec_given), optarg, 0, 0, ARG_STRING,
+              "exec", 'E',
               additional_error))
             goto failure;
         
@@ -1219,6 +1249,16 @@ cmdline_parser_internal (
             goto failure;
         
           break;
+        case 'D':	/* Do not create nodes in /dev.  */
+        
+        
+          if (update_arg((void *)&(args_info->no_dev_flag), 0, &(args_info->no_dev_given),
+              &(local_args_info.no_dev_given), optarg, 0, 0, ARG_FLAG,
+              check_ambiguity, override, 1, 0, "no-dev", 'D',
+              additional_error))
+            goto failure;
+        
+          break;
 
         case 0:	/* Long option with no short option */
         case '?':	/* Invalid option.  */
@@ -1240,6 +1280,10 @@ cmdline_parser_internal (
     &(args_info->netif_orig), args_info->netif_given,
     local_args_info.netif_given, 0,
     ARG_STRING, netif_list);
+  update_multiple_arg((void *)&(args_info->exec_arg),
+    &(args_info->exec_orig), args_info->exec_given,
+    local_args_info.exec_given, 0,
+    ARG_STRING, exec_list);
   update_multiple_arg((void *)&(args_info->user_map_arg),
     &(args_info->user_map_orig), args_info->user_map_given,
     local_args_info.user_map_given, 0,
@@ -1262,6 +1306,8 @@ cmdline_parser_internal (
   local_args_info.mount_given = 0;
   args_info->netif_given += local_args_info.netif_given;
   local_args_info.netif_given = 0;
+  args_info->exec_given += local_args_info.exec_given;
+  local_args_info.exec_given = 0;
   args_info->user_map_given += local_args_info.user_map_given;
   local_args_info.user_map_given = 0;
   args_info->cgroup_given += local_args_info.cgroup_given;
@@ -1286,6 +1332,7 @@ cmdline_parser_internal (
 failure:
   free_list (mount_list, 1 );
   free_list (netif_list, 1 );
+  free_list (exec_list, 1 );
   free_list (user_map_list, 1 );
   free_list (cgroup_list, 1 );
   free_list (caps_list, 1 );

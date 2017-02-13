@@ -11,6 +11,8 @@ option "mount"     m "Create a new mount point inside the container"
        string optional multiple
 option "netif"     n "Disconnect the container networking from the host"
        string optional argoptional multiple
+option "exec"      E "Execute commands when the container is ready"
+       string optional multiple
 option "user"      u "Run the command under the specified user"
        string default="root" optional
 option "user-map"  e "Map container users to host users"
@@ -41,4 +43,6 @@ option "no-ipcns"   I "Disable IPC namespace support"
 option "no-utsns"   H "Disable UTS namespace support"
        flag off
 option "no-pidns"   P "Disable PID namespace support"
+       flag off
+option "no-dev"     D "Do not create nodes in /dev"
        flag off
