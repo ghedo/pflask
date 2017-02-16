@@ -321,7 +321,8 @@ int main(int argc, char *argv[]) {
 		break;
 
 	case CLD_KILLED:
-		err_printf("Child was terminated");
+		err_printf("Child was terminated by signal '%d'",
+		           status.si_status);
 		break;
 
 	default:
