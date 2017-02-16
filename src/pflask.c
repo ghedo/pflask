@@ -339,6 +339,8 @@ int main(int argc, char *argv[]) {
 		                     ephemeral_dir);
 	}
 
+	cmdline_parser_free(&args);
+
 	return status.si_status;
 }
 
