@@ -38,74 +38,74 @@
 #include "util.h"
 
 struct capability {
-	capng_act_t action;
-	int capability;
+    capng_act_t action;
+    int capability;
 
-	struct capability *next, *prev;
+    struct capability *next, *prev;
 };
 
 void capability_add(struct capability **caps, char *cap) {
-	int rc;
+    int rc;
 
-	struct capability *c = malloc(sizeof(struct capability));
-	fail_if(!c, "OOM");
+    struct capability *c = malloc(sizeof(struct capability));
+    fail_if(!c, "OOM");
 
-	fail_if(!cap[0], "Invalid empty capability name");
+    fail_if(!cap[0], "Invalid empty capability name");
 
-	switch (cap[0]) {
-	case '+':
-		c->action = CAPNG_ADD;
-		cap++;
-		break;
+    switch (cap[0]) {
+    case '+':
+        c->action = CAPNG_ADD;
+        cap++;
+        break;
 
-	case '-':
-		c->action = CAPNG_DROP;
-		cap++;
-		break;
+    case '-':
+        c->action = CAPNG_DROP;
+        cap++;
+        break;
 
-	default:
-		c->action = CAPNG_ADD;
-		break;
-	}
+    default:
+        c->action = CAPNG_ADD;
+        break;
+    }
 
-	if (!strcasecmp(cap, "all")) {
-		/* *caps == NULL means that the list is empty */
-		fail_if(*caps, "Alias 'all' is valid only as first capability");
+    if (!strcasecmp(cap, "all")) {
+        /* *caps == NULL means that the list is empty */
+        fail_if(*caps, "Alias 'all' is valid only as first capability");
 
-		c->capability = -1;
-	} else {
-		rc = capng_name_to_capability(cap);
-		fail_if(rc < 0, "Invalid capability name: '%s'", cap);
+        c->capability = -1;
+    } else {
+        rc = capng_name_to_capability(cap);
+        fail_if(rc < 0, "Invalid capability name: '%s'", cap);
 
-		c->capability = rc;
-	}
+        c->capability = rc;
+    }
 
-	DL_APPEND(*caps, c);
+    DL_APPEND(*caps, c);
 }
 
 void setup_capabilities(struct capability *caps) {
-	int rc;
+    int rc;
 
-	struct capability *i = NULL;
+    struct capability *i = NULL;
 
-	capng_get_caps_process();
+    capng_get_caps_process();
 
-	DL_FOREACH(caps, i) {
-		if (i->capability < 0) {
-			if (i->action == CAPNG_DROP)
-				capng_clear(CAPNG_SELECT_BOTH);
+    DL_FOREACH(caps, i) {
+        if (i->capability < 0) {
+            if (i->action == CAPNG_DROP)
+                capng_clear(CAPNG_SELECT_BOTH);
 
-			continue;
-		}
+            continue;
+        }
 
-		rc = capng_update(i->action, CAPNG_EFFECTIVE |
-		                             CAPNG_PERMITTED |
-		                             CAPNG_INHERITABLE |
-		                             CAPNG_BOUNDING_SET,
-		                             i->capability);
-		fail_if(rc != 0, "Error updating capabilities");
-	}
+        rc = capng_update(i->action, CAPNG_EFFECTIVE |
+                                     CAPNG_PERMITTED |
+                                     CAPNG_INHERITABLE |
+                                     CAPNG_BOUNDING_SET,
+                                     i->capability);
+        fail_if(rc != 0, "Error updating capabilities");
+    }
 
-	rc = capng_apply(CAPNG_SELECT_BOTH);
-	fail_if(rc != 0, "Error applying capabilities");
+    rc = capng_apply(CAPNG_SELECT_BOTH);
+    fail_if(rc != 0, "Error applying capabilities");
 }

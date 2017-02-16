@@ -45,175 +45,175 @@
 #include "util.h"
 
 void setup_ptmx(const char *dest) {
-	int rc;
+    int rc;
 
-	_free_ char *target = NULL;
+    _free_ char *target = NULL;
 
-	rc = asprintf(&target, "%s/dev/ptmx", dest);
-	fail_if(rc < 0, "OOM");
+    rc = asprintf(&target, "%s/dev/ptmx", dest);
+    fail_if(rc < 0, "OOM");
 
-	rc = symlink("/dev/pts/ptmx", target);
-	sys_fail_if(rc < 0, "Error creating symlink '%s'", target);
+    rc = symlink("/dev/pts/ptmx", target);
+    sys_fail_if(rc < 0, "Error creating symlink '%s'", target);
 }
 
 void setup_console_owner(char *path, struct user *u) {
-	int rc;
+    int rc;
 
-	pid_t pid;
+    pid_t pid;
 
-	int sync[2];
+    int sync[2];
 
-	struct stat sb;
+    struct stat sb;
 
-	uid_t hostuid = geteuid();
-	gid_t hostgid = getegid();
+    uid_t hostuid = geteuid();
+    gid_t hostgid = getegid();
 
-	uid_t rootuid;
-	gid_t rootgid;
+    uid_t rootuid;
+    gid_t rootgid;
 
-	struct user *users = NULL;
+    struct user *users = NULL;
 
-	unsigned int tmp;
+    unsigned int tmp;
 
-	if (!user_get_mapped_root(u, 'u', &tmp))
-		fail_printf("No mapping for container root user");
+    if (!user_get_mapped_root(u, 'u', &tmp))
+        fail_printf("No mapping for container root user");
 
-	rootuid = (uid_t) tmp;
+    rootuid = (uid_t) tmp;
 
-	if (!user_get_mapped_root(u, 'g', &tmp))
-		fail_printf("No mapping for container root group");
+    if (!user_get_mapped_root(u, 'g', &tmp))
+        fail_printf("No mapping for container root group");
 
-	rootgid = (uid_t) tmp;
+    rootgid = (uid_t) tmp;
 
-	if (!geteuid()) {
-		rc = chown(path, rootuid, rootgid);
-		sys_fail_if(rc < 0, "Error chowning '%s'", path);
+    if (!geteuid()) {
+        rc = chown(path, rootuid, rootgid);
+        sys_fail_if(rc < 0, "Error chowning '%s'", path);
 
-		return;
-	}
+        return;
+    }
 
-	if (rootuid == geteuid())
-		return;
+    if (rootuid == geteuid())
+        return;
 
-	if (stat(path, &sb) < 0)
-		sysf_printf("stat(%s)", path);
+    if (stat(path, &sb) < 0)
+        sysf_printf("stat(%s)", path);
 
-	if (sb.st_uid == geteuid()  && chown(path, -1, hostgid) < 0)
-		sysf_printf("Error chgrping '%s'", path);
+    if (sb.st_uid == geteuid()  && chown(path, -1, hostgid) < 0)
+        sysf_printf("Error chgrping '%s'", path);
 
-	user_add_map(&users, 'u', 0, rootuid, 1);
-	user_add_map(&users, 'u', hostuid, hostuid, 1);
-	user_add_map(&users, 'g', 0, rootgid, 1);
-	user_add_map(&users, 'g', (gid_t) sb.st_gid,
-	             rootgid + (gid_t) sb.st_gid, 1);
-	user_add_map(&users, 'g', hostgid, hostgid, 1);
+    user_add_map(&users, 'u', 0, rootuid, 1);
+    user_add_map(&users, 'u', hostuid, hostuid, 1);
+    user_add_map(&users, 'g', 0, rootgid, 1);
+    user_add_map(&users, 'g', (gid_t) sb.st_gid,
+                 rootgid + (gid_t) sb.st_gid, 1);
+    user_add_map(&users, 'g', hostgid, hostgid, 1);
 
-	sync_init(sync);
+    sync_init(sync);
 
-	pid = fork();
-	if (!pid) {
-		_free_ char *chown_cmd = NULL;
+    pid = fork();
+    if (!pid) {
+        _free_ char *chown_cmd = NULL;
 
-		unshare(CLONE_NEWNS | CLONE_NEWUSER);
+        unshare(CLONE_NEWNS | CLONE_NEWUSER);
 
-		sync_barrier_parent(sync, SYNC_START);
+        sync_barrier_parent(sync, SYNC_START);
 
-		sync_close(sync);
+        sync_close(sync);
 
-		setup_user("root");
+        setup_user("root");
 
-		rc = chown(path, 0, sb.st_gid);
-		sys_fail_if(rc < 0, "Error chowning '%s'", path);
+        rc = chown(path, 0, sb.st_gid);
+        sys_fail_if(rc < 0, "Error chowning '%s'", path);
 
-		exit(0);
-	}
+        exit(0);
+    }
 
-	sync_wait_child(sync, SYNC_START);
+    sync_wait_child(sync, SYNC_START);
 
-	setup_user_map(users, pid);
+    setup_user_map(users, pid);
 
-	sync_wake_child(sync, SYNC_DONE);
+    sync_wake_child(sync, SYNC_DONE);
 
-	sync_close(sync);
+    sync_close(sync);
 
-	waitpid(pid, &rc, 0);
+    waitpid(pid, &rc, 0);
 
-	return;
+    return;
 }
 
 void setup_console(const char *dest, const char *console) {
-	int rc;
+    int rc;
 
-	_free_ char *target = NULL;
+    _free_ char *target = NULL;
 
-	rc = asprintf(&target, "%s/dev/console", dest);
-	fail_if(rc < 0, "OOM");
+    rc = asprintf(&target, "%s/dev/console", dest);
+    fail_if(rc < 0, "OOM");
 
-	rc = chmod(console, 0600);
-	sys_fail_if(rc < 0, "Error chmoding '%s'", console);
+    rc = chmod(console, 0600);
+    sys_fail_if(rc < 0, "Error chmoding '%s'", console);
 
-	rc = mount(console, target, NULL, MS_BIND, NULL);
-	sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
+    rc = mount(console, target, NULL, MS_BIND, NULL);
+    sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
 }
 
 void setup_symlinks(const char *dest) {
-	int rc;
+    int rc;
 
-	const char *src[] = {
-		"/proc/kcore",
-		"/proc/self/fd",
-		"/proc/self/fd/0",
-		"/proc/self/fd/1",
-		"/proc/self/fd/2"
-	};
+    const char *src[] = {
+        "/proc/kcore",
+        "/proc/self/fd",
+        "/proc/self/fd/0",
+        "/proc/self/fd/1",
+        "/proc/self/fd/2"
+    };
 
-	const char *dst[] = {
-		"/dev/core",
-		"/dev/fd",
-		"/dev/stdin",
-		"/dev/stdout",
-		"/dev/stderr"
-	};
+    const char *dst[] = {
+        "/dev/core",
+        "/dev/fd",
+        "/dev/stdin",
+        "/dev/stdout",
+        "/dev/stderr"
+    };
 
-	for (size_t i = 0; i <  sizeof(src) / sizeof(*src); i++) {
-		_free_ char *link = NULL;
+    for (size_t i = 0; i <  sizeof(src) / sizeof(*src); i++) {
+        _free_ char *link = NULL;
 
-		rc = asprintf(&link, "%s/%s", dest, dst[i]);
-		fail_if(rc < 0, "OOM");
+        rc = asprintf(&link, "%s/%s", dest, dst[i]);
+        fail_if(rc < 0, "OOM");
 
-		rc = symlink(src[i], link);
-		sys_fail_if(rc < 0, "Error creating symlink '%s'", link);
-	}
+        rc = symlink(src[i], link);
+        sys_fail_if(rc < 0, "Error creating symlink '%s'", link);
+    }
 }
 
 void setup_nodes(const char *dest) {
-	int rc;
+    int rc;
 
-	mode_t u = umask(0000);
+    mode_t u = umask(0000);
 
-	const char *nodes[] = {
-		"/dev/console",
-		"/dev/tty",
-		"/dev/full",
-		"/dev/null",
-		"/dev/zero",
-		"/dev/random",
-		"/dev/urandom",
-	};
+    const char *nodes[] = {
+        "/dev/console",
+        "/dev/tty",
+        "/dev/full",
+        "/dev/null",
+        "/dev/zero",
+        "/dev/random",
+        "/dev/urandom",
+    };
 
-	for (size_t i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
-		_close_ int fd = -1;
-		_free_ char *target = NULL;
+    for (size_t i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
+        _close_ int fd = -1;
+        _free_ char *target = NULL;
 
-		rc = asprintf(&target, "%s%s", dest, nodes[i]);
-		fail_if(rc < 0, "OOM");
+        rc = asprintf(&target, "%s%s", dest, nodes[i]);
+        fail_if(rc < 0, "OOM");
 
-		fd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, 644);
-		sys_fail_if(fd < 0, "Error creating file '%s'", target);
+        fd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, 644);
+        sys_fail_if(fd < 0, "Error creating file '%s'", target);
 
-		rc = mount(nodes[i], target, NULL, MS_BIND, NULL);
-		sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
-	}
+        rc = mount(nodes[i], target, NULL, MS_BIND, NULL);
+        sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
+    }
 
-	umask(u);
+    umask(u);
 }

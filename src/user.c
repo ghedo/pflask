@@ -45,140 +45,140 @@
 #include "util.h"
 
 struct user {
-	char type;
+    char type;
 
-	uid_t id;
-	uid_t host_id;
-	size_t count;
+    uid_t id;
+    uid_t host_id;
+    size_t count;
 
-	struct user *next, *prev;
+    struct user *next, *prev;
 };
 
 void user_add_map(struct user **users, char type, uid_t id, uid_t host_id,
                   size_t count) {
-	struct user *usr = malloc(sizeof(struct user));
-	fail_if(!usr, "OOM");
+    struct user *usr = malloc(sizeof(struct user));
+    fail_if(!usr, "OOM");
 
-	usr->type    = type;
-	usr->id      = id;
-	usr->host_id = host_id;
-	usr->count   = count;
+    usr->type    = type;
+    usr->id      = id;
+    usr->host_id = host_id;
+    usr->count   = count;
 
-	DL_APPEND(*users, usr);
+    DL_APPEND(*users, usr);
 }
 
 void setup_user_map2(struct user *users, char type, pid_t pid) {
-	int rc;
+    int rc;
 
-	struct user *i;
+    struct user *i;
 
-	_free_ char *map = strdup("");
+    _free_ char *map = strdup("");
 
-	_free_ char *have_cmd = on_path("newuidmap", NULL);
+    _free_ char *have_cmd = on_path("newuidmap", NULL);
 
-	if (!have_cmd && geteuid() != 0)
-		fail_printf("Unprivileged containers need the newuidmap/newgidmap executables");
+    if (!have_cmd && geteuid() != 0)
+        fail_printf("Unprivileged containers need the newuidmap/newgidmap executables");
 
-	DL_FOREACH(users, i) {
-		char *tmp = NULL;
+    DL_FOREACH(users, i) {
+        char *tmp = NULL;
 
-		if (i->type != type)
-			continue;
+        if (i->type != type)
+            continue;
 
-		rc = asprintf(&tmp, "%s%u %u %lu%c", map,
-		              i->id, i->host_id, i->count,
-		              have_cmd ? ' ' : '\n');
-		fail_if(rc < 0, "OOM");
-		freep(&map);
+        rc = asprintf(&tmp, "%s%u %u %lu%c", map,
+                      i->id, i->host_id, i->count,
+                      have_cmd ? ' ' : '\n');
+        fail_if(rc < 0, "OOM");
+        freep(&map);
 
-		map = tmp;
-	}
+        map = tmp;
+    }
 
-	if (have_cmd != NULL) {
-		_free_ char *cmd = NULL;
+    if (have_cmd != NULL) {
+        _free_ char *cmd = NULL;
 
-		rc = asprintf(&map, "new%cidmap %u %s", type, pid, map);
-		fail_if(rc < 0, "OOM");
+        rc = asprintf(&map, "new%cidmap %u %s", type, pid, map);
+        fail_if(rc < 0, "OOM");
 
-		rc = system(map);
-		fail_if(rc != 0, "new%cidmap returned %d", type, rc);
-	} else {
-		_close_ int map_fd = -1;
+        rc = system(map);
+        fail_if(rc != 0, "new%cidmap returned %d", type, rc);
+    } else {
+        _close_ int map_fd = -1;
 
-		_free_ char *map_file = NULL;
+        _free_ char *map_file = NULL;
 
-		rc = asprintf(&map_file, "/proc/%d/%cid_map", pid, type);
-		fail_if(rc < 0, "OOM");
+        rc = asprintf(&map_file, "/proc/%d/%cid_map", pid, type);
+        fail_if(rc < 0, "OOM");
 
-		map_fd = open(map_file, O_RDWR);
-		sys_fail_if(map_fd < 0, "Error opening file '%s'", map_file);
+        map_fd = open(map_file, O_RDWR);
+        sys_fail_if(map_fd < 0, "Error opening file '%s'", map_file);
 
-		rc = write(map_fd, map, strlen(map));
-		sys_fail_if(rc < 0, "Error writing to file '%s'", map_file);
-	}
+        rc = write(map_fd, map, strlen(map));
+        sys_fail_if(rc < 0, "Error writing to file '%s'", map_file);
+    }
 }
 
 void setup_user_map(struct user *users, pid_t pid) {
-	setup_user_map2(users, 'u', pid);
-	setup_user_map2(users, 'g', pid);
+    setup_user_map2(users, 'u', pid);
+    setup_user_map2(users, 'g', pid);
 }
 
 void setup_user(const char *user) {
-	int rc;
+    int rc;
 
-	uid_t pw_uid;
-	uid_t pw_gid;
+    uid_t pw_uid;
+    uid_t pw_gid;
 
-	if (!user_get_uid_gid(user, &pw_uid, &pw_gid))
-		return;
+    if (!user_get_uid_gid(user, &pw_uid, &pw_gid))
+        return;
 
-	rc = setresgid(pw_gid, pw_gid, pw_gid);
-	sys_fail_if(rc < 0, "Error settign GID");
+    rc = setresgid(pw_gid, pw_gid, pw_gid);
+    sys_fail_if(rc < 0, "Error settign GID");
 
-	rc = setresuid(pw_uid, pw_uid, pw_uid);
-	sys_fail_if(rc < 0, "Error setting UID");
+    rc = setresuid(pw_uid, pw_uid, pw_uid);
+    sys_fail_if(rc < 0, "Error setting UID");
 
-	rc = setgroups(0, NULL);
-	sys_fail_if(rc < 0, "Error setting groups");
+    rc = setgroups(0, NULL);
+    sys_fail_if(rc < 0, "Error setting groups");
 }
 
 bool user_get_mapped_root(struct user *users, char type, unsigned *id) {
-	struct user *i;
+    struct user *i;
 
-	DL_FOREACH(users, i) {
-		if (i->type != type)
-			continue;
+    DL_FOREACH(users, i) {
+        if (i->type != type)
+            continue;
 
-		if (i->id != 0)
-			continue;
+        if (i->id != 0)
+            continue;
 
-		*id = i->host_id;
-		return true;
-	}
+        *id = i->host_id;
+        return true;
+    }
 
-	return false;
+    return false;
 }
 
 bool user_get_uid_gid(const char *user, uid_t *uid, gid_t *gid) {
-	struct passwd *pwd;
+    struct passwd *pwd;
 
-	*uid = 0;
-	*gid = 0;
+    *uid = 0;
+    *gid = 0;
 
-	if (strncmp(user, "root", 5)) {
-		errno = 0;
+    if (strncmp(user, "root", 5)) {
+        errno = 0;
 
-		pwd = getpwnam(user);
-		if (!pwd && !errno) {
-			err_printf("Invalid user '%s'", user);
-			return false;
-		}
+        pwd = getpwnam(user);
+        if (!pwd && !errno) {
+            err_printf("Invalid user '%s'", user);
+            return false;
+        }
 
-		sys_fail_if(!pwd && errno, "Error getting user");
+        sys_fail_if(!pwd && errno, "Error getting user");
 
-		*uid = pwd->pw_uid;
-		*gid = pwd->pw_gid;
-	}
+        *uid = pwd->pw_uid;
+        *gid = pwd->pw_gid;
+    }
 
-	return true;
+    return true;
 }

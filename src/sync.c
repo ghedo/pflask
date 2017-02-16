@@ -38,84 +38,84 @@
 #include "util.h"
 
 int sync_init(int fd[2]) {
-	int rc;
+    int rc;
 
-	rc = socketpair(AF_LOCAL, SOCK_STREAM, 0, fd);
-	sys_fail_if(rc < 0, "Error creating socket pair");
+    rc = socketpair(AF_LOCAL, SOCK_STREAM, 0, fd);
+    sys_fail_if(rc < 0, "Error creating socket pair");
 
-	rc = fcntl(fd[0], F_SETFD, FD_CLOEXEC);
-	sys_fail_if(rc < 0, "Error setting FD_CLOEXEC");
+    rc = fcntl(fd[0], F_SETFD, FD_CLOEXEC);
+    sys_fail_if(rc < 0, "Error setting FD_CLOEXEC");
 
-	return 0;
+    return 0;
 }
 
 static int sync_wait(int fd, int seq) {
-	int rc;
-	int sync = -1;
+    int rc;
+    int sync = -1;
 
-	rc = read(fd, &sync, sizeof(sync));
-	sys_fail_if(rc < 0, "Error reading from socket");
+    rc = read(fd, &sync, sizeof(sync));
+    sys_fail_if(rc < 0, "Error reading from socket");
 
-	if (!rc)
-		return 0;
+    if (!rc)
+        return 0;
 
-	if (sync != seq)
-		fail_printf("Invalid sync sequence: %d != %d", seq, sync);
+    if (sync != seq)
+        fail_printf("Invalid sync sequence: %d != %d", seq, sync);
 
-	return 0;
+    return 0;
 }
 
 int sync_wait_child(int fd[2], int seq) {
-	return sync_wait(fd[1], seq);
+    return sync_wait(fd[1], seq);
 }
 
 int sync_wait_parent(int fd[2], int seq) {
-	return sync_wait(fd[0], seq);
+    return sync_wait(fd[0], seq);
 }
 
 static int sync_wake(int fd, int seq) {
-	int rc;
+    int rc;
 
-	rc = write(fd, &seq, sizeof(seq));
-	sys_fail_if(rc < 0, "Error waking process");
+    rc = write(fd, &seq, sizeof(seq));
+    sys_fail_if(rc < 0, "Error waking process");
 
-	return 0;
+    return 0;
 }
 
 int sync_wake_child(int fd[2], int seq) {
-	return sync_wake(fd[1], seq);
+    return sync_wake(fd[1], seq);
 }
 
 int sync_wake_parent(int fd[2], int seq) {
-	return sync_wake(fd[0], seq);
+    return sync_wake(fd[0], seq);
 }
 
 static int sync_barrier(int fd, int seq) {
-	if (sync_wake(fd, seq))
-		return -1;
+    if (sync_wake(fd, seq))
+        return -1;
 
-	return sync_wait(fd, seq + 1);
+    return sync_wait(fd, seq + 1);
 }
 
 int sync_barrier_child(int fd[2], int seq) {
-	return sync_barrier(fd[1], seq);
+    return sync_barrier(fd[1], seq);
 }
 
 int sync_barrier_parent(int fd[2], int seq) {
-	return sync_barrier(fd[0], seq);
+    return sync_barrier(fd[0], seq);
 }
 
 void sync_close_child(int fd[2]) {
-	if (fd[0] != -1)
-		closep(&fd[0]);
+    if (fd[0] != -1)
+        closep(&fd[0]);
 }
 
 void sync_close_parent(int fd[2]) {
-	if (fd[1] != -1)
-		closep(&fd[1]);
+    if (fd[1] != -1)
+        closep(&fd[1]);
 }
 
 void sync_close(int fd[2]) {
-	sync_close_child(fd);
-	sync_close_parent(fd);
+    sync_close_child(fd);
+    sync_close_parent(fd);
 }

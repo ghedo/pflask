@@ -29,10 +29,10 @@
  */
 
 enum netif_type {
-	MOVE,
-	MACVLAN,
-	IPVLAN,
-	VETH,
+    MOVE,
+    MACVLAN,
+    IPVLAN,
+    VETH,
 };
 
 struct netif;

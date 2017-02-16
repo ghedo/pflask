@@ -42,10 +42,10 @@
 #define CGROUP_BASE "/sys/fs/cgroup"
 
 struct cgroup {
-	char *controller;
-	char *name;
+    char *controller;
+    char *name;
 
-	struct cgroup *next, *prev;
+    struct cgroup *next, *prev;
 };
 
 static void create_cgroup(const char *controller, const char *name);
@@ -53,76 +53,76 @@ static void attach_cgroup(const char *controller, const char *name, pid_t pid);
 static void destroy_cgroup(const char *controller, const char *name);
 
 void cgroup_add(struct cgroup **groups, char *controller) {
-	int rc;
+    int rc;
 
-	pid_t pid = getpid();
+    pid_t pid = getpid();
 
-	struct cgroup *cg = malloc(sizeof(struct cgroup));
-	fail_if(!cg, "OOM");
+    struct cgroup *cg = malloc(sizeof(struct cgroup));
+    fail_if(!cg, "OOM");
 
-	cg->controller = strdup(controller);
+    cg->controller = strdup(controller);
 
-	rc = asprintf(&cg->name, "pflask.%d", pid);
-	fail_if(rc < 0, "OOM");
+    rc = asprintf(&cg->name, "pflask.%d", pid);
+    fail_if(rc < 0, "OOM");
 
-	DL_APPEND(*groups, cg);
+    DL_APPEND(*groups, cg);
 }
 
 void setup_cgroup(struct cgroup *groups, pid_t pid) {
-	struct cgroup *i = NULL;
+    struct cgroup *i = NULL;
 
-	DL_FOREACH(groups, i) {
-		create_cgroup(i->controller, i->name);
-		attach_cgroup(i->controller, i->name, pid);
-	}
+    DL_FOREACH(groups, i) {
+        create_cgroup(i->controller, i->name);
+        attach_cgroup(i->controller, i->name, pid);
+    }
 }
 
 void clean_cgroup(struct cgroup *groups) {
-	struct cgroup *i = NULL;
+    struct cgroup *i = NULL;
 
-	DL_FOREACH(groups, i) {
-		destroy_cgroup(i->controller, i->name);
-	}
+    DL_FOREACH(groups, i) {
+        destroy_cgroup(i->controller, i->name);
+    }
 }
 
 static void create_cgroup(const char *controller, const char *name) {
-	int rc;
+    int rc;
 
-	_free_ char *path = NULL;
+    _free_ char *path = NULL;
 
-	rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);
-	fail_if(rc < 0, "OOM");
+    rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);
+    fail_if(rc < 0, "OOM");
 
-	rc = mkdir(path, 0755);
-	sys_fail_if((rc < 0) && (errno != EEXIST), "Error creating cgroup");
+    rc = mkdir(path, 0755);
+    sys_fail_if((rc < 0) && (errno != EEXIST), "Error creating cgroup");
 }
 
 static void attach_cgroup(const char *controller, const char *name, pid_t pid) {
-	int rc;
+    int rc;
 
-	FILE *tasks = NULL;
-	_free_ char *path = NULL;
+    FILE *tasks = NULL;
+    _free_ char *path = NULL;
 
-	rc = asprintf(&path, CGROUP_BASE "/%s/%s/tasks", controller, name);
-	fail_if(rc < 0, "OOM");
+    rc = asprintf(&path, CGROUP_BASE "/%s/%s/tasks", controller, name);
+    fail_if(rc < 0, "OOM");
 
-	tasks = fopen(path, "w");
-	sys_fail_if(!tasks, "Error opening cgroup");
+    tasks = fopen(path, "w");
+    sys_fail_if(!tasks, "Error opening cgroup");
 
-	fprintf(tasks, "%d\n", pid);
+    fprintf(tasks, "%d\n", pid);
 
-	rc = fclose(tasks);
-	sys_fail_if(rc < 0, "Error closing cgroup");
+    rc = fclose(tasks);
+    sys_fail_if(rc < 0, "Error closing cgroup");
 }
 
 static void destroy_cgroup(const char *controller, const char *name) {
-	int rc;
+    int rc;
 
-	_free_ char *path = NULL;
+    _free_ char *path = NULL;
 
-	rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);
-	fail_if(rc < 0, "OOM");
+    rc = asprintf(&path, CGROUP_BASE "/%s/%s", controller, name);
+    fail_if(rc < 0, "OOM");
 
-	rc = rmdir(path);
-	sys_fail_if(rc < 0, "Error destroying cgroup");
+    rc = rmdir(path);
+    sys_fail_if(rc < 0, "Error destroying cgroup");
 }

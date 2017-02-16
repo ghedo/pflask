@@ -39,97 +39,97 @@
 #include "util.h"
 
 void rtattr_append(struct nlmsg *nlmsg, int attr, void *d, size_t len) {
-	struct rtattr *rtattr;
-	size_t rtalen = RTA_LENGTH(len);
+    struct rtattr *rtattr;
+    size_t rtalen = RTA_LENGTH(len);
 
-	rtattr = NLMSG_TAIL(&nlmsg->hdr);
-	rtattr->rta_type = attr;
-	rtattr->rta_len  = rtalen;
+    rtattr = NLMSG_TAIL(&nlmsg->hdr);
+    rtattr->rta_type = attr;
+    rtattr->rta_len  = rtalen;
 
-	memcpy(RTA_DATA(rtattr), d, len);
+    memcpy(RTA_DATA(rtattr), d, len);
 
-	nlmsg->hdr.nlmsg_len = NLMSG_ALIGN(nlmsg->hdr.nlmsg_len) +
-	                       RTA_ALIGN(rtalen);
+    nlmsg->hdr.nlmsg_len = NLMSG_ALIGN(nlmsg->hdr.nlmsg_len) +
+                           RTA_ALIGN(rtalen);
 }
 
 struct rtattr *rtattr_start_nested(struct nlmsg *nlmsg, int attr) {
-	struct rtattr *rtattr = NLMSG_TAIL(&nlmsg->hdr);
-	rtattr_append(nlmsg, attr, NULL, 0);
+    struct rtattr *rtattr = NLMSG_TAIL(&nlmsg->hdr);
+    rtattr_append(nlmsg, attr, NULL, 0);
 
-	return rtattr;
+    return rtattr;
 }
 
 void rtattr_end_nested(struct nlmsg *nlmsg, struct rtattr *rtattr) {
-	rtattr->rta_len = (char *) NLMSG_TAIL(&nlmsg->hdr) - (char *) rtattr;
+    rtattr->rta_len = (char *) NLMSG_TAIL(&nlmsg->hdr) - (char *) rtattr;
 }
 
 int nl_open(void) {
-	int rc;
+    int rc;
 
-	int sock = -1;
+    int sock = -1;
 
-	struct sockaddr_nl addr;
+    struct sockaddr_nl addr;
 
-	sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-	sys_fail_if(sock < 0, "Error creating netlink socket");
+    sock = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    sys_fail_if(sock < 0, "Error creating netlink socket");
 
-	addr.nl_family = AF_NETLINK;
-	addr.nl_pad    = 0;
-	addr.nl_pid    = getpid();
-	addr.nl_groups = 0;
+    addr.nl_family = AF_NETLINK;
+    addr.nl_pad    = 0;
+    addr.nl_pid    = getpid();
+    addr.nl_groups = 0;
 
-	rc = bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_nl));
-	sys_fail_if(rc < 0, "Error binding netlink socket");
+    rc = bind(sock, (struct sockaddr *) &addr, sizeof(struct sockaddr_nl));
+    sys_fail_if(rc < 0, "Error binding netlink socket");
 
-	return sock;
+    return sock;
 }
 
 void nl_send(int sock, struct nlmsg *nlmsg) {
-	int rc;
-	struct sockaddr_nl addr;
+    int rc;
+    struct sockaddr_nl addr;
 
-	struct iovec iov = {
-		.iov_base = (void *) nlmsg,
-		.iov_len  = nlmsg->hdr.nlmsg_len
-	};
+    struct iovec iov = {
+        .iov_base = (void *) nlmsg,
+        .iov_len  = nlmsg->hdr.nlmsg_len
+    };
 
-	struct msghdr msg = {
-		.msg_name    = &addr,
-		.msg_namelen = sizeof(struct sockaddr_nl),
-		.msg_iov     = &iov,
-		.msg_iovlen  = 1
-	};
+    struct msghdr msg = {
+        .msg_name    = &addr,
+        .msg_namelen = sizeof(struct sockaddr_nl),
+        .msg_iov     = &iov,
+        .msg_iovlen  = 1
+    };
 
-	memset(&addr, 0, sizeof(struct sockaddr_nl));
-	addr.nl_family = AF_NETLINK;
-	addr.nl_pid    = 0;
-	addr.nl_groups = 0;
+    memset(&addr, 0, sizeof(struct sockaddr_nl));
+    addr.nl_family = AF_NETLINK;
+    addr.nl_pid    = 0;
+    addr.nl_groups = 0;
 
-	rc = sendmsg(sock, &msg, 0);
-	sys_fail_if(rc < 0, "Error sending netlink message");
+    rc = sendmsg(sock, &msg, 0);
+    sys_fail_if(rc < 0, "Error sending netlink message");
 }
 
 void nl_recv(int sock, struct nlmsg *nlmsg) {
-	int rc;
-	struct sockaddr_nl addr;
+    int rc;
+    struct sockaddr_nl addr;
 
-	struct iovec iov = {
-		.iov_base = (void *) nlmsg,
-		.iov_len  = nlmsg->hdr.nlmsg_len
-	};
+    struct iovec iov = {
+        .iov_base = (void *) nlmsg,
+        .iov_len  = nlmsg->hdr.nlmsg_len
+    };
 
-	struct msghdr msg = {
-		.msg_name    = &addr,
-		.msg_namelen = sizeof(struct sockaddr_nl),
-		.msg_iov     = &iov,
-		.msg_iovlen  = 1
-	};
+    struct msghdr msg = {
+        .msg_name    = &addr,
+        .msg_namelen = sizeof(struct sockaddr_nl),
+        .msg_iov     = &iov,
+        .msg_iovlen  = 1
+    };
 
-	memset(&addr, 0, sizeof(struct sockaddr_nl));
-	addr.nl_family = AF_NETLINK;
-	addr.nl_pid    = 0;
-	addr.nl_groups = 0;
+    memset(&addr, 0, sizeof(struct sockaddr_nl));
+    addr.nl_family = AF_NETLINK;
+    addr.nl_pid    = 0;
+    addr.nl_groups = 0;
 
-	rc = recvmsg(sock, &msg, 0);
-	sys_fail_if(rc < 0, "Error receiving netlink message");
+    rc = recvmsg(sock, &msg, 0);
+    sys_fail_if(rc < 0, "Error receiving netlink message");
 }

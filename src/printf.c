@@ -45,69 +45,69 @@ int use_syslog = 0;
 static void do_log(const char *prefix, const char *fmt, va_list args, bool c);
 
 void ok_printf(const char *fmt, ...) {
-	va_list args;
+    va_list args;
 
-	va_start(args, fmt);
-	do_log("[" COLOR_GREEN "✔" COLOR_OFF "] ", fmt, args, false);
-	va_end(args);
+    va_start(args, fmt);
+    do_log("[" COLOR_GREEN "✔" COLOR_OFF "] ", fmt, args, false);
+    va_end(args);
 }
 
 void debug_printf(const char *fmt, ...) {
-	va_list args;
+    va_list args;
 
-	va_start(args, fmt);
-	do_log("[" COLOR_YELLOW "¡" COLOR_OFF "] ", fmt, args, false);
-	va_end(args);
+    va_start(args, fmt);
+    do_log("[" COLOR_YELLOW "¡" COLOR_OFF "] ", fmt, args, false);
+    va_end(args);
 }
 
 void err_printf(const char *fmt, ...) {
-	va_list args;
+    va_list args;
 
-	va_start(args, fmt);
-	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args, false);
-	va_end(args);
+    va_start(args, fmt);
+    do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args, false);
+    va_end(args);
 }
 
 void fail_printf(const char *fmt, ...) {
-	va_list args;
+    va_list args;
 
-	va_start(args, fmt);
-	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args, true);
-	va_end(args);
+    va_start(args, fmt);
+    do_log("[" COLOR_RED "✘" COLOR_OFF "] ", fmt, args, true);
+    va_end(args);
 
-	_exit(EXIT_FAILURE);
+    _exit(EXIT_FAILURE);
 }
 
 void sysf_printf(const char *fmt, ...) {
-	int rc;
-	va_list args;
+    int rc;
+    va_list args;
 
-	_free_ char *format = NULL;
+    _free_ char *format = NULL;
 
-	rc = asprintf(&format, "%s: %s", fmt, strerror(errno));
-	fail_if(rc < 0, "OOM");
+    rc = asprintf(&format, "%s: %s", fmt, strerror(errno));
+    fail_if(rc < 0, "OOM");
 
-	va_start(args, fmt);
-	do_log("[" COLOR_RED "✘" COLOR_OFF "] ", format, args, true);
-	va_end(args);
+    va_start(args, fmt);
+    do_log("[" COLOR_RED "✘" COLOR_OFF "] ", format, args, true);
+    va_end(args);
 
-	_exit(EXIT_FAILURE);
+    _exit(EXIT_FAILURE);
 }
 
 static void do_log(const char *pre, const char *fmt, va_list args, bool cursor) {
-	int rc;
-	static char format[LINE_MAX];
+    int rc;
+    static char format[LINE_MAX];
 
-	if (use_syslog || !isatty(STDERR_FILENO))
-		rc = snprintf(format, LINE_MAX, "%s\n", fmt);
-	else
-		rc = snprintf(format, LINE_MAX, "\r" LINE_CLEAR "%s%s%s\n",
-			      cursor ? CURSOR_SHOW  : "", pre, fmt);
+    if (use_syslog || !isatty(STDERR_FILENO))
+        rc = snprintf(format, LINE_MAX, "%s\n", fmt);
+    else
+        rc = snprintf(format, LINE_MAX, "\r" LINE_CLEAR "%s%s%s\n",
+                  cursor ? CURSOR_SHOW  : "", pre, fmt);
 
-	if (rc < 0) fail_printf("EIO");
+    if (rc < 0) fail_printf("EIO");
 
-	if (use_syslog == 1)
-		vsyslog(LOG_CRIT, format, args);
-	else
-		vfprintf(stderr, format, args);
+    if (use_syslog == 1)
+        vsyslog(LOG_CRIT, format, args);
+    else
+        vfprintf(stderr, format, args);
 }

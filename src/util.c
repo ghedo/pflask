@@ -35,27 +35,27 @@
 #include "util.h"
 
 size_t split_str(char *orig, char ***dest, char *needle) {
-	size_t size  = 0;
-	char  *token = NULL;
+    size_t size  = 0;
+    char  *token = NULL;
 
-	if (!orig || !dest)
-		return 0;
+    if (!orig || !dest)
+        return 0;
 
-	token = strtok(orig, needle);
+    token = strtok(orig, needle);
 
-	do {
-		char **tmp = realloc(*dest, sizeof(char *) * (size + 1));
+    do {
+        char **tmp = realloc(*dest, sizeof(char *) * (size + 1));
 
-		if (!tmp) {
-			if (*dest != NULL)
-				free(*dest);
+        if (!tmp) {
+            if (*dest != NULL)
+                free(*dest);
 
-			return 0;
-		}
+            return 0;
+        }
 
-		*dest = tmp;
-		(*dest)[size++] = token;
-	} while ((token = strtok(NULL, needle)) != NULL);
+        *dest = tmp;
+        (*dest)[size++] = token;
+    } while ((token = strtok(NULL, needle)) != NULL);
 
-	return size;
+    return size;
 }

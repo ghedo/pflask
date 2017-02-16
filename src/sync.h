@@ -29,8 +29,8 @@
  */
 
 enum {
-	SYNC_START,
-	SYNC_DONE,
+    SYNC_START,
+    SYNC_DONE,
 };
 
 int sync_init(int fd[2]);

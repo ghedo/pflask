@@ -33,41 +33,41 @@
 
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
-#define fail_if_(cond, fmt, ...)				\
-	do {							\
-		if ((cond))					\
-			fail_printf(fmt, __VA_ARGS__);		\
-	} while (0)
+#define fail_if_(cond, fmt, ...)                \
+    do {                                        \
+        if ((cond))                             \
+            fail_printf(fmt, __VA_ARGS__);      \
+    } while (0)
 #define fail_if(...) fail_if_(__VA_ARGS__, "")
 
-#define sys_fail_if_(cond, fmt, ...)				\
-	do {							\
-		if ((cond))					\
-			sysf_printf(fmt, __VA_ARGS__);		\
-	} while (0)
+#define sys_fail_if_(cond, fmt, ...)            \
+    do {                                        \
+        if ((cond))                             \
+            sysf_printf(fmt, __VA_ARGS__);      \
+    } while (0)
 #define sys_fail_if(...) sys_fail_if_(__VA_ARGS__, "")
 
 #define _free_ __attribute__((cleanup(freep)))
 #define _close_ __attribute__((cleanup(closep)))
 
 static inline void freep(void *p) {
-	if (!p) return;
+    if (!p) return;
 
-	free(*(void **) p);
+    free(*(void **) p);
 
-	*(void **)p = NULL;
+    *(void **)p = NULL;
 }
 
 static inline void closep(int *p) {
-	int rc;
+    int rc;
 
-	if (*p == -1)
-		return;
+    if (*p == -1)
+        return;
 
-	rc = close(*p);
-	sys_fail_if(rc < 0, "Error closing fd");
+    rc = close(*p);
+    sys_fail_if(rc < 0, "Error closing fd");
 
-	*p = -1;
+    *p = -1;
 }
 
 size_t split_str(char *orig, char ***dest, char *needle);

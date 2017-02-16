@@ -28,16 +28,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#define COLOR_GREEN	"[1;32m"
-#define COLOR_YELLOW	"[1;33m"
-#define COLOR_RED	"[1;31m"
-#define COLOR_BGRED	"[1;41m"
-#define COLOR_OFF	"[0m"
+#define COLOR_GREEN  "[1;32m"
+#define COLOR_YELLOW "[1;33m"
+#define COLOR_RED    "[1;31m"
+#define COLOR_BGRED  "[1;41m"
+#define COLOR_OFF    "[0m"
 
-#define LINE_CLEAR	"[0K"
+#define LINE_CLEAR   "[0K"
 
-#define CURSOR_HIDE	"[?25l"
-#define CURSOR_SHOW	"[?25h"
+#define CURSOR_HIDE  "[?25l"
+#define CURSOR_SHOW  "[?25h"
 
 int use_syslog;
 

@@ -37,117 +37,117 @@
 #include "util.h"
 
 int path_compare(const char *a, const char *b) {
-	int d;
+    int d;
 
-	/* A relative path and an abolute path must not compare as equal.
-	 * Which one is sorted before the other does not really matter.
-	 * Here a relative path is ordered before an absolute path. */
-	d = (a[0] == '/') - (b[0] == '/');
-	if (d)
-		return d;
+    /* A relative path and an abolute path must not compare as equal.
+     * Which one is sorted before the other does not really matter.
+     * Here a relative path is ordered before an absolute path. */
+    d = (a[0] == '/') - (b[0] == '/');
+    if (d)
+        return d;
 
-	for (;;) {
-		size_t j, k;
+    for (;;) {
+        size_t j, k;
 
-		a += strspn(a, "/");
-		b += strspn(b, "/");
+        a += strspn(a, "/");
+        b += strspn(b, "/");
 
-		if (*a == 0 && *b == 0)
-			return 0;
+        if (*a == 0 && *b == 0)
+            return 0;
 
-		/* Order prefixes first: "/foo" before "/foo/bar" */
-		if (*a == 0)
-			return -1;
-		if (*b == 0)
-			return 1;
+        /* Order prefixes first: "/foo" before "/foo/bar" */
+        if (*a == 0)
+            return -1;
+        if (*b == 0)
+            return 1;
 
-		j = strcspn(a, "/");
-		k = strcspn(b, "/");
+        j = strcspn(a, "/");
+        k = strcspn(b, "/");
 
-		/* Alphabetical sort: "/foo/aaa" before "/foo/b" */
-		d = memcmp(a, b, MIN(j, k));
-		if (d)
-			return (d > 0) - (d < 0); /* sign of d */
+        /* Alphabetical sort: "/foo/aaa" before "/foo/b" */
+        d = memcmp(a, b, MIN(j, k));
+        if (d)
+            return (d > 0) - (d < 0); /* sign of d */
 
-		/* Sort "/foo/a" before "/foo/aaa" */
-		d = (j > k) - (j < k);  /* sign of (j - k) */
-		if (d)
-			return d;
+        /* Sort "/foo/a" before "/foo/aaa" */
+        d = (j > k) - (j < k);  /* sign of (j - k) */
+        if (d)
+            return d;
 
-		a += j;
-		b += k;
-	}
+        a += j;
+        b += k;
+    }
 }
 
 char *path_prefix_root(const char *root, const char *path) {
-	char *n, *p;
-	size_t l;
+    char *n, *p;
+    size_t l;
 
-	/* If root is passed, prefixes path with it. Otherwise returns
-	 * it as is. */
+    /* If root is passed, prefixes path with it. Otherwise returns
+     * it as is. */
 
-	/* First, drop duplicate prefixing slashes from the path */
-	while (path[0] == '/' && path[1] == '/')
-		path++;
+    /* First, drop duplicate prefixing slashes from the path */
+    while (path[0] == '/' && path[1] == '/')
+        path++;
 
-	if (!root || !root[0] ||
-	    (path_compare(root, "/") == 0) ||
-	    (path_compare(root, path) == 0))
-		return strdup(path);
+    if (!root || !root[0] ||
+        (path_compare(root, "/") == 0) ||
+        (path_compare(root, path) == 0))
+        return strdup(path);
 
-	l = strlen(root) + 1 + strlen(path) + 1;
+    l = strlen(root) + 1 + strlen(path) + 1;
 
-	n = malloc(l);
-	if (!n)
-		return NULL;
+    n = malloc(l);
+    if (!n)
+        return NULL;
 
-	p = stpcpy(n, root);
+    p = stpcpy(n, root);
 
-	while (p > n && p[-1] == '/')
-		p--;
+    while (p > n && p[-1] == '/')
+        p--;
 
-	if (path[0] != '/')
-		*(p++) = '/';
+    if (path[0] != '/')
+        *(p++) = '/';
 
-	strcpy(p, path);
-	return n;
+    strcpy(p, path);
+    return n;
 }
 
 char *on_path(char *cmd, const char *rootfs) {
-	int rc;
+    int rc;
 
-	_free_ char *path = NULL;
+    _free_ char *path = NULL;
 
-	char *iter = NULL;
-	char *entry = NULL;
-	char *saveptr = NULL;
-	char *cmd_path = NULL;
+    char *iter = NULL;
+    char *entry = NULL;
+    char *saveptr = NULL;
+    char *cmd_path = NULL;
 
-	path = getenv("PATH");
-	if (!path)
-		return NULL;
+    path = getenv("PATH");
+    if (!path)
+        return NULL;
 
-	path = strdup(path);
-	if (!path)
-		return NULL;
+    path = strdup(path);
+    if (!path)
+        return NULL;
 
-	iter = path;
+    iter = path;
 
-	while ((entry = strtok_r(iter, ":", &saveptr))) {
-		iter = NULL;
+    while ((entry = strtok_r(iter, ":", &saveptr))) {
+        iter = NULL;
 
-		if (rootfs)
-			rc = asprintf(&cmd_path, "%s/%s/%s", rootfs, entry, cmd);
-		else
-			rc = asprintf(&cmd_path, "%s/%s", entry, cmd);
+        if (rootfs)
+            rc = asprintf(&cmd_path, "%s/%s/%s", rootfs, entry, cmd);
+        else
+            rc = asprintf(&cmd_path, "%s/%s", entry, cmd);
 
-		if (rc >= 0 && !access(cmd_path, X_OK))
-			return cmd_path;
-	}
+        if (rc >= 0 && !access(cmd_path, X_OK))
+            return cmd_path;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 bool path_is_absolute(const char *p) {
-	return p[0] == '/';
+    return p[0] == '/';
 }

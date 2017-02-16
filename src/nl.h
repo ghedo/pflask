@@ -29,12 +29,12 @@
  */
 
 struct nlmsg {
-	struct nlmsghdr hdr;
+    struct nlmsghdr hdr;
 
-	union {
-		struct ifinfomsg ifi;
-		struct nlmsgerr  err;
-	} msg;
+    union {
+        struct ifinfomsg ifi;
+        struct nlmsgerr  err;
+    } msg;
 };
 
 #define NLMSG_TAIL(nmsg) \
