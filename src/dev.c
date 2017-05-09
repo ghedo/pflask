@@ -28,14 +28,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
 #include <stdbool.h>
-#include <fcntl.h>
 #include <unistd.h>
 
 #include <sched.h>
 
-#include <sys/mount.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 
@@ -43,18 +40,6 @@
 #include "sync.h"
 #include "printf.h"
 #include "util.h"
-
-void setup_ptmx(const char *dest) {
-    int rc;
-
-    _free_ char *target = NULL;
-
-    rc = asprintf(&target, "%s/dev/ptmx", dest);
-    fail_if(rc < 0, "OOM");
-
-    rc = symlink("/dev/pts/ptmx", target);
-    sys_fail_if(rc < 0, "Error creating symlink '%s'", target);
-}
 
 void setup_console_owner(char *path, struct user *u) {
     int rc;
@@ -139,81 +124,4 @@ void setup_console_owner(char *path, struct user *u) {
     waitpid(pid, &rc, 0);
 
     return;
-}
-
-void setup_console(const char *dest, const char *console) {
-    int rc;
-
-    _free_ char *target = NULL;
-
-    rc = asprintf(&target, "%s/dev/console", dest);
-    fail_if(rc < 0, "OOM");
-
-    rc = chmod(console, 0600);
-    sys_fail_if(rc < 0, "Error chmoding '%s'", console);
-
-    rc = mount(console, target, NULL, MS_BIND, NULL);
-    sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
-}
-
-void setup_symlinks(const char *dest) {
-    int rc;
-
-    const char *src[] = {
-        "/proc/kcore",
-        "/proc/self/fd",
-        "/proc/self/fd/0",
-        "/proc/self/fd/1",
-        "/proc/self/fd/2"
-    };
-
-    const char *dst[] = {
-        "/dev/core",
-        "/dev/fd",
-        "/dev/stdin",
-        "/dev/stdout",
-        "/dev/stderr"
-    };
-
-    for (size_t i = 0; i <  sizeof(src) / sizeof(*src); i++) {
-        _free_ char *link = NULL;
-
-        rc = asprintf(&link, "%s/%s", dest, dst[i]);
-        fail_if(rc < 0, "OOM");
-
-        rc = symlink(src[i], link);
-        sys_fail_if(rc < 0, "Error creating symlink '%s'", link);
-    }
-}
-
-void setup_nodes(const char *dest) {
-    int rc;
-
-    mode_t u = umask(0000);
-
-    const char *nodes[] = {
-        "/dev/console",
-        "/dev/tty",
-        "/dev/full",
-        "/dev/null",
-        "/dev/zero",
-        "/dev/random",
-        "/dev/urandom",
-    };
-
-    for (size_t i = 0; i <  sizeof(nodes) / sizeof(*nodes); i++) {
-        _close_ int fd = -1;
-        _free_ char *target = NULL;
-
-        rc = asprintf(&target, "%s%s", dest, nodes[i]);
-        fail_if(rc < 0, "OOM");
-
-        fd = open(target, O_WRONLY | O_CREAT | O_CLOEXEC, 644);
-        sys_fail_if(fd < 0, "Error creating file '%s'", target);
-
-        rc = mount(nodes[i], target, NULL, MS_BIND, NULL);
-        sys_fail_if(rc < 0, "Error bind mounting '%s'", target);
-    }
-
-    umask(u);
 }

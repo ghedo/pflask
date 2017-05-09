@@ -231,14 +231,6 @@ int main(int argc, char *argv[]) {
                                                ephemeral_dir : NULL);
 
         if (args.chroot_given) {
-            setup_nodes(args.chroot_arg);
-
-            setup_ptmx(args.chroot_arg);
-
-            setup_symlinks(args.chroot_arg);
-
-            setup_console(args.chroot_arg, master);
-
             do_chroot(args.chroot_arg);
         }
 
