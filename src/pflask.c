@@ -361,7 +361,7 @@ static size_t validate_optlist(const char *name, const char *opts) {
     fail_if(!c, "Invalid value '%s' for %s", opts, name);
 
     for (i = 0; i < c; i++) {
-        if (vars[i] == '\0')
+        if (*vars[i] == '\0')
             fail_printf("Invalid value '%s' for %s", opts, name);
     }
 
