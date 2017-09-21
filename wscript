@@ -64,10 +64,6 @@ def configure(cfg):
     # OS
     my_check_os(cfg)
 
-    # AuFS
-    my_check_cc(cfg, 'aufs', header_name='linux/aufs_type.h',
-                define_name='HAVE_AUFS', mandatory=False)
-
     # libdbus
     my_check_cfg(cfg, 'dbus', package='dbus-1', mandatory=False)
 
