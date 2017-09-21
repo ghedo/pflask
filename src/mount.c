@@ -196,6 +196,9 @@ void setup_mount(struct mount *mounts, const char *dest, const char *ephemeral_d
 
         mount_add(&sys_mounts, "tmpfs", "/run", "tmpfs",
                   MS_NOSUID | MS_NODEV | MS_STRICTATIME, "mode=755");
+
+        mount_add(&sys_mounts, "cgroup", "/sys/fs/cgroup", "cgroup2",
+                  MS_NOSUID | MS_NODEV | MS_NOEXEC, NULL);
     }
 
     DL_CONCAT(sys_mounts, mounts);
