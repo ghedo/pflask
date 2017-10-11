@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <signal.h>
+#include <stddef.h>
 
 #include <fcntl.h>
 #include <termios.h>
@@ -233,6 +234,7 @@ done:
 
 void serve_pty(int fd) {
     int rc;
+    socklen_t addrlen;
 
     pid_t pid;
 
@@ -262,13 +264,14 @@ void serve_pty(int fd) {
 
     servaddr_un.sun_family  = AF_UNIX;
 
-    snprintf(servaddr_un.sun_path, sizeof(servaddr_un.sun_path), "%s", path);
+    rc = snprintf(servaddr_un.sun_path, sizeof(servaddr_un.sun_path), "%s", path);
     servaddr_un.sun_path[0] = '\0';
+    addrlen = offsetof(struct sockaddr_un, sun_path) + rc;
 
     sock = socket(AF_UNIX, SOCK_STREAM, 0);
     sys_fail_if(sock < 0, "socket()");
 
-    rc = bind(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
+    rc = bind(sock, (struct sockaddr *) &servaddr_un, addrlen);
     sys_fail_if(rc < 0, "bind()");
 
     rc = listen(sock, 1);
@@ -343,6 +346,7 @@ void serve_pty(int fd) {
 
 int recv_pty(pid_t pid) {
     int rc;
+    socklen_t addrlen;
 
     _close_ int sock = -1;
 
@@ -360,13 +364,14 @@ int recv_pty(pid_t pid) {
 
     servaddr_un.sun_family = AF_UNIX;
 
-    snprintf(servaddr_un.sun_path, sizeof(servaddr_un.sun_path), "%s", path);
+    rc = snprintf(servaddr_un.sun_path, sizeof(servaddr_un.sun_path), "%s", path);
     servaddr_un.sun_path[0] = '\0';
+    addrlen = offsetof(struct sockaddr_un, sun_path) + rc;
 
     sock = socket(AF_UNIX, SOCK_STREAM, 0);
     sys_fail_if(sock < 0, "socket()");
 
-    rc = connect(sock, (struct sockaddr *) &servaddr_un, sizeof(struct sockaddr_un));
+    rc = connect(sock, (struct sockaddr *) &servaddr_un, addrlen);
     sys_fail_if(rc < 0, "connect()");
 
     return recv_fd(sock);
