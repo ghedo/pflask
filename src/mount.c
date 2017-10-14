@@ -181,8 +181,8 @@ void setup_mount(struct mount *mounts, const char *dest, const char *ephemeral_d
         mount_add(&sys_mounts, NULL, "/proc/sys", "proc/sys-ro",
                   MS_BIND | MS_RDONLY | MS_REMOUNT, NULL);
 
-        mount_add(&sys_mounts, "sysfs", "/sys", "sysfs",
-                  MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_RDONLY, NULL);
+        mount_add(&sys_mounts, "/sys", "/sys", "bind",
+                  MS_BIND | MS_REC | MS_NOSUID | MS_NODEV | MS_NOEXEC, NULL);
 
         mount_add(&sys_mounts, "tmpfs", "/dev", "tmpfs",
                   MS_NOSUID | MS_STRICTATIME, "mode=755");
