@@ -91,6 +91,9 @@ int main(int argc, char *argv[]) {
                           CLONE_NEWCGROUP |
 #endif
                           CLONE_NEWUTS;
+#ifdef CLONE_NEWCGROUP
+    clone_flags |= CLONE_NEWCGROUP;
+#endif
 
     struct gengetopt_args_info args;
 
