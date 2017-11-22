@@ -1,7 +1,7 @@
 pflask
 ======
 
-.. image:: https://travis-ci.org/ghedo/pflask.png
+.. image:: https://travis-ci.org/ghedo/pflask.svg
   :target: https://travis-ci.org/ghedo/pflask
 
 pflask_ is a simple tool for creating process containers on LInux. It can be
