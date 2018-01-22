@@ -161,7 +161,7 @@ def build(bld):
             source = bld.path.ant_glob('docs/pflask.rst') +
                      bld.path.ant_glob('build/docs/conf.py'),
             target = 'docs/man/pflask.1 docs/man/pflask-debuild.1',
-            install_path = bld.env.MANDIR
+            install_path = bld.env.MANDIR + '/man1'
         )
 
         bld(
