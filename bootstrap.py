@@ -5,13 +5,13 @@
 from __future__ import print_function
 import os, sys, stat, hashlib, subprocess
 
-WAFRELEASE = "waf-1.8.6"
-WAFURL     = "http://waf.io/pub/release/" + WAFRELEASE
-SHA256HASH = "81c4e6a3144c7b2021a839e7277bdaf1cedbbc87302186897b4ae03f4effcbf5"
+WAFRELEASE = "2.1.9"
+WAFURL     = "https://waf.io/waf-" + WAFRELEASE
+SHA256HASH = "e235eeac6d34f039834e355a738298416a92a17defd1b6e1eae48488ba4a6864"
 
 if os.path.exists("waf"):
     wafver = subprocess.check_output(['./waf', '--version']).decode()
-    if WAFRELEASE.split('-')[1] == wafver.split(' ')[1]:
+    if WAFRELEASE == wafver.split(' ')[1]:
         print("Found 'waf', skipping download.")
         sys.exit(0)
 

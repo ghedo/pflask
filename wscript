@@ -18,10 +18,9 @@ _INSTALL_DIRS_LIST = [
 def options(opt):
     opt.load('compiler_c')
 
-    group = opt.get_option_group("build and install options")
     for ident, default, desc in _INSTALL_DIRS_LIST:
-        group.add_option('--{0}'.format(ident),
-            type    = 'string',
+        opt.add_option('--{0}'.format(ident),
+            type    = str,
             dest    = ident,
             default = default,
             help    = 'directory for installing {0} [{1}]' \
@@ -52,7 +51,7 @@ def configure(cfg):
         cfg.env[varname] = getattr(cfg.options, ident)
 
         # keep substituting vars, until the paths are fully expanded
-        while re.match('\$\{([^}]+)\}', cfg.env[varname]):
+        while re.match(r'\$\{([^}]+)\}', cfg.env[varname]):
             cfg.env[varname] = \
               Utils.subst_vars(cfg.env[varname], cfg.env)
 
