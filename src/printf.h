@@ -39,7 +39,7 @@
 #define CURSOR_HIDE  "[?25l"
 #define CURSOR_SHOW  "[?25h"
 
-int use_syslog;
+extern int use_syslog;
 
 void ok_printf(const char *fmt, ...);
 void debug_printf(const char *fmt, ...);
